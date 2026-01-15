@@ -1,0 +1,145 @@
+package com.hackathon.manager.service
+
+import com.hackathon.manager.dto.CreateProjectRequest
+import com.hackathon.manager.dto.ProjectResponse
+import com.hackathon.manager.dto.UpdateProjectRequest
+import com.hackathon.manager.entity.Project
+import com.hackathon.manager.entity.enums.SubmissionStatus
+import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.repository.*
+import org.springframework.http.HttpStatus
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
+import java.util.*
+
+@Service
+class ProjectService(
+    private val projectRepository: ProjectRepository,
+    private val teamRepository: TeamRepository,
+    private val teamMemberRepository: TeamMemberRepository,
+    private val hackathonRepository: HackathonRepository
+) {
+
+    @Transactional(readOnly = true)
+    fun getProjectsByHackathon(hackathonId: UUID): List<ProjectResponse> {
+        return projectRepository.findByHackathonId(hackathonId)
+            .map { ProjectResponse.fromEntity(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getSubmittedProjectsByHackathon(hackathonId: UUID): List<ProjectResponse> {
+        return projectRepository.findByHackathonIdAndStatus(hackathonId, SubmissionStatus.submitted)
+            .map { ProjectResponse.fromEntity(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getProjectById(id: UUID): ProjectResponse {
+        val project = projectRepository.findById(id)
+            .orElseThrow { ApiException("Project not found", HttpStatus.NOT_FOUND) }
+        return ProjectResponse.fromEntity(project)
+    }
+
+    @Transactional(readOnly = true)
+    fun getProjectByTeam(teamId: UUID): ProjectResponse? {
+        val project = projectRepository.findByTeamId(teamId)
+        return project?.let { ProjectResponse.fromEntity(it) }
+    }
+
+    @Transactional
+    fun createProject(request: CreateProjectRequest, userId: UUID): ProjectResponse {
+        val team = teamRepository.findById(request.teamId)
+            .orElseThrow { ApiException("Team not found", HttpStatus.NOT_FOUND) }
+
+        if (!teamMemberRepository.existsByTeamIdAndUserId(request.teamId, userId)) {
+            throw ApiException("Must be a team member to create a project", HttpStatus.FORBIDDEN)
+        }
+
+        if (projectRepository.existsByTeamIdAndHackathonId(request.teamId, team.hackathon.id!!)) {
+            throw ApiException("Team already has a project for this hackathon", HttpStatus.CONFLICT)
+        }
+
+        val project = Project(
+            team = team,
+            hackathon = team.hackathon,
+            name = request.name,
+            tagline = request.tagline,
+            description = request.description,
+            demoUrl = request.demoUrl,
+            videoUrl = request.videoUrl,
+            repositoryUrl = request.repositoryUrl,
+            presentationUrl = request.presentationUrl,
+            technologies = request.technologies?.toTypedArray()
+        )
+
+        val savedProject = projectRepository.save(project)
+        return ProjectResponse.fromEntity(savedProject)
+    }
+
+    @Transactional
+    fun updateProject(id: UUID, request: UpdateProjectRequest, userId: UUID): ProjectResponse {
+        val project = projectRepository.findById(id)
+            .orElseThrow { ApiException("Project not found", HttpStatus.NOT_FOUND) }
+
+        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
+            throw ApiException("Must be a team member to update the project", HttpStatus.FORBIDDEN)
+        }
+
+        if (project.status == SubmissionStatus.submitted) {
+            throw ApiException("Cannot update a submitted project", HttpStatus.BAD_REQUEST)
+        }
+
+        request.name?.let { project.name = it }
+        request.tagline?.let { project.tagline = it }
+        request.description?.let { project.description = it }
+        request.demoUrl?.let { project.demoUrl = it }
+        request.videoUrl?.let { project.videoUrl = it }
+        request.repositoryUrl?.let { project.repositoryUrl = it }
+        request.presentationUrl?.let { project.presentationUrl = it }
+        request.thumbnailUrl?.let { project.thumbnailUrl = it }
+        request.technologies?.let { project.technologies = it.toTypedArray() }
+
+        val savedProject = projectRepository.save(project)
+        return ProjectResponse.fromEntity(savedProject)
+    }
+
+    @Transactional
+    fun submitProject(id: UUID, userId: UUID): ProjectResponse {
+        val project = projectRepository.findById(id)
+            .orElseThrow { ApiException("Project not found", HttpStatus.NOT_FOUND) }
+
+        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
+            throw ApiException("Must be a team member to submit the project", HttpStatus.FORBIDDEN)
+        }
+
+        if (project.status == SubmissionStatus.submitted) {
+            throw ApiException("Project already submitted", HttpStatus.BAD_REQUEST)
+        }
+
+        project.status = SubmissionStatus.submitted
+        project.submittedAt = OffsetDateTime.now()
+
+        val savedProject = projectRepository.save(project)
+        return ProjectResponse.fromEntity(savedProject)
+    }
+
+    @Transactional
+    fun unsubmitProject(id: UUID, userId: UUID): ProjectResponse {
+        val project = projectRepository.findById(id)
+            .orElseThrow { ApiException("Project not found", HttpStatus.NOT_FOUND) }
+
+        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
+            throw ApiException("Must be a team member to unsubmit the project", HttpStatus.FORBIDDEN)
+        }
+
+        if (project.status != SubmissionStatus.submitted) {
+            throw ApiException("Project is not submitted", HttpStatus.BAD_REQUEST)
+        }
+
+        project.status = SubmissionStatus.draft
+        project.submittedAt = null
+
+        val savedProject = projectRepository.save(project)
+        return ProjectResponse.fromEntity(savedProject)
+    }
+}
