@@ -25,15 +25,29 @@ class HackathonController(
         return ResponseEntity.ok(hackathons)
     }
 
+    @GetMapping("/my-drafts")
+    fun getMyDraftHackathons(
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<List<HackathonResponse>> {
+        val hackathons = hackathonService.getUserDraftHackathons(principal.id)
+        return ResponseEntity.ok(hackathons)
+    }
+
     @GetMapping("/{slug}")
-    fun getHackathonBySlug(@PathVariable slug: String): ResponseEntity<HackathonResponse> {
-        val hackathon = hackathonService.getHackathonBySlug(slug)
+    fun getHackathonBySlug(
+        @PathVariable slug: String,
+        @AuthenticationPrincipal principal: UserPrincipal?
+    ): ResponseEntity<HackathonResponse> {
+        val hackathon = hackathonService.getHackathonBySlug(slug, principal?.id)
         return ResponseEntity.ok(hackathon)
     }
 
     @GetMapping("/id/{id}")
-    fun getHackathonById(@PathVariable id: UUID): ResponseEntity<HackathonResponse> {
-        val hackathon = hackathonService.getHackathonById(id)
+    fun getHackathonById(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal?
+    ): ResponseEntity<HackathonResponse> {
+        val hackathon = hackathonService.getHackathonById(id, principal?.id)
         return ResponseEntity.ok(hackathon)
     }
 

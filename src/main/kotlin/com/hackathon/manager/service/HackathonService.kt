@@ -34,19 +34,21 @@ class HackathonService(
     }
 
     @Transactional(readOnly = true)
-    fun getHackathonById(id: UUID): HackathonResponse {
+    fun getHackathonById(id: UUID, userId: UUID? = null): HackathonResponse {
         val hackathon = hackathonRepository.findById(id)
             .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
         val participantCount = hackathonUserRepository.findByHackathonIdAndRole(id, UserRole.participant).size
-        return HackathonResponse.fromEntity(hackathon, participantCount)
+        val userRole = userId?.let { hackathonUserRepository.findByHackathonIdAndUserId(id, it)?.role }
+        return HackathonResponse.fromEntity(hackathon, participantCount, userRole)
     }
 
     @Transactional(readOnly = true)
-    fun getHackathonBySlug(slug: String): HackathonResponse {
+    fun getHackathonBySlug(slug: String, userId: UUID? = null): HackathonResponse {
         val hackathon = hackathonRepository.findBySlug(slug)
             ?: throw ApiException("Hackathon not found", HttpStatus.NOT_FOUND)
         val participantCount = hackathonUserRepository.findByHackathonIdAndRole(hackathon.id!!, UserRole.participant).size
-        return HackathonResponse.fromEntity(hackathon, participantCount)
+        val userRole = userId?.let { hackathonUserRepository.findByHackathonIdAndUserId(hackathon.id!!, it)?.role }
+        return HackathonResponse.fromEntity(hackathon, participantCount, userRole)
     }
 
     @Transactional
@@ -63,6 +65,7 @@ class HackathonService(
             slug = request.slug,
             description = request.description,
             rules = request.rules,
+            status = request.status ?: HackathonStatus.draft,
             bannerUrl = request.bannerUrl,
             logoUrl = request.logoUrl,
             location = request.location,
@@ -90,7 +93,7 @@ class HackathonService(
         )
         hackathonUserRepository.save(hackathonUser)
 
-        return HackathonResponse.fromEntity(savedHackathon)
+        return HackathonResponse.fromEntity(savedHackathon, 0, UserRole.organizer)
     }
 
     @Transactional
@@ -149,17 +152,23 @@ class HackathonService(
         )
         hackathonUserRepository.save(hackathonUser)
 
-        return HackathonResponse.fromEntity(hackathon, participantCount + 1)
+        return HackathonResponse.fromEntity(hackathon, participantCount + 1, UserRole.participant)
     }
 
     @Transactional(readOnly = true)
     fun getUserRoleInHackathon(hackathonId: UUID, userId: UUID): UserRole? {
-        return hackathonUserRepository.findRoleByHackathonIdAndUserId(hackathonId, userId)
+        return hackathonUserRepository.findByHackathonIdAndUserId(hackathonId, userId)?.role
     }
 
     @Transactional(readOnly = true)
     fun isUserOrganizer(hackathonId: UUID, userId: UUID): Boolean {
         val role = getUserRoleInHackathon(hackathonId, userId)
         return role == UserRole.organizer || role == UserRole.admin
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserDraftHackathons(userId: UUID): List<HackathonResponse> {
+        return hackathonRepository.findByOrganizerAndStatus(userId, HackathonStatus.draft)
+            .map { HackathonResponse.fromEntity(it) }
     }
 }

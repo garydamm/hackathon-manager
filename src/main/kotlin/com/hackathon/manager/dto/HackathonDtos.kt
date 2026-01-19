@@ -2,6 +2,7 @@ package com.hackathon.manager.dto
 
 import com.hackathon.manager.entity.Hackathon
 import com.hackathon.manager.entity.enums.HackathonStatus
+import com.hackathon.manager.entity.enums.UserRole
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.OffsetDateTime
@@ -29,10 +30,15 @@ data class HackathonResponse(
     val minTeamSize: Int,
     val maxParticipants: Int?,
     val participantCount: Int?,
-    val createdAt: OffsetDateTime?
+    val createdAt: OffsetDateTime?,
+    val userRole: UserRole? = null
 ) {
     companion object {
-        fun fromEntity(hackathon: Hackathon, participantCount: Int? = null): HackathonResponse {
+        fun fromEntity(
+            hackathon: Hackathon,
+            participantCount: Int? = null,
+            userRole: UserRole? = null
+        ): HackathonResponse {
             return HackathonResponse(
                 id = hackathon.id!!,
                 name = hackathon.name,
@@ -55,7 +61,8 @@ data class HackathonResponse(
                 minTeamSize = hackathon.minTeamSize,
                 maxParticipants = hackathon.maxParticipants,
                 participantCount = participantCount,
-                createdAt = hackathon.createdAt
+                createdAt = hackathon.createdAt,
+                userRole = userRole
             )
         }
     }
@@ -70,6 +77,7 @@ data class CreateHackathonRequest(
 
     val description: String? = null,
     val rules: String? = null,
+    val status: HackathonStatus? = null,
     val bannerUrl: String? = null,
     val logoUrl: String? = null,
     val location: String? = null,

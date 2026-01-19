@@ -20,4 +20,7 @@ interface HackathonRepository : JpaRepository<Hackathon, UUID> {
         HackathonStatus.in_progress,
         HackathonStatus.judging
     )): List<Hackathon>
+
+    @Query("SELECT h FROM Hackathon h JOIN HackathonUser hu ON h.id = hu.hackathon.id WHERE hu.user.id = :userId AND hu.role = 'organizer' AND h.status = :status ORDER BY h.createdAt DESC")
+    fun findByOrganizerAndStatus(userId: UUID, status: HackathonStatus): List<Hackathon>
 }
