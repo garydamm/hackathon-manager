@@ -78,8 +78,8 @@ class TeamService(
             user = creator,
             isLeader = true
         )
-        teamMemberRepository.save(member)
-        savedTeam.members.add(member)
+        val savedMember = teamMemberRepository.save(member)
+        savedTeam.members.add(savedMember)
 
         return TeamResponse.fromEntity(savedTeam, includeMembers = true)
     }
@@ -139,8 +139,8 @@ class TeamService(
             user = user,
             isLeader = false
         )
-        teamMemberRepository.save(member)
-        team.members.add(member)
+        val savedMember = teamMemberRepository.save(member)
+        team.members.add(savedMember)
 
         return TeamResponse.fromEntity(team, includeMembers = true)
     }
