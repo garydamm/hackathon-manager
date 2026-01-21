@@ -52,3 +52,23 @@
   - After logout, navigating to / redirects back to /login (protected route)
   - Create Hackathon page is at /hackathons/new
 ---
+
+## Iteration 3 - US-003: Add hackathon creation happy path tests
+- What was implemented:
+  - Created frontend/e2e/hackathon-create.spec.ts with 4 tests
+  - Test: navigates to create hackathon page via dashboard button
+  - Test: displays all form sections (Basic Information, Date & Time, Location, Team Settings)
+  - Test: fills out required fields and submits successfully
+  - Test: redirects to dashboard after successful creation
+- Files changed:
+  - frontend/e2e/hackathon-create.spec.ts (new)
+  - PRD.md (marked US-003 criteria complete)
+- Learnings for future iterations:
+  - Create Hackathon form sections: Basic Information, Date & Time, Location, Team Settings, Branding
+  - Required fields: Hackathon Name (auto-generates slug), Start Date & Time, End Date & Time
+  - Labels use asterisk for required fields: 'Hackathon Name *', 'Start Date & Time *', 'End Date & Time *'
+  - Submit button: 'Create Hackathon' -> 'Creating...' during submission
+  - After successful creation, redirects to dashboard (/) not to hackathon detail page
+  - Use datetime-local format for date fields: YYYY-MM-DDTHH:mm (e.g., toISOString().slice(0, 16))
+  - generateUniqueHackathonName() pattern: include timestamp to avoid conflicts
+---

@@ -40,13 +40,13 @@ Complete the frontend end-to-end test suite to cover all current application fea
 **Description:** As a developer, I want e2e tests for hackathon creation so that I can verify the create flow works correctly.
 
 **Acceptance Criteria:**
-- [ ] Test navigates to create hackathon page via dashboard button
-- [ ] Test verifies all form sections are visible (Basic Info, Dates, Location, Team Settings)
-- [ ] Test fills out required fields and submits successfully
-- [ ] Test verifies redirect to hackathon detail page after creation
-- [ ] Test file created at `e2e/hackathon-create.spec.ts`
-- [ ] Typecheck passes
-- [ ] All tests pass with `npm run test:e2e`
+- [x] Test navigates to create hackathon page via dashboard button
+- [x] Test verifies all form sections are visible (Basic Info, Dates, Location, Team Settings)
+- [x] Test fills out required fields and submits successfully
+- [x] Test verifies redirect to hackathon detail page after creation
+- [x] Test file created at `e2e/hackathon-create.spec.ts`
+- [x] Typecheck passes
+- [x] All tests pass with `npm run test:e2e`
 
 ### US-004: Add hackathon detail view tests
 **Description:** As a developer, I want e2e tests for viewing hackathon details so that I can verify the detail page displays correctly.
