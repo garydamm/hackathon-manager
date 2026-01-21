@@ -41,14 +41,14 @@ Add end-to-end testing capability to the frontend using Playwright. This establi
 **Description:** As a developer, I want a test for the registration flow so I can verify new user signup works correctly.
 
 **Acceptance Criteria:**
-- [ ] Test added to `frontend/e2e/auth.spec.ts`
-- [ ] Test navigates to registration page
-- [ ] Test fills in required registration fields (name, email, password)
-- [ ] Test submits the form
-- [ ] Test verifies successful registration (redirect or success message)
-- [ ] Test verifies validation errors for invalid input (e.g., weak password, existing email)
-- [ ] Typecheck passes
-- [ ] Test passes when run against running backend
+- [x] Test added to `frontend/e2e/auth.spec.ts`
+- [x] Test navigates to registration page
+- [x] Test fills in required registration fields (name, email, password)
+- [x] Test submits the form
+- [x] Test verifies successful registration (redirect or success message)
+- [x] Test verifies validation errors for invalid input (e.g., weak password, existing email)
+- [x] Typecheck passes
+- [x] Test passes when run against running backend
 
 ## Non-Goals
 
