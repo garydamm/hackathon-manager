@@ -28,14 +28,14 @@ Add end-to-end testing capability to the frontend using Playwright. This establi
 **Description:** As a developer, I want a test for the login flow so I can verify authentication works correctly.
 
 **Acceptance Criteria:**
-- [ ] Test file created at `frontend/e2e/auth.spec.ts`
-- [ ] Test navigates to login page
-- [ ] Test fills in email and password fields
-- [ ] Test submits the form
-- [ ] Test verifies successful login (redirect to dashboard or authenticated state)
-- [ ] Test verifies error state for invalid credentials
-- [ ] Typecheck passes
-- [ ] Test passes when run against running backend
+- [x] Test file created at `frontend/e2e/auth.spec.ts`
+- [x] Test navigates to login page
+- [x] Test fills in email and password fields
+- [x] Test submits the form
+- [x] Test verifies successful login (redirect to dashboard or authenticated state)
+- [x] Test verifies error state for invalid credentials
+- [x] Typecheck passes
+- [x] Test passes when run against running backend
 
 ### US-003: Add registration flow test
 **Description:** As a developer, I want a test for the registration flow so I can verify new user signup works correctly.

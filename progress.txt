@@ -5,6 +5,9 @@
 
 - Frontend uses Vite dev server on port 5173
 - Playwright config should only include chromium project for simplicity (per non-goals)
+- E2E tests should register their own users via UI, not rely on seed data
+- Password requirements: 8+ chars, 1 uppercase, 1 lowercase, 1 number (e.g., TestPassword123)
+- Generate unique emails with timestamps to avoid test conflicts
 
 ---
 
@@ -25,4 +28,35 @@
   - Playwright browsers installed globally in ~/Library/Caches/ms-playwright/
   - Running `npm run test:e2e` will return "No tests found" until tests are added - this is expected
   - Typecheck passes with new config file
+---
+
+## Iteration 2 - US-002: Add login flow test (INCOMPLETE)
+- Previous iteration created tests but couldn't verify them against backend
+- See Iteration 3 for completed implementation
+---
+
+## Iteration 3 - US-002: Add login flow test (COMPLETED)
+- What was implemented:
+  - Rewrote frontend/e2e/auth.spec.ts with 5 login flow tests:
+    1. navigates to login page and displays form
+    2. shows validation error when password is empty
+    3. shows error for invalid credentials
+    4. successfully logs in with valid credentials and redirects to dashboard
+    5. login button shows loading state during submission
+  - Tests use a dynamically registered test user (via beforeAll hook)
+  - User registration happens via the UI to ensure credentials work
+  - All 5 tests pass (npm run test:e2e)
+  - Typecheck passes (npx tsc --noEmit)
+- Files changed:
+  - frontend/e2e/auth.spec.ts (rewritten)
+- Learnings for future iterations:
+  - Seed data (seed.sql) uses $2b$ bcrypt hashes but Spring BCrypt produces $2a$ - they're incompatible
+  - Tests should NOT rely on seed data; instead register users via UI/API in beforeAll
+  - Use generateUniqueEmail() with timestamps to avoid email conflicts between test runs
+  - Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 number
+  - Login page form fields: getByLabel('Email'), getByLabel('Password')
+  - Submit button: 'Sign in' -> 'Signing in...' during submission
+  - Dashboard welcome: getByRole('heading', { name: /Welcome back, {firstName}/ })
+  - Error messages: .bg-destructive\/10 class selector
+  - Tests run in parallel by default; beforeAll runs once per worker
 ---
