@@ -8,55 +8,47 @@
 - E2E tests should register their own users via UI, not rely on seed data
 - Password requirements: 8+ chars, 1 uppercase, 1 lowercase, 1 number (e.g., TestPassword123)
 - Generate unique emails with timestamps to avoid test conflicts
+- Seed data (seed.sql) uses $2b$ bcrypt hashes but Spring BCrypt produces $2a$ - they're incompatible
+- Use generateUniqueEmail() with timestamps to avoid email conflicts between test runs
+- Login page form fields: getByLabel('Email'), getByLabel('Password')
+- Submit button: 'Sign in' -> 'Signing in...' during submission
+- Dashboard welcome: getByRole('heading', { name: /Welcome back, {firstName}/ })
+- Error messages: .bg-destructive\/10 class selector
+- Tests run in parallel by default; beforeAll runs once per worker
+- Registration form fields: First name, Last name, Email, Password (exact: true), Confirm password
+- Submit button: 'Create account' -> 'Creating account...' during submission
 
 ---
 
-## Iteration 1 - US-001: Install and configure Playwright
+## Iteration 1 - US-001: Add dashboard display tests
 - What was implemented:
-  - Installed @playwright/test v1.57.0 as dev dependency
-  - Created playwright.config.ts with baseURL http://localhost:5173
-  - Added "test:e2e": "playwright test" script to package.json
-  - Updated .gitignore with test-results/, playwright-report/, playwright/.cache/
-  - Created frontend/e2e/ directory with .gitkeep
+  - Created frontend/e2e/dashboard.spec.ts with 3 tests
+  - Test: displays welcome message with user name after login
+  - Test: displays Create Hackathon button (verifies link and href)
+  - Test: displays Open for Registration section heading
 - Files changed:
-  - frontend/package.json
-  - frontend/package-lock.json
-  - frontend/playwright.config.ts (new)
-  - frontend/.gitignore
-  - frontend/e2e/.gitkeep (new)
+  - frontend/e2e/dashboard.spec.ts (new)
+  - PRD.md (marked US-001 criteria complete)
 - Learnings for future iterations:
-  - Playwright browsers installed globally in ~/Library/Caches/ms-playwright/
-  - Running `npm run test:e2e` will return "No tests found" until tests are added - this is expected
-  - Typecheck passes with new config file
+  - Dashboard sections like "Your Drafts", "Happening Now" are conditionally rendered based on data
+  - The "Open for Registration" section is always visible (even with empty state)
+  - Create Hackathon is a Link component, use getByRole('link') not getByRole('button')
+  - beforeEach should login and wait for dashboard before each test
 ---
 
-## Iteration 2 - US-002: Add login flow test (INCOMPLETE)
-- Previous iteration created tests but couldn't verify them against backend
-- See Iteration 3 for completed implementation
----
-
-## Iteration 3 - US-002: Add login flow test (COMPLETED)
+## Iteration 2 - US-002: Add navigation and logout tests
 - What was implemented:
-  - Rewrote frontend/e2e/auth.spec.ts with 5 login flow tests:
-    1. navigates to login page and displays form
-    2. shows validation error when password is empty
-    3. shows error for invalid credentials
-    4. successfully logs in with valid credentials and redirects to dashboard
-    5. login button shows loading state during submission
-  - Tests use a dynamically registered test user (via beforeAll hook)
-  - User registration happens via the UI to ensure credentials work
-  - All 5 tests pass (npm run test:e2e)
-  - Typecheck passes (npx tsc --noEmit)
+  - Created frontend/e2e/navigation.spec.ts with 3 tests
+  - Test: clicking logo navigates to dashboard (navigates away, clicks HackathonHub link, verifies return)
+  - Test: logout button is visible in nav when authenticated
+  - Test: clicking logout clears session and redirects to login page (includes redirect protection check)
 - Files changed:
-  - frontend/e2e/auth.spec.ts (rewritten)
+  - frontend/e2e/navigation.spec.ts (new)
+  - PRD.md (marked US-002 criteria complete)
 - Learnings for future iterations:
-  - Seed data (seed.sql) uses $2b$ bcrypt hashes but Spring BCrypt produces $2a$ - they're incompatible
-  - Tests should NOT rely on seed data; instead register users via UI/API in beforeAll
-  - Use generateUniqueEmail() with timestamps to avoid email conflicts between test runs
-  - Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 number
-  - Login page form fields: getByLabel('Email'), getByLabel('Password')
-  - Submit button: 'Sign in' -> 'Signing in...' during submission
-  - Dashboard welcome: getByRole('heading', { name: /Welcome back, {firstName}/ })
-  - Error messages: .bg-destructive\/10 class selector
-  - Tests run in parallel by default; beforeAll runs once per worker
+  - Logo/home link uses text "HackathonHub", select with getByRole('link', { name: 'HackathonHub' })
+  - Logout button: getByRole('button', { name: 'Logout' })
+  - Logout clears localStorage and redirects to /login
+  - After logout, navigating to / redirects back to /login (protected route)
+  - Create Hackathon page is at /hackathons/new
 ---

@@ -29,12 +29,12 @@ Complete the frontend end-to-end test suite to cover all current application fea
 **Description:** As a developer, I want e2e tests for navigation and logout so that I can verify users can navigate the app and sign out.
 
 **Acceptance Criteria:**
-- [ ] Test verifies clicking logo/home navigates to dashboard
-- [ ] Test verifies logout button is visible in nav when authenticated
-- [ ] Test verifies clicking logout clears session and redirects to login page
-- [ ] Test file created at `e2e/navigation.spec.ts`
-- [ ] Typecheck passes
-- [ ] All tests pass with `npm run test:e2e`
+- [x] Test verifies clicking logo/home navigates to dashboard
+- [x] Test verifies logout button is visible in nav when authenticated
+- [x] Test verifies clicking logout clears session and redirects to login page
+- [x] Test file created at `e2e/navigation.spec.ts`
+- [x] Typecheck passes
+- [x] All tests pass with `npm run test:e2e`
 
 ### US-003: Add hackathon creation happy path tests
 **Description:** As a developer, I want e2e tests for hackathon creation so that I can verify the create flow works correctly.
