@@ -64,13 +64,13 @@ Complete the frontend end-to-end test suite to cover all current application fea
 **Description:** As a developer, I want e2e tests for basic hackathon editing so that I can verify organizers can update hackathon fields.
 
 **Acceptance Criteria:**
-- [ ] Test clicks edit button on hackathon detail page (as organizer)
-- [ ] Test verifies edit form appears with current values populated
-- [ ] Test modifies hackathon name and description fields
-- [ ] Test saves changes and verifies updated values display
-- [ ] Tests added to `e2e/hackathon-detail.spec.ts`
-- [ ] Typecheck passes
-- [ ] All tests pass with `npm run test:e2e`
+- [x] Test clicks edit button on hackathon detail page (as organizer)
+- [x] Test verifies edit form appears with current values populated
+- [x] Test modifies hackathon name and description fields
+- [x] Test saves changes and verifies updated values display
+- [x] Tests added to `e2e/hackathon-detail.spec.ts`
+- [x] Typecheck passes
+- [x] All tests pass with `npm run test:e2e`
 
 ### US-006: Add hackathon card navigation tests
 **Description:** As a developer, I want e2e tests for hackathon card interactions so that I can verify users can navigate from dashboard to hackathon details.

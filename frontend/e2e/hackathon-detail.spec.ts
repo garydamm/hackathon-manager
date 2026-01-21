@@ -162,4 +162,83 @@ test.describe('Hackathon Detail View', () => {
     await expect(page.getByRole('heading', { name: 'Rules & Guidelines' })).toBeVisible();
     await expect(page.getByText(rulesText)).toBeVisible();
   });
+
+  // US-005: Hackathon basic edit tests
+  test('clicking edit button shows edit form (as organizer)', async ({ page }) => {
+    // Navigate to hackathon detail page
+    await page.goto(`/hackathons/${hackathonSlug}`);
+
+    // Wait for page to load
+    await expect(page.getByRole('heading', { name: hackathonName, level: 1 })).toBeVisible({ timeout: 10000 });
+
+    // Verify edit button is visible (user is organizer)
+    const editButton = page.getByRole('button', { name: 'Edit' });
+    await expect(editButton).toBeVisible();
+
+    // Click edit button
+    await editButton.click();
+
+    // Verify edit form appears
+    await expect(page.getByLabel('Name')).toBeVisible();
+    await expect(page.getByLabel('Description')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
+  });
+
+  test('edit form displays current values populated', async ({ page }) => {
+    // Navigate to hackathon detail page
+    await page.goto(`/hackathons/${hackathonSlug}`);
+
+    // Wait for page to load
+    await expect(page.getByRole('heading', { name: hackathonName, level: 1 })).toBeVisible({ timeout: 10000 });
+
+    // Click edit button
+    await page.getByRole('button', { name: 'Edit' }).click();
+
+    // Wait for edit form to appear
+    await expect(page.getByLabel('Name')).toBeVisible();
+
+    // Verify current values are populated in the form
+    // Name field should have the hackathon name
+    await expect(page.getByLabel('Name')).toHaveValue(hackathonName);
+
+    // Description field should have the description we set during creation
+    await expect(page.getByLabel('Description')).toHaveValue('This is a test hackathon description for e2e testing.');
+  });
+
+  test('modifies hackathon name and description and saves changes', async ({ page }) => {
+    // Navigate to hackathon detail page
+    await page.goto(`/hackathons/${hackathonSlug}`);
+
+    // Wait for page to load
+    await expect(page.getByRole('heading', { name: hackathonName, level: 1 })).toBeVisible({ timeout: 10000 });
+
+    // Click edit button
+    await page.getByRole('button', { name: 'Edit' }).click();
+
+    // Wait for edit form to appear
+    await expect(page.getByLabel('Name')).toBeVisible();
+
+    // Modify name and description
+    const updatedName = `${hackathonName} - Updated`;
+    const updatedDescription = 'Updated description for e2e testing of edit functionality.';
+
+    await page.getByLabel('Name').clear();
+    await page.getByLabel('Name').fill(updatedName);
+    await page.getByLabel('Description').clear();
+    await page.getByLabel('Description').fill(updatedDescription);
+
+    // Save changes
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+
+    // Wait for save to complete and return to view mode
+    await expect(page.getByRole('button', { name: 'Edit' })).toBeVisible({ timeout: 10000 });
+
+    // Verify updated values are displayed
+    await expect(page.getByRole('heading', { name: updatedName, level: 1 })).toBeVisible();
+    await expect(page.getByText(updatedDescription)).toBeVisible();
+
+    // Update shared hackathon name for any subsequent tests
+    hackathonName = updatedName;
+  });
 });
