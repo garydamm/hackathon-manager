@@ -1,67 +1,105 @@
-# PRD: Frontend Tests with Playwright
+# PRD: Frontend E2E Test Coverage
 
 ## Introduction
 
-Add end-to-end testing capability to the frontend using Playwright. This establishes a testing foundation focused on critical authentication flows (login and registration), running against the real backend. The setup will serve as a foundation for expanding test coverage later.
+Complete the frontend end-to-end test suite to cover all current application features. The existing test suite covers authentication flows (login/registration). This PRD addresses the remaining untested features: dashboard, hackathon creation, hackathon viewing, basic editing, navigation, and logout functionality.
 
 ## Goals
 
-- Install and configure Playwright for the frontend project
-- Create reliable tests for login and registration flows
-- Ensure tests can run against the real backend server
-- Establish patterns and conventions for future test development
+- Achieve comprehensive e2e test coverage for all user-facing features
+- Focus on happy path testing with minimal error case coverage
+- Ensure tests are independent and can run in parallel
+- Follow existing test patterns established in `auth.spec.ts`
+- All tests pass reliably in CI environment
 
 ## User Stories
 
-### US-001: Install and configure Playwright
-**Description:** As a developer, I need Playwright installed and configured so I can write and run end-to-end tests.
+### US-001: Add dashboard display tests
+**Description:** As a developer, I want e2e tests for the dashboard page so that I can verify hackathons display correctly after login.
 
 **Acceptance Criteria:**
-- [x] Playwright and @playwright/test installed as dev dependencies in frontend
-- [x] playwright.config.ts created with base configuration (baseURL pointing to local dev server)
-- [x] Test script added to package.json: `"test:e2e": "playwright test"`
-- [x] .gitignore updated to exclude playwright test artifacts (test-results/, playwright-report/)
-- [x] Example test file structure created: `e2e/` directory in frontend
+- [x] Test navigates to dashboard after login and verifies welcome message with user's name
+- [x] Test verifies "Create Hackathon" button is visible
+- [x] Test verifies dashboard section headings are present (Your Drafts, Happening Now, etc.)
+- [x] Test file created at `e2e/dashboard.spec.ts`
 - [x] Typecheck passes
+- [x] All tests pass with `npm run test:e2e`
 
-### US-002: Add login flow test
-**Description:** As a developer, I want a test for the login flow so I can verify authentication works correctly.
+### US-002: Add navigation and logout tests
+**Description:** As a developer, I want e2e tests for navigation and logout so that I can verify users can navigate the app and sign out.
 
 **Acceptance Criteria:**
-- [x] Test file created at `frontend/e2e/auth.spec.ts`
-- [x] Test navigates to login page
-- [x] Test fills in email and password fields
-- [x] Test submits the form
-- [x] Test verifies successful login (redirect to dashboard or authenticated state)
-- [x] Test verifies error state for invalid credentials
-- [x] Typecheck passes
-- [x] Test passes when run against running backend
+- [ ] Test verifies clicking logo/home navigates to dashboard
+- [ ] Test verifies logout button is visible in nav when authenticated
+- [ ] Test verifies clicking logout clears session and redirects to login page
+- [ ] Test file created at `e2e/navigation.spec.ts`
+- [ ] Typecheck passes
+- [ ] All tests pass with `npm run test:e2e`
 
-### US-003: Add registration flow test
-**Description:** As a developer, I want a test for the registration flow so I can verify new user signup works correctly.
+### US-003: Add hackathon creation happy path tests
+**Description:** As a developer, I want e2e tests for hackathon creation so that I can verify the create flow works correctly.
 
 **Acceptance Criteria:**
-- [x] Test added to `frontend/e2e/auth.spec.ts`
-- [x] Test navigates to registration page
-- [x] Test fills in required registration fields (name, email, password)
-- [x] Test submits the form
-- [x] Test verifies successful registration (redirect or success message)
-- [x] Test verifies validation errors for invalid input (e.g., weak password, existing email)
-- [x] Typecheck passes
-- [x] Test passes when run against running backend
+- [ ] Test navigates to create hackathon page via dashboard button
+- [ ] Test verifies all form sections are visible (Basic Info, Dates, Location, Team Settings)
+- [ ] Test fills out required fields and submits successfully
+- [ ] Test verifies redirect to hackathon detail page after creation
+- [ ] Test file created at `e2e/hackathon-create.spec.ts`
+- [ ] Typecheck passes
+- [ ] All tests pass with `npm run test:e2e`
+
+### US-004: Add hackathon detail view tests
+**Description:** As a developer, I want e2e tests for viewing hackathon details so that I can verify the detail page displays correctly.
+
+**Acceptance Criteria:**
+- [ ] Test navigates to a hackathon detail page
+- [ ] Test verifies hackathon name, description, and status badge are displayed
+- [ ] Test verifies quick info cards show (start date, end date, location, participants)
+- [ ] Test verifies rules section is displayed
+- [ ] Test file created at `e2e/hackathon-detail.spec.ts`
+- [ ] Typecheck passes
+- [ ] All tests pass with `npm run test:e2e`
+
+### US-005: Add hackathon basic edit tests
+**Description:** As a developer, I want e2e tests for basic hackathon editing so that I can verify organizers can update hackathon fields.
+
+**Acceptance Criteria:**
+- [ ] Test clicks edit button on hackathon detail page (as organizer)
+- [ ] Test verifies edit form appears with current values populated
+- [ ] Test modifies hackathon name and description fields
+- [ ] Test saves changes and verifies updated values display
+- [ ] Tests added to `e2e/hackathon-detail.spec.ts`
+- [ ] Typecheck passes
+- [ ] All tests pass with `npm run test:e2e`
+
+### US-006: Add hackathon card navigation tests
+**Description:** As a developer, I want e2e tests for hackathon card interactions so that I can verify users can navigate from dashboard to hackathon details.
+
+**Acceptance Criteria:**
+- [ ] Test creates a hackathon, returns to dashboard
+- [ ] Test verifies hackathon card appears in appropriate section
+- [ ] Test clicks on hackathon card and verifies navigation to detail page
+- [ ] Tests added to `e2e/dashboard.spec.ts`
+- [ ] Typecheck passes
+- [ ] All tests pass with `npm run test:e2e`
 
 ## Non-Goals
 
+- Protected route redirect testing (e.g., unauthenticated access)
+- Session expiry or token refresh testing
+- Comprehensive form validation testing (only happy paths)
+- Mobile/responsive layout testing
+- Performance or load testing
 - Visual regression testing
-- Mocked API responses (tests run against real backend)
-- Tests for non-authentication pages (Dashboard, CreateHackathon, HackathonDetail)
-- CI/CD integration (can be added later)
-- Cross-browser testing configuration (defaults are fine for now)
-- Test data seeding/cleanup automation
+- Testing all possible error states
 
 ## Technical Considerations
 
-- Tests require both frontend (`npm run dev`) and backend servers running
-- Use Playwright's built-in test assertions and locators
-- Follow Playwright best practices: use `data-testid` attributes where needed, prefer user-visible text/roles for selectors
-- Registration tests may need unique email generation to avoid conflicts on repeated runs
+- Follow existing patterns from `e2e/auth.spec.ts`:
+  - Use `test.beforeAll()` to register test user once per file
+  - Use `test.beforeEach()` to clear session and login fresh
+  - Use `generateUniqueEmail()` pattern for unique test data
+  - Use semantic locators: `getByLabel()`, `getByRole()`, `getByText()`
+- Each test file should be independent and not rely on state from other files
+- Use unique hackathon names with timestamps to avoid conflicts
+- Tests run against `http://localhost:5173` (Vite dev server)
