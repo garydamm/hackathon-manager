@@ -3,4 +3,26 @@
 ## Learnings
 (Patterns discovered during implementation)
 
+- Frontend uses Vite dev server on port 5173
+- Playwright config should only include chromium project for simplicity (per non-goals)
+
+---
+
+## Iteration 1 - US-001: Install and configure Playwright
+- What was implemented:
+  - Installed @playwright/test v1.57.0 as dev dependency
+  - Created playwright.config.ts with baseURL http://localhost:5173
+  - Added "test:e2e": "playwright test" script to package.json
+  - Updated .gitignore with test-results/, playwright-report/, playwright/.cache/
+  - Created frontend/e2e/ directory with .gitkeep
+- Files changed:
+  - frontend/package.json
+  - frontend/package-lock.json
+  - frontend/playwright.config.ts (new)
+  - frontend/.gitignore
+  - frontend/e2e/.gitkeep (new)
+- Learnings for future iterations:
+  - Playwright browsers installed globally in ~/Library/Caches/ms-playwright/
+  - Running `npm run test:e2e` will return "No tests found" until tests are added - this is expected
+  - Typecheck passes with new config file
 ---
