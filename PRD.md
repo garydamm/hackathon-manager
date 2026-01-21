@@ -52,13 +52,13 @@ Complete the frontend end-to-end test suite to cover all current application fea
 **Description:** As a developer, I want e2e tests for viewing hackathon details so that I can verify the detail page displays correctly.
 
 **Acceptance Criteria:**
-- [ ] Test navigates to a hackathon detail page
-- [ ] Test verifies hackathon name, description, and status badge are displayed
-- [ ] Test verifies quick info cards show (start date, end date, location, participants)
-- [ ] Test verifies rules section is displayed
-- [ ] Test file created at `e2e/hackathon-detail.spec.ts`
-- [ ] Typecheck passes
-- [ ] All tests pass with `npm run test:e2e`
+- [x] Test navigates to a hackathon detail page
+- [x] Test verifies hackathon name, description, and status badge are displayed
+- [x] Test verifies quick info cards show (start date, end date, location, participants)
+- [x] Test verifies rules section is displayed
+- [x] Test file created at `e2e/hackathon-detail.spec.ts`
+- [x] Typecheck passes
+- [x] All tests pass with `npm run test:e2e`
 
 ### US-005: Add hackathon basic edit tests
 **Description:** As a developer, I want e2e tests for basic hackathon editing so that I can verify organizers can update hackathon fields.

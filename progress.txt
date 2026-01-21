@@ -72,3 +72,26 @@
   - Use datetime-local format for date fields: YYYY-MM-DDTHH:mm (e.g., toISOString().slice(0, 16))
   - generateUniqueHackathonName() pattern: include timestamp to avoid conflicts
 ---
+
+## Iteration 4 - US-004: Add hackathon detail view tests
+- What was implemented:
+  - Created frontend/e2e/hackathon-detail.spec.ts with 4 tests
+  - Test: navigates to hackathon detail page
+  - Test: displays hackathon name, description, and status badge
+  - Test: displays quick info cards (start date, end date, location, participants)
+  - Test: displays rules section when rules are present (includes editing to add rules)
+- Files changed:
+  - frontend/e2e/hackathon-detail.spec.ts (new)
+  - PRD.md (marked US-004 criteria complete)
+- Learnings for future iterations:
+  - Detail page URL pattern: /hackathons/{slug}
+  - Hackathon name displayed as h1: getByRole('heading', { name: hackathonName, level: 1 })
+  - Default status when publishImmediately=true (form default) is "Registration Open", not "Draft"
+  - About section shows description, Rules & Guidelines section shows rules (both conditionally rendered)
+  - Quick info cards have labels: "Starts", "Ends", "Location", "Participants"
+  - Edit button visible to organizer: getByRole('button', { name: 'Edit' })
+  - Save button in edit mode: getByRole('button', { name: 'Save Changes' })
+  - Edit form fields use simpler labels (e.g., "Name" not "Hackathon Name *")
+  - Use test.describe.configure({ mode: 'serial' }) when tests share state created in beforeAll
+  - Slug is generated from name: lowercase with spaces replaced by dashes
+---
