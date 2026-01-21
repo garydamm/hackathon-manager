@@ -17,12 +17,12 @@ Add end-to-end testing capability to the frontend using Playwright. This establi
 **Description:** As a developer, I need Playwright installed and configured so I can write and run end-to-end tests.
 
 **Acceptance Criteria:**
-- [ ] Playwright and @playwright/test installed as dev dependencies in frontend
-- [ ] playwright.config.ts created with base configuration (baseURL pointing to local dev server)
-- [ ] Test script added to package.json: `"test:e2e": "playwright test"`
-- [ ] .gitignore updated to exclude playwright test artifacts (test-results/, playwright-report/)
-- [ ] Example test file structure created: `e2e/` directory in frontend
-- [ ] Typecheck passes
+- [x] Playwright and @playwright/test installed as dev dependencies in frontend
+- [x] playwright.config.ts created with base configuration (baseURL pointing to local dev server)
+- [x] Test script added to package.json: `"test:e2e": "playwright test"`
+- [x] .gitignore updated to exclude playwright test artifacts (test-results/, playwright-report/)
+- [x] Example test file structure created: `e2e/` directory in frontend
+- [x] Typecheck passes
 
 ### US-002: Add login flow test
 **Description:** As a developer, I want a test for the login flow so I can verify authentication works correctly.
