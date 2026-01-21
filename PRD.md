@@ -76,12 +76,12 @@ Complete the frontend end-to-end test suite to cover all current application fea
 **Description:** As a developer, I want e2e tests for hackathon card interactions so that I can verify users can navigate from dashboard to hackathon details.
 
 **Acceptance Criteria:**
-- [ ] Test creates a hackathon, returns to dashboard
-- [ ] Test verifies hackathon card appears in appropriate section
-- [ ] Test clicks on hackathon card and verifies navigation to detail page
-- [ ] Tests added to `e2e/dashboard.spec.ts`
-- [ ] Typecheck passes
-- [ ] All tests pass with `npm run test:e2e`
+- [x] Test creates a hackathon, returns to dashboard
+- [x] Test verifies hackathon card appears in appropriate section
+- [x] Test clicks on hackathon card and verifies navigation to detail page
+- [x] Tests added to `e2e/dashboard.spec.ts`
+- [x] Typecheck passes
+- [x] All tests pass with `npm run test:e2e`
 
 ## Non-Goals
 
