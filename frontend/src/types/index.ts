@@ -112,3 +112,41 @@ export interface UpdateHackathonRequest {
   minTeamSize?: number
   maxParticipants?: number
 }
+
+// Team types
+export interface TeamMember {
+  id: string
+  user: User
+  isLeader: boolean
+  joinedAt: string
+}
+
+export interface Team {
+  id: string
+  hackathonId: string
+  name: string
+  description?: string | null
+  avatarUrl?: string | null
+  inviteCode?: string | null
+  isOpen: boolean
+  memberCount: number
+  members?: TeamMember[] | null
+  createdAt?: string | null
+}
+
+export interface CreateTeamRequest {
+  hackathonId: string
+  name: string
+  description?: string
+  isOpen?: boolean
+}
+
+export interface UpdateTeamRequest {
+  name?: string
+  description?: string
+  isOpen?: boolean
+}
+
+export interface JoinTeamRequest {
+  inviteCode: string
+}

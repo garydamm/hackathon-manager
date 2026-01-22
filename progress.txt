@@ -2,130 +2,24 @@
 
 ## Learnings
 (Patterns discovered during implementation)
-
-- Frontend uses Vite dev server on port 5173
-- Playwright config should only include chromium project for simplicity (per non-goals)
-- E2E tests should register their own users via UI, not rely on seed data
-- Password requirements: 8+ chars, 1 uppercase, 1 lowercase, 1 number (e.g., TestPassword123)
-- Generate unique emails with timestamps to avoid test conflicts
-- Seed data (seed.sql) uses $2b$ bcrypt hashes but Spring BCrypt produces $2a$ - they're incompatible
-- Use generateUniqueEmail() with timestamps to avoid email conflicts between test runs
-- Login page form fields: getByLabel('Email'), getByLabel('Password')
-- Submit button: 'Sign in' -> 'Signing in...' during submission
-- Dashboard welcome: getByRole('heading', { name: /Welcome back, {firstName}/ })
-- Error messages: .bg-destructive\/10 class selector
-- Tests run in parallel by default; beforeAll runs once per worker
-- Registration form fields: First name, Last name, Email, Password (exact: true), Confirm password
-- Submit button: 'Create account' -> 'Creating account...' during submission
+- Frontend code is in /frontend directory, not /src
+- TypeScript typecheck: use `cd frontend && npx tsc --noEmit`
+- Services pattern: export object with async methods, use api.get/post/put from ./api
+- Types go in frontend/src/types/index.ts
+- Backend uses UUID for IDs but frontend uses string type
 
 ---
 
-## Iteration 1 - US-001: Add dashboard display tests
+## Iteration 1 - US-001: Teams service layer
 - What was implemented:
-  - Created frontend/e2e/dashboard.spec.ts with 3 tests
-  - Test: displays welcome message with user name after login
-  - Test: displays Create Hackathon button (verifies link and href)
-  - Test: displays Open for Registration section heading
+  - Created `/frontend/src/services/teams.ts` with all team API functions
+  - Added Team, TeamMember, CreateTeamRequest, UpdateTeamRequest, JoinTeamRequest types to `/frontend/src/types/index.ts`
 - Files changed:
-  - frontend/e2e/dashboard.spec.ts (new)
-  - PRD.md (marked US-001 criteria complete)
+  - frontend/src/services/teams.ts (new)
+  - frontend/src/types/index.ts (modified)
 - Learnings for future iterations:
-  - Dashboard sections like "Your Drafts", "Happening Now" are conditionally rendered based on data
-  - The "Open for Registration" section is always visible (even with empty state)
-  - Create Hackathon is a Link component, use getByRole('link') not getByRole('button')
-  - beforeEach should login and wait for dashboard before each test
----
-
-## Iteration 2 - US-002: Add navigation and logout tests
-- What was implemented:
-  - Created frontend/e2e/navigation.spec.ts with 3 tests
-  - Test: clicking logo navigates to dashboard (navigates away, clicks HackathonHub link, verifies return)
-  - Test: logout button is visible in nav when authenticated
-  - Test: clicking logout clears session and redirects to login page (includes redirect protection check)
-- Files changed:
-  - frontend/e2e/navigation.spec.ts (new)
-  - PRD.md (marked US-002 criteria complete)
-- Learnings for future iterations:
-  - Logo/home link uses text "HackathonHub", select with getByRole('link', { name: 'HackathonHub' })
-  - Logout button: getByRole('button', { name: 'Logout' })
-  - Logout clears localStorage and redirects to /login
-  - After logout, navigating to / redirects back to /login (protected route)
-  - Create Hackathon page is at /hackathons/new
----
-
-## Iteration 3 - US-003: Add hackathon creation happy path tests
-- What was implemented:
-  - Created frontend/e2e/hackathon-create.spec.ts with 4 tests
-  - Test: navigates to create hackathon page via dashboard button
-  - Test: displays all form sections (Basic Information, Date & Time, Location, Team Settings)
-  - Test: fills out required fields and submits successfully
-  - Test: redirects to dashboard after successful creation
-- Files changed:
-  - frontend/e2e/hackathon-create.spec.ts (new)
-  - PRD.md (marked US-003 criteria complete)
-- Learnings for future iterations:
-  - Create Hackathon form sections: Basic Information, Date & Time, Location, Team Settings, Branding
-  - Required fields: Hackathon Name (auto-generates slug), Start Date & Time, End Date & Time
-  - Labels use asterisk for required fields: 'Hackathon Name *', 'Start Date & Time *', 'End Date & Time *'
-  - Submit button: 'Create Hackathon' -> 'Creating...' during submission
-  - After successful creation, redirects to dashboard (/) not to hackathon detail page
-  - Use datetime-local format for date fields: YYYY-MM-DDTHH:mm (e.g., toISOString().slice(0, 16))
-  - generateUniqueHackathonName() pattern: include timestamp to avoid conflicts
----
-
-## Iteration 4 - US-004: Add hackathon detail view tests
-- What was implemented:
-  - Created frontend/e2e/hackathon-detail.spec.ts with 4 tests
-  - Test: navigates to hackathon detail page
-  - Test: displays hackathon name, description, and status badge
-  - Test: displays quick info cards (start date, end date, location, participants)
-  - Test: displays rules section when rules are present (includes editing to add rules)
-- Files changed:
-  - frontend/e2e/hackathon-detail.spec.ts (new)
-  - PRD.md (marked US-004 criteria complete)
-- Learnings for future iterations:
-  - Detail page URL pattern: /hackathons/{slug}
-  - Hackathon name displayed as h1: getByRole('heading', { name: hackathonName, level: 1 })
-  - Default status when publishImmediately=true (form default) is "Registration Open", not "Draft"
-  - About section shows description, Rules & Guidelines section shows rules (both conditionally rendered)
-  - Quick info cards have labels: "Starts", "Ends", "Location", "Participants"
-  - Edit button visible to organizer: getByRole('button', { name: 'Edit' })
-  - Save button in edit mode: getByRole('button', { name: 'Save Changes' })
-  - Edit form fields use simpler labels (e.g., "Name" not "Hackathon Name *")
-  - Use test.describe.configure({ mode: 'serial' }) when tests share state created in beforeAll
-  - Slug is generated from name: lowercase with spaces replaced by dashes
----
-
-## Iteration 5 - US-005: Add hackathon basic edit tests
-- What was implemented:
-  - Added 3 new tests to frontend/e2e/hackathon-detail.spec.ts for hackathon editing
-  - Test: clicking edit button shows edit form (as organizer) - verifies Edit button visibility and form appears with Name, Description fields, Save Changes and Cancel buttons
-  - Test: edit form displays current values populated - verifies Name and Description fields are pre-populated with existing hackathon data
-  - Test: modifies hackathon name and description and saves changes - tests full edit workflow and verifies updated values display after save
-- Files changed:
-  - frontend/e2e/hackathon-detail.spec.ts (modified - added 3 tests)
-  - PRD.md (marked US-005 criteria complete)
-- Learnings for future iterations:
-  - Edit form fields use simple labels: 'Name', 'Description' (not 'Hackathon Name *')
-  - Cancel button is visible in edit form alongside Save Changes button
-  - Use .clear() before .fill() when updating existing field values
-  - Edit form preserves current field values and populates them automatically
-  - After save, Edit button reappears indicating return to view mode
----
-
-## Iteration 6 - US-006: Add hackathon card navigation tests
-- What was implemented:
-  - Added 3 new tests to frontend/e2e/dashboard.spec.ts for hackathon card navigation
-  - Test: creates a hackathon and returns to dashboard - creates hackathon via form and verifies redirect to dashboard
-  - Test: verifies hackathon card appears in Open for Registration section - finds hackathon name in the section
-  - Test: clicks on hackathon card and verifies navigation to detail page - clicks View Details and verifies URL and heading
-- Files changed:
-  - frontend/e2e/dashboard.spec.ts (modified - added new test.describe block with 3 tests)
-  - PRD.md (marked US-006 criteria complete)
-- Learnings for future iterations:
-  - Use test.describe.configure({ mode: 'serial' }) for tests that share state (hackathonName, hackathonSlug)
-  - To find a specific hackathon card's View Details link, use href selector: page.locator(`a[href="/hackathons/${slug}"]`).filter({ hasText: 'View Details' })
-  - Using .filter({ hasText }) with .locator('div') can match too many elements - prefer href-based selection
-  - Created hackathons with publishImmediately=true appear in "Open for Registration" section
-  - generateUniqueHackathonName() with timestamp ensures no conflicts between test runs
+  - Follow existing hackathonService pattern in services/hackathons.ts
+  - Backend endpoints are at /api/teams/*
+  - regenerateInviteCode returns { inviteCode: string } object
+  - getMyTeam can return null if user has no team
 ---

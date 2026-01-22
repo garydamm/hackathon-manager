@@ -1,105 +1,190 @@
-# PRD: Frontend E2E Test Coverage
+# PRD: Teams Frontend Feature
 
 ## Introduction
 
-Complete the frontend end-to-end test suite to cover all current application features. The existing test suite covers authentication flows (login/registration). This PRD addresses the remaining untested features: dashboard, hackathon creation, hackathon viewing, basic editing, navigation, and logout functionality.
+Add team management UI to the hackathon frontend, allowing participants to create teams, browse existing teams, join via invite code, and manage team membership. Team leaders can edit team details and regenerate invite codes. This builds on the existing backend teams API.
 
 ## Goals
 
-- Achieve comprehensive e2e test coverage for all user-facing features
-- Focus on happy path testing with minimal error case coverage
-- Ensure tests are independent and can run in parallel
-- Follow existing test patterns established in `auth.spec.ts`
-- All tests pass reliably in CI environment
+- Allow registered participants to create and manage teams within a hackathon
+- Enable team discovery through a browsable list of all teams
+- Provide invite code sharing and joining functionality
+- Give team leaders full management capabilities (edit details, regenerate invite, view members)
+- Display team information within hackathon detail pages
+- Show users their teams in a dedicated section on hackathon detail
 
 ## User Stories
 
-### US-001: Add dashboard display tests
-**Description:** As a developer, I want e2e tests for the dashboard page so that I can verify hackathons display correctly after login.
+### US-001: Teams service layer
+**Description:** As a developer, I need API client functions for teams so that frontend components can interact with the backend.
 
 **Acceptance Criteria:**
-- [x] Test navigates to dashboard after login and verifies welcome message with user's name
-- [x] Test verifies "Create Hackathon" button is visible
-- [x] Test verifies dashboard section headings are present (Your Drafts, Happening Now, etc.)
-- [x] Test file created at `e2e/dashboard.spec.ts`
+- [x] Create `/src/services/teams.ts` with typed functions
+- [x] `getTeamsByHackathon(hackathonId)` - GET teams list for a hackathon
+- [x] `getTeam(teamId)` - GET single team details with members
+- [x] `getMyTeam(hackathonId)` - GET current user's team in a hackathon
+- [x] `createTeam(data)` - POST to create team
+- [x] `updateTeam(teamId, data)` - PUT to update team
+- [x] `joinTeamByCode(inviteCode)` - POST to join via invite code
+- [x] `leaveTeam(teamId)` - POST to leave team
+- [x] `regenerateInviteCode(teamId)` - POST to regenerate invite code
+- [x] Add Team and TeamMember types to `/src/types/index.ts`
 - [x] Typecheck passes
-- [x] All tests pass with `npm run test:e2e`
 
-### US-002: Add navigation and logout tests
-**Description:** As a developer, I want e2e tests for navigation and logout so that I can verify users can navigate the app and sign out.
+### US-002: TeamCard component
+**Description:** As a user, I want to see team information displayed consistently so I can quickly understand team details.
 
 **Acceptance Criteria:**
-- [x] Test verifies clicking logo/home navigates to dashboard
-- [x] Test verifies logout button is visible in nav when authenticated
-- [x] Test verifies clicking logout clears session and redirects to login page
-- [x] Test file created at `e2e/navigation.spec.ts`
-- [x] Typecheck passes
-- [x] All tests pass with `npm run test:e2e`
+- [ ] Create `/src/components/TeamCard.tsx` component
+- [ ] Displays team name, description preview (truncated), member count
+- [ ] Shows open/closed badge with appropriate colors (green for open, gray for closed)
+- [ ] Shows "X / Y members" where Y is max team size
+- [ ] Card is clickable and navigates to team detail page
+- [ ] Matches existing HackathonCard styling patterns
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-003: Add hackathon creation happy path tests
-**Description:** As a developer, I want e2e tests for hackathon creation so that I can verify the create flow works correctly.
-
-**Acceptance Criteria:**
-- [x] Test navigates to create hackathon page via dashboard button
-- [x] Test verifies all form sections are visible (Basic Info, Dates, Location, Team Settings)
-- [x] Test fills out required fields and submits successfully
-- [x] Test verifies redirect to hackathon detail page after creation
-- [x] Test file created at `e2e/hackathon-create.spec.ts`
-- [x] Typecheck passes
-- [x] All tests pass with `npm run test:e2e`
-
-### US-004: Add hackathon detail view tests
-**Description:** As a developer, I want e2e tests for viewing hackathon details so that I can verify the detail page displays correctly.
+### US-003: Teams list page
+**Description:** As a participant, I want to browse all teams in a hackathon so I can find one to join.
 
 **Acceptance Criteria:**
-- [x] Test navigates to a hackathon detail page
-- [x] Test verifies hackathon name, description, and status badge are displayed
-- [x] Test verifies quick info cards show (start date, end date, location, participants)
-- [x] Test verifies rules section is displayed
-- [x] Test file created at `e2e/hackathon-detail.spec.ts`
-- [x] Typecheck passes
-- [x] All tests pass with `npm run test:e2e`
+- [ ] New route: `/hackathons/:slug/teams` renders teams browse page
+- [ ] Page header shows "Teams" with hackathon name
+- [ ] Fetches and displays all teams using TeamCard components
+- [ ] Filter toggle: "Show open teams only" (default off - shows all teams)
+- [ ] Search input filters teams by name (client-side filtering)
+- [ ] Empty state message when no teams exist or match filters
+- [ ] Back link to hackathon detail page
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-005: Add hackathon basic edit tests
-**Description:** As a developer, I want e2e tests for basic hackathon editing so that I can verify organizers can update hackathon fields.
-
-**Acceptance Criteria:**
-- [x] Test clicks edit button on hackathon detail page (as organizer)
-- [x] Test verifies edit form appears with current values populated
-- [x] Test modifies hackathon name and description fields
-- [x] Test saves changes and verifies updated values display
-- [x] Tests added to `e2e/hackathon-detail.spec.ts`
-- [x] Typecheck passes
-- [x] All tests pass with `npm run test:e2e`
-
-### US-006: Add hackathon card navigation tests
-**Description:** As a developer, I want e2e tests for hackathon card interactions so that I can verify users can navigate from dashboard to hackathon details.
+### US-004: Teams section on hackathon detail page
+**Description:** As a participant, I want to see team information on the hackathon page so I can quickly access team features.
 
 **Acceptance Criteria:**
-- [x] Test creates a hackathon, returns to dashboard
-- [x] Test verifies hackathon card appears in appropriate section
-- [x] Test clicks on hackathon card and verifies navigation to detail page
-- [x] Tests added to `e2e/dashboard.spec.ts`
-- [x] Typecheck passes
-- [x] All tests pass with `npm run test:e2e`
+- [ ] Add "Teams" section/card to hackathon detail page
+- [ ] Shows count of total teams in the hackathon
+- [ ] "Browse Teams" button links to `/hackathons/:slug/teams`
+- [ ] "Create Team" button visible for registered participants without a team
+- [ ] If user has a team, show "My Team" card with team name and "View Team" link
+- [ ] Section only visible for hackathons with status registration_open or in_progress
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-005: Team detail page - view mode
+**Description:** As a participant, I want to view a team's profile so I can learn about them before joining.
+
+**Acceptance Criteria:**
+- [ ] New route: `/hackathons/:slug/teams/:teamId` renders team detail page
+- [ ] Displays team name, full description, open/closed status badge
+- [ ] Shows member list with names and leader badge indicator
+- [ ] Shows hackathon name with link back to hackathon detail
+- [ ] Shows "X of Y members" capacity indicator
+- [ ] Back link to teams list page
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-006: Create team functionality
+**Description:** As a registered participant, I want to create a team so I can start forming my group.
+
+**Acceptance Criteria:**
+- [ ] Create team form/modal accessible from hackathon detail and teams list pages
+- [ ] Form fields: team name (required), description (optional), open for joining toggle (default true)
+- [ ] Form validates name is not empty
+- [ ] Uses React Hook Form with Zod validation (matching existing patterns)
+- [ ] Successful creation shows success toast and navigates to new team detail page
+- [ ] Error displays appropriate message (already on team, not registered, etc.)
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-007: Join team via invite code
+**Description:** As a participant, I want to join a team using an invite code so I can join teams that aren't publicly open.
+
+**Acceptance Criteria:**
+- [ ] "Join with Invite Code" button on teams list page
+- [ ] Opens modal with single input field for invite code
+- [ ] Validates code is not empty
+- [ ] Successful join shows success toast and navigates to team detail page
+- [ ] Error displays appropriate message (invalid code, team full, already on team)
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-008: Join open team from detail page
+**Description:** As a participant, I want to join an open team directly so I can quickly join teams accepting members.
+
+**Acceptance Criteria:**
+- [ ] "Join Team" button visible on team detail page for open teams
+- [ ] Button hidden if user already on a team in this hackathon
+- [ ] Button hidden if user is not registered for the hackathon
+- [ ] Button shows "Team Full" (disabled) if at max capacity
+- [ ] Clicking join shows confirmation dialog
+- [ ] Successful join shows success toast and refreshes page to show member view
+- [ ] Error displays appropriate message
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-009: Leave team functionality
+**Description:** As a team member, I want to leave my team so I can join a different one.
+
+**Acceptance Criteria:**
+- [ ] "Leave Team" button visible on team detail page for team members
+- [ ] Button shows confirmation dialog explaining consequences
+- [ ] If user is leader and other members exist, dialog explains leadership will transfer
+- [ ] Successful leave shows toast and redirects to hackathon detail page
+- [ ] Error displays appropriate message
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-010: Team leader - edit team
+**Description:** As a team leader, I want to edit my team's details so I can keep information accurate.
+
+**Acceptance Criteria:**
+- [ ] "Edit Team" button visible on team detail page for team leader only
+- [ ] Opens modal/form with: name, description, is_open toggle (pre-filled with current values)
+- [ ] Uses same form component/pattern as create team
+- [ ] Save updates team and shows success toast
+- [ ] Cancel closes modal without changes
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-011: Team leader - invite code management
+**Description:** As a team leader, I want to share and regenerate my team's invite code so I can invite specific people.
+
+**Acceptance Criteria:**
+- [ ] Invite code section visible on team detail page for team members
+- [ ] Shows current invite code in a copyable format
+- [ ] "Copy" button copies code to clipboard with toast confirmation
+- [ ] "Regenerate Code" button visible for team leader only
+- [ ] Regenerate shows confirmation dialog (old code will stop working)
+- [ ] Successful regenerate shows new code and success toast
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-012: Navigation and routing setup
+**Description:** As a developer, I need routes configured for team pages so users can navigate to them.
+
+**Acceptance Criteria:**
+- [ ] Add route `/hackathons/:slug/teams` for teams list page
+- [ ] Add route `/hackathons/:slug/teams/:teamId` for team detail page
+- [ ] Routes are protected (require authentication)
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- Protected route redirect testing (e.g., unauthenticated access)
-- Session expiry or token refresh testing
-- Comprehensive form validation testing (only happy paths)
-- Mobile/responsive layout testing
-- Performance or load testing
-- Visual regression testing
-- Testing all possible error states
+- Team chat or messaging functionality
+- Join request/approval workflow (direct join for open teams, invite code for closed)
+- Team matching or recommendation algorithms
+- Team deletion UI (teams persist, members can leave)
+- Team avatars/logo upload
+- Notification system for team events
+- Member removal by leader (out of scope for initial release)
+- "My Teams" dashboard section across all hackathons (may add later)
 
 ## Technical Considerations
 
-- Follow existing patterns from `e2e/auth.spec.ts`:
-  - Use `test.beforeAll()` to register test user once per file
-  - Use `test.beforeEach()` to clear session and login fresh
-  - Use `generateUniqueEmail()` pattern for unique test data
-  - Use semantic locators: `getByLabel()`, `getByRole()`, `getByText()`
-- Each test file should be independent and not rely on state from other files
-- Use unique hackathon names with timestamps to avoid conflicts
-- Tests run against `http://localhost:5173` (Vite dev server)
+- Backend APIs already exist at `/api/teams/*` endpoints - use existing service patterns
+- Reuse existing UI patterns: Cards similar to HackathonCard, modals using existing Dialog patterns
+- Use React Query for data fetching (consistent with hackathons patterns)
+- Use React Hook Form + Zod for form validation (consistent with existing forms)
+- Team routes nested under hackathon slug for context
+- Filter state can use URL search params for shareability
