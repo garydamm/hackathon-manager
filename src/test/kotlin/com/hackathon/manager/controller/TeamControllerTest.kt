@@ -276,6 +276,37 @@ class TeamControllerTest {
     }
 
     @Test
+    fun `joinTeamById should return 200 when successful`() {
+        whenever(teamService.joinTeamById(testTeamId, testUserId))
+            .thenReturn(createTeamResponse())
+
+        mockMvc.perform(
+            post("/api/teams/$testTeamId/join")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.name").value("Test Team"))
+    }
+
+    @Test
+    fun `joinTeamById should return 403 when team is closed`() {
+        whenever(teamService.joinTeamById(testTeamId, testUserId))
+            .thenThrow(ApiException("Team is not accepting new members", HttpStatus.FORBIDDEN))
+
+        mockMvc.perform(
+            post("/api/teams/$testTeamId/join")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}")
+        )
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
     fun `leaveTeam should return 204 when successful`() {
         mockMvc.perform(
             post("/api/teams/$testTeamId/leave")

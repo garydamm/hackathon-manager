@@ -118,6 +118,22 @@ class TeamService(
             throw ApiException("Team is not accepting new members", HttpStatus.FORBIDDEN)
         }
 
+        return addUserToTeam(team, userId)
+    }
+
+    @Transactional
+    fun joinTeamById(teamId: UUID, userId: UUID): TeamResponse {
+        val team = teamRepository.findById(teamId)
+            .orElseThrow { ApiException("Team not found", HttpStatus.NOT_FOUND) }
+
+        if (!team.isOpen) {
+            throw ApiException("Team is not accepting new members", HttpStatus.FORBIDDEN)
+        }
+
+        return addUserToTeam(team, userId)
+    }
+
+    private fun addUserToTeam(team: Team, userId: UUID): TeamResponse {
         if (!hackathonUserRepository.existsByHackathonIdAndUserId(team.hackathon.id!!, userId)) {
             throw ApiException("Must be registered for the hackathon to join a team", HttpStatus.FORBIDDEN)
         }

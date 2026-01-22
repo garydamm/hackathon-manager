@@ -68,6 +68,15 @@ class TeamController(
         return ResponseEntity.ok(team)
     }
 
+    @PostMapping("/{id}/join")
+    fun joinTeamById(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<TeamResponse> {
+        val team = teamService.joinTeamById(id, principal.id)
+        return ResponseEntity.ok(team)
+    }
+
     @PostMapping("/{id}/leave")
     fun leaveTeam(
         @PathVariable id: UUID,

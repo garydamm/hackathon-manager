@@ -26,6 +26,10 @@ export const teamService = {
     return api.post<Team>("/teams/join", { inviteCode })
   },
 
+  async joinTeam(teamId: string): Promise<Team> {
+    return api.post<Team>(`/teams/${teamId}/join`, {})
+  },
+
   async leaveTeam(teamId: string): Promise<void> {
     return api.post<void>(`/teams/${teamId}/leave`)
   },

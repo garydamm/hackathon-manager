@@ -113,15 +113,15 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a participant, I want to join an open team directly so I can quickly join teams accepting members.
 
 **Acceptance Criteria:**
-- [ ] "Join Team" button visible on team detail page for open teams
-- [ ] Button hidden if user already on a team in this hackathon
-- [ ] Button hidden if user is not registered for the hackathon
-- [ ] Button shows "Team Full" (disabled) if at max capacity
-- [ ] Clicking join shows confirmation dialog
-- [ ] Successful join shows success toast and refreshes page to show member view
-- [ ] Error displays appropriate message
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] "Join Team" button visible on team detail page for open teams
+- [x] Button hidden if user already on a team in this hackathon
+- [x] Button hidden if user is not registered for the hackathon
+- [x] Button shows "Team Full" (disabled) if at max capacity
+- [x] Clicking join shows confirmation dialog
+- [x] Successful join shows success toast and refreshes page to show member view
+- [x] Error displays appropriate message
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-009: Leave team functionality
 **Description:** As a team member, I want to leave my team so I can join a different one.

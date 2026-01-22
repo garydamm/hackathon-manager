@@ -1,7 +1,8 @@
-import { useParams, Link } from "react-router-dom"
-import { useQuery } from "@tanstack/react-query"
-import { motion } from "framer-motion"
-import { ArrowLeft, Loader2, Users, Crown } from "lucide-react"
+import { useState } from "react"
+import { useParams, Link, useNavigate } from "react-router-dom"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { motion, AnimatePresence } from "framer-motion"
+import { ArrowLeft, Loader2, Users, Crown, UserPlus, X } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,6 +12,10 @@ import { ApiError } from "@/services/api"
 
 export function TeamDetailPage() {
   const { slug, teamId } = useParams<{ slug: string; teamId: string }>()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [showJoinConfirm, setShowJoinConfirm] = useState(false)
+  const [joinError, setJoinError] = useState<string | null>(null)
 
   const {
     data: hackathon,
@@ -26,13 +31,41 @@ export function TeamDetailPage() {
     data: team,
     isLoading: isLoadingTeam,
     error: teamError,
+    refetch: refetchTeam,
   } = useQuery({
     queryKey: ["team", teamId],
     queryFn: () => teamService.getTeam(teamId!),
     enabled: !!teamId,
   })
 
-  const isLoading = isLoadingHackathon || isLoadingTeam
+  // Fetch user's team in this hackathon
+  const { data: myTeam, isLoading: isLoadingMyTeam } = useQuery({
+    queryKey: ["myTeam", hackathon?.id],
+    queryFn: () => teamService.getMyTeam(hackathon!.id),
+    enabled: !!hackathon?.id,
+  })
+
+  const joinMutation = useMutation({
+    mutationFn: () => teamService.joinTeam(teamId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["team", teamId] })
+      queryClient.invalidateQueries({ queryKey: ["myTeam", hackathon?.id] })
+      queryClient.invalidateQueries({ queryKey: ["teams", hackathon?.id] })
+      setShowJoinConfirm(false)
+      setJoinError(null)
+      // Refetch team to show member view
+      refetchTeam()
+    },
+    onError: (err) => {
+      if (err instanceof ApiError) {
+        setJoinError(err.message)
+      } else {
+        setJoinError("Failed to join team. Please try again.")
+      }
+    },
+  })
+
+  const isLoading = isLoadingHackathon || isLoadingTeam || isLoadingMyTeam
   const error = hackathonError || teamError
 
   if (isLoading) {
@@ -65,6 +98,22 @@ export function TeamDetailPage() {
   }
 
   const members = team.members ?? []
+  const isTeamFull = team.memberCount >= hackathon.maxTeamSize
+  const isRegistered = hackathon.userRole === "participant"
+  const hasTeam = !!myTeam
+  const isOnThisTeam = myTeam?.id === team.id
+
+  // Show join button if: team is open, user is registered, user has no team
+  const canJoin = team.isOpen && isRegistered && !hasTeam
+
+  const handleJoinClick = () => {
+    setJoinError(null)
+    setShowJoinConfirm(true)
+  }
+
+  const handleConfirmJoin = () => {
+    joinMutation.mutate()
+  }
 
   return (
     <AppLayout>
@@ -99,6 +148,22 @@ export function TeamDetailPage() {
                   {team.isOpen ? "Open to join" : "Closed"}
                 </span>
               </div>
+              {/* Join Team Button */}
+              {canJoin && (
+                <Button
+                  onClick={handleJoinClick}
+                  disabled={isTeamFull}
+                >
+                  {isTeamFull ? (
+                    "Team Full"
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Join Team
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
 
@@ -188,6 +253,93 @@ export function TeamDetailPage() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Join Confirmation Dialog */}
+      <AnimatePresence>
+        {showJoinConfirm && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowJoinConfirm(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="bg-background rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                      <UserPlus className="h-5 w-5 text-primary" />
+                    </div>
+                    <h2 className="text-xl font-semibold">Join Team</h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowJoinConfirm(false)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <p className="text-muted-foreground">
+                  Are you sure you want to join <strong>{team.name}</strong>?
+                  Once you join, you won't be able to join another team in this hackathon.
+                </p>
+
+                {/* Error message */}
+                {joinError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                  >
+                    {joinError}
+                  </motion.div>
+                )}
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowJoinConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleConfirmJoin}
+                    disabled={joinMutation.isPending}
+                  >
+                    {joinMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Joining...
+                      </>
+                    ) : (
+                      "Join Team"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </AppLayout>
   )
 }
