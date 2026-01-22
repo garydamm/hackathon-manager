@@ -35,13 +35,13 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a user, I want to see team information displayed consistently so I can quickly understand team details.
 
 **Acceptance Criteria:**
-- [ ] Create `/src/components/TeamCard.tsx` component
-- [ ] Displays team name, description preview (truncated), member count
-- [ ] Shows open/closed badge with appropriate colors (green for open, gray for closed)
-- [ ] Shows "X / Y members" where Y is max team size
-- [ ] Card is clickable and navigates to team detail page
-- [ ] Matches existing HackathonCard styling patterns
-- [ ] Typecheck passes
+- [x] Create `/src/components/TeamCard.tsx` component
+- [x] Displays team name, description preview (truncated), member count
+- [x] Shows open/closed badge with appropriate colors (green for open, gray for closed)
+- [x] Shows "X / Y members" where Y is max team size
+- [x] Card is clickable and navigates to team detail page
+- [x] Matches existing HackathonCard styling patterns
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-003: Teams list page
