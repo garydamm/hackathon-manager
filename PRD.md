@@ -40,19 +40,19 @@ Enable logged-in users to register and unregister for hackathons through the UI.
 **Description:** As a user viewing a hackathon detail page, I want to click a Register button and see a confirmation modal with next steps so I understand what happens after registration.
 
 **Acceptance Criteria:**
-- [ ] Show "Register" button when `status === 'registration_open'` AND user is not already registered
-- [ ] Button is disabled with "Registration Full" text when `participantCount >= maxParticipants`
-- [ ] Button is hidden when registration is not open
-- [ ] Clicking Register opens confirmation modal asking "Register for {hackathon name}?"
-- [ ] Modal shows hackathon dates and participant count
-- [ ] Modal has Cancel and "Confirm Registration" buttons
-- [ ] On confirm, calls `hackathonService.register()` with loading state
-- [ ] On success, shows success modal with next steps: "You're registered! You can now create or join a team."
-- [ ] Success modal has "Browse Teams" and "Create Team" action buttons
-- [ ] On error, displays error message in modal (capacity full, registration closed, etc.)
-- [ ] Invalidates hackathon query cache on success to refresh UI state
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Show "Register" button when `status === 'registration_open'` AND user is not already registered
+- [x] Button is disabled with "Registration Full" text when `participantCount >= maxParticipants`
+- [x] Button is hidden when registration is not open
+- [x] Clicking Register opens confirmation modal asking "Register for {hackathon name}?"
+- [x] Modal shows hackathon dates and participant count
+- [x] Modal has Cancel and "Confirm Registration" buttons
+- [x] On confirm, calls `hackathonService.register()` with loading state
+- [x] On success, shows success modal with next steps: "You're registered! You can now create or join a team."
+- [x] Success modal has "Browse Teams" and "Create Team" action buttons
+- [x] On error, displays error message in modal (capacity full, registration closed, etc.)
+- [x] Invalidates hackathon query cache on success to refresh UI state
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-004: Add Unregister button with confirmation to hackathon detail page
 **Description:** As a registered participant, I want to unregister from a hackathon so I can free up my spot if plans change.

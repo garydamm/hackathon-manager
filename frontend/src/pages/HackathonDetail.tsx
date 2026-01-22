@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { RegisterModal } from "@/components/RegisterModal"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { ApiError } from "@/services/api"
@@ -172,9 +173,23 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
   )
 }
 
-function ViewMode({ hackathon }: { hackathon: Hackathon }) {
+function ViewMode({
+  hackathon,
+  onRegisterClick,
+}: {
+  hackathon: Hackathon
+  onRegisterClick: () => void
+}) {
   const showTeamsSection =
     hackathon.status === "registration_open" || hackathon.status === "in_progress"
+
+  const isRegistered = hackathon.userRole === "participant"
+  const isRegistrationOpen = hackathon.status === "registration_open"
+  const isFull =
+    hackathon.maxParticipants != null &&
+    (hackathon.participantCount ?? 0) >= hackathon.maxParticipants
+
+  const showRegisterButton = isRegistrationOpen && !isRegistered
 
   return (
     <div className="space-y-8">
@@ -214,6 +229,11 @@ function ViewMode({ hackathon }: { hackathon: Hackathon }) {
                 </span>
               )}
             </div>
+            {showRegisterButton && (
+              <Button onClick={onRegisterClick} disabled={isFull} className="mt-2">
+                {isFull ? "Registration Full" : "Register"}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -570,6 +590,7 @@ export function HackathonDetailPage() {
   const queryClient = useQueryClient()
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
 
   const {
     data: hackathon,
@@ -687,10 +708,20 @@ export function HackathonDetailPage() {
               isSaving={updateMutation.isPending}
             />
           ) : (
-            <ViewMode hackathon={hackathon} />
+            <ViewMode
+              hackathon={hackathon}
+              onRegisterClick={() => setIsRegisterModalOpen(true)}
+            />
           )}
         </motion.div>
       </div>
+
+      {/* Register Modal */}
+      <RegisterModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        hackathon={hackathon}
+      />
     </AppLayout>
   )
 }
