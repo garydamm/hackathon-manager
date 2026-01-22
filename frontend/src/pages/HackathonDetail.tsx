@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, Link } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -16,6 +16,7 @@ import {
   Edit,
   Save,
   X,
+  UsersRound,
 } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { hackathonService } from "@/services/hackathons"
+import { teamService } from "@/services/teams"
 import { ApiError } from "@/services/api"
 import type { Hackathon, HackathonStatus } from "@/types"
 
@@ -96,7 +98,83 @@ const STATUS_OPTIONS: { value: HackathonStatus; label: string }[] = [
   { value: "cancelled", label: "Cancelled" },
 ]
 
+function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
+  const { data: teams, isLoading: teamsLoading } = useQuery({
+    queryKey: ["teams", hackathon.id],
+    queryFn: () => teamService.getTeamsByHackathon(hackathon.id),
+  })
+
+  const { data: myTeam, isLoading: myTeamLoading } = useQuery({
+    queryKey: ["myTeam", hackathon.id],
+    queryFn: () => teamService.getMyTeam(hackathon.id),
+  })
+
+  const isRegisteredParticipant = hackathon.userRole === "participant"
+  const teamsCount = teams?.length ?? 0
+
+  if (teamsLoading || myTeamLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UsersRound className="h-5 w-5" />
+            Teams
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <UsersRound className="h-5 w-5" />
+          Teams
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-muted-foreground">
+          {teamsCount} {teamsCount === 1 ? "team" : "teams"} in this hackathon
+        </p>
+
+        {myTeam ? (
+          <div className="p-4 rounded-lg bg-muted/50 space-y-3">
+            <div>
+              <p className="text-sm text-muted-foreground">My Team</p>
+              <p className="font-medium">{myTeam.name}</p>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link to={`/hackathons/${hackathon.slug}/teams/${myTeam.id}`}>
+                View Team
+              </Link>
+            </Button>
+          </div>
+        ) : isRegisteredParticipant ? (
+          <Button asChild>
+            <Link to={`/hackathons/${hackathon.slug}/teams?create=true`}>
+              Create Team
+            </Link>
+          </Button>
+        ) : null}
+
+        <Button asChild variant="outline">
+          <Link to={`/hackathons/${hackathon.slug}/teams`}>Browse Teams</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
+
 function ViewMode({ hackathon }: { hackathon: Hackathon }) {
+  const showTeamsSection =
+    hackathon.status === "registration_open" || hackathon.status === "in_progress"
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -234,6 +312,9 @@ function ViewMode({ hackathon }: { hackathon: Hackathon }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Teams Section */}
+      {showTeamsSection && <TeamsSection hackathon={hackathon} />}
     </div>
   )
 }

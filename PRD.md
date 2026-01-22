@@ -62,14 +62,14 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a participant, I want to see team information on the hackathon page so I can quickly access team features.
 
 **Acceptance Criteria:**
-- [ ] Add "Teams" section/card to hackathon detail page
-- [ ] Shows count of total teams in the hackathon
-- [ ] "Browse Teams" button links to `/hackathons/:slug/teams`
-- [ ] "Create Team" button visible for registered participants without a team
-- [ ] If user has a team, show "My Team" card with team name and "View Team" link
-- [ ] Section only visible for hackathons with status registration_open or in_progress
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Add "Teams" section/card to hackathon detail page
+- [x] Shows count of total teams in the hackathon
+- [x] "Browse Teams" button links to `/hackathons/:slug/teams`
+- [x] "Create Team" button visible for registered participants without a team
+- [x] If user has a team, show "My Team" card with team name and "View Team" link
+- [x] Section only visible for hackathons with status registration_open or in_progress
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-005: Team detail page - view mode
 **Description:** As a participant, I want to view a team's profile so I can learn about them before joining.
