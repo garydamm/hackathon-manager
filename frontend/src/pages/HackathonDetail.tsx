@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RegisterModal } from "@/components/RegisterModal"
+import { UnregisterModal } from "@/components/UnregisterModal"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { ApiError } from "@/services/api"
@@ -176,9 +177,11 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
 function ViewMode({
   hackathon,
   onRegisterClick,
+  onUnregisterClick,
 }: {
   hackathon: Hackathon
   onRegisterClick: () => void
+  onUnregisterClick: () => void
 }) {
   const showTeamsSection =
     hackathon.status === "registration_open" || hackathon.status === "in_progress"
@@ -232,6 +235,11 @@ function ViewMode({
             {showRegisterButton && (
               <Button onClick={onRegisterClick} disabled={isFull} className="mt-2">
                 {isFull ? "Registration Full" : "Register"}
+              </Button>
+            )}
+            {isRegistered && (
+              <Button variant="outline" onClick={onUnregisterClick} className="mt-2">
+                Unregister
               </Button>
             )}
           </div>
@@ -591,6 +599,7 @@ export function HackathonDetailPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+  const [isUnregisterModalOpen, setIsUnregisterModalOpen] = useState(false)
 
   const {
     data: hackathon,
@@ -711,6 +720,7 @@ export function HackathonDetailPage() {
             <ViewMode
               hackathon={hackathon}
               onRegisterClick={() => setIsRegisterModalOpen(true)}
+              onUnregisterClick={() => setIsUnregisterModalOpen(true)}
             />
           )}
         </motion.div>
@@ -720,6 +730,13 @@ export function HackathonDetailPage() {
       <RegisterModal
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
+        hackathon={hackathon}
+      />
+
+      {/* Unregister Modal */}
+      <UnregisterModal
+        isOpen={isUnregisterModalOpen}
+        onClose={() => setIsUnregisterModalOpen(false)}
         hackathon={hackathon}
       />
     </AppLayout>

@@ -63,3 +63,23 @@
   - isFull check: maxParticipants != null && (participantCount ?? 0) >= maxParticipants
   - Pass callbacks via props (onRegisterClick) to keep modal state in parent component
 ---
+
+## Iteration 4 - US-004: Add Unregister button with confirmation to hackathon detail page
+- What was implemented:
+  - Created new UnregisterModal component with three states: confirm, success, error
+  - Confirm state shows warning about being removed from teams with Cancel/Confirm Unregister buttons
+  - Confirm Unregister button uses destructive variant for visual warning
+  - Success state shows confirmation message with close button
+  - Error state displays error message with Try Again option
+  - Added Unregister button (outline variant) to ViewMode when user is registered
+  - Uses hackathonService.unregister() and invalidates cache on success
+  - Register button reappears automatically after unregistration (due to cache invalidation)
+- Files changed:
+  - frontend/src/components/UnregisterModal.tsx (new file)
+  - frontend/src/pages/HackathonDetail.tsx
+- Learnings for future iterations:
+  - Follow same modal pattern as RegisterModal (three states: confirm, success, error)
+  - Use AlertTriangle icon with yellow bg for warning messages
+  - Use variant="destructive" for confirm buttons that perform destructive actions
+  - Add onUnregisterClick callback prop to ViewMode alongside onRegisterClick
+---

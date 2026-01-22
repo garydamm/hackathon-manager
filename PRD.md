@@ -58,17 +58,17 @@ Enable logged-in users to register and unregister for hackathons through the UI.
 **Description:** As a registered participant, I want to unregister from a hackathon so I can free up my spot if plans change.
 
 **Acceptance Criteria:**
-- [ ] Show "Unregister" button (outline/secondary variant) when user is registered participant
-- [ ] Clicking Unregister opens confirmation modal: "Are you sure you want to unregister from {hackathon name}?"
-- [ ] Modal warns: "You will be removed from any team you've joined."
-- [ ] Modal has Cancel and "Confirm Unregister" buttons (destructive variant)
-- [ ] On confirm, calls `hackathonService.unregister()` with loading state
-- [ ] On success, closes modal and shows brief success message
-- [ ] On error, displays error message in modal
-- [ ] Invalidates hackathon query cache on success
-- [ ] Register button reappears after successful unregistration
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Show "Unregister" button (outline/secondary variant) when user is registered participant
+- [x] Clicking Unregister opens confirmation modal: "Are you sure you want to unregister from {hackathon name}?"
+- [x] Modal warns: "You will be removed from any team you've joined."
+- [x] Modal has Cancel and "Confirm Unregister" buttons (destructive variant)
+- [x] On confirm, calls `hackathonService.unregister()` with loading state
+- [x] On success, closes modal and shows brief success message
+- [x] On error, displays error message in modal
+- [x] Invalidates hackathon query cache on success
+- [x] Register button reappears after successful unregistration
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-005: Add registration status and actions to HackathonCard
 **Description:** As a user browsing hackathons, I want to see my registration status on each card and be able to register directly from the list so I don't have to navigate to the detail page.
