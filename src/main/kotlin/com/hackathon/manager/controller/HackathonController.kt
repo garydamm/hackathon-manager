@@ -81,4 +81,13 @@ class HackathonController(
         val hackathon = hackathonService.registerForHackathon(id, principal.id)
         return ResponseEntity.ok(hackathon)
     }
+
+    @DeleteMapping("/{id}/register")
+    fun unregisterForHackathon(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<HackathonResponse> {
+        val hackathon = hackathonService.unregisterForHackathon(id, principal.id)
+        return ResponseEntity.ok(hackathon)
+    }
 }

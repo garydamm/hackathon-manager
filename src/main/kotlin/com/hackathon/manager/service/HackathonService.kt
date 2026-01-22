@@ -155,6 +155,20 @@ class HackathonService(
         return HackathonResponse.fromEntity(hackathon, participantCount + 1, UserRole.participant)
     }
 
+    @Transactional
+    fun unregisterForHackathon(hackathonId: UUID, userId: UUID): HackathonResponse {
+        val hackathon = hackathonRepository.findById(hackathonId)
+            .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
+
+        val hackathonUser = hackathonUserRepository.findByHackathonIdAndUserId(hackathonId, userId)
+            ?: throw ApiException("Not registered for this hackathon", HttpStatus.NOT_FOUND)
+
+        hackathonUserRepository.delete(hackathonUser)
+
+        val participantCount = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.participant).size
+        return HackathonResponse.fromEntity(hackathon, participantCount, null)
+    }
+
     @Transactional(readOnly = true)
     fun getUserRoleInHackathon(hackathonId: UUID, userId: UUID): UserRole? {
         return hackathonUserRepository.findByHackathonIdAndUserId(hackathonId, userId)?.role

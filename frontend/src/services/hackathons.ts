@@ -29,4 +29,8 @@ export const hackathonService = {
   async register(hackathonId: string): Promise<Hackathon> {
     return api.post<Hackathon>(`/hackathons/${hackathonId}/register`)
   },
+
+  async unregister(hackathonId: string): Promise<Hackathon> {
+    return api.delete<Hackathon>(`/hackathons/${hackathonId}/register`)
+  },
 }
