@@ -83,3 +83,21 @@
   - Use variant="destructive" for confirm buttons that perform destructive actions
   - Add onUnregisterClick callback prop to ViewMode alongside onRegisterClick
 ---
+
+## Iteration 5 - US-005: Add registration status and actions to HackathonCard
+- What was implemented:
+  - Added "Registered" badge to HackathonCard in top-right corner near status badge
+  - Badge displays when `hackathon.userRole === 'participant'` with CheckCircle icon
+  - Added "Register" button that appears when status is 'registration_open' and user not registered
+  - Button is disabled with "Full" text and title tooltip when at max capacity
+  - Button is hidden for non-open hackathons
+  - Clicking Register opens RegisterModal (reused from US-003)
+  - RegisterModal invalidates both hackathon and hackathons queries for cache refresh
+- Files changed:
+  - frontend/src/components/HackathonCard.tsx
+- Learnings for future iterations:
+  - No tooltip UI component exists in this codebase - use native HTML title attribute instead
+  - Reuse RegisterModal component by importing and controlling visibility with useState
+  - Same registration logic patterns (isRegistered, isRegistrationOpen, isFull) can be reused across components
+  - Place Registered badge before status badge in flex container for consistent top-right positioning
+---

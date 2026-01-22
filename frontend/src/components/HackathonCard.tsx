@@ -1,8 +1,10 @@
+import { useState } from "react"
 import { motion } from "framer-motion"
-import { Calendar, MapPin, Users, Globe, Clock } from "lucide-react"
+import { Calendar, MapPin, Users, Globe, Clock, CheckCircle } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { RegisterModal } from "@/components/RegisterModal"
 import type { Hackathon, HackathonStatus } from "@/types"
 
 interface HackathonCardProps {
@@ -61,6 +63,12 @@ function getTimeUntil(dateString: string): string {
 }
 
 export function HackathonCard({ hackathon, index }: HackathonCardProps) {
+  const [showRegisterModal, setShowRegisterModal] = useState(false)
+
+  const isRegistered = hackathon.userRole === "participant"
+  const isRegistrationOpen = hackathon.status === "registration_open"
+  const isFull = hackathon.maxParticipants != null && (hackathon.participantCount ?? 0) >= hackathon.maxParticipants
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -94,8 +102,14 @@ export function HackathonCard({ hackathon, index }: HackathonCardProps) {
             </div>
           )}
 
-          {/* Status badge */}
-          <div className="absolute top-3 right-3">
+          {/* Status badges */}
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            {isRegistered && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                <CheckCircle className="h-3 w-3" />
+                Registered
+              </span>
+            )}
             <span
               className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                 hackathon.status
@@ -152,11 +166,32 @@ export function HackathonCard({ hackathon, index }: HackathonCardProps) {
             </div>
           </div>
 
-          <Button className="w-full" variant="outline" asChild>
-            <Link to={`/hackathons/${hackathon.slug}`}>View Details</Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button className="flex-1" variant="outline" asChild>
+              <Link to={`/hackathons/${hackathon.slug}`}>View Details</Link>
+            </Button>
+            {isRegistrationOpen && !isRegistered && (
+              <Button
+                className="flex-1"
+                disabled={isFull}
+                title={isFull ? "This hackathon is at maximum capacity" : undefined}
+                onClick={(e) => {
+                  e.preventDefault()
+                  setShowRegisterModal(true)
+                }}
+              >
+                {isFull ? "Full" : "Register"}
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
+
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        hackathon={hackathon}
+      />
     </motion.div>
   )
 }

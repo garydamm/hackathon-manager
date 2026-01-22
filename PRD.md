@@ -74,15 +74,15 @@ Enable logged-in users to register and unregister for hackathons through the UI.
 **Description:** As a user browsing hackathons, I want to see my registration status on each card and be able to register directly from the list so I don't have to navigate to the detail page.
 
 **Acceptance Criteria:**
-- [ ] Display small "Registered" badge on cards where `userRole === 'participant'`
-- [ ] Badge positioned in top-right corner of card or near status badge
-- [ ] Show "Register" button on cards with `status === 'registration_open'` and user not registered
-- [ ] Register button disabled with tooltip when at max capacity
-- [ ] Hide Register button for non-open hackathons
-- [ ] Clicking Register opens same confirmation modal flow as detail page
-- [ ] Reuse modal components created in US-003
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Display small "Registered" badge on cards where `userRole === 'participant'`
+- [x] Badge positioned in top-right corner of card or near status badge
+- [x] Show "Register" button on cards with `status === 'registration_open'` and user not registered
+- [x] Register button disabled with tooltip when at max capacity
+- [x] Hide Register button for non-open hackathons
+- [x] Clicking Register opens same confirmation modal flow as detail page
+- [x] Reuse modal components created in US-003
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ## Non-Goals
 
