@@ -139,12 +139,12 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a team leader, I want to edit my team's details so I can keep information accurate.
 
 **Acceptance Criteria:**
-- [ ] "Edit Team" button visible on team detail page for team leader only
-- [ ] Opens modal/form with: name, description, is_open toggle (pre-filled with current values)
-- [ ] Uses same form component/pattern as create team
-- [ ] Save updates team and shows success toast
-- [ ] Cancel closes modal without changes
-- [ ] Typecheck passes
+- [x] "Edit Team" button visible on team detail page for team leader only
+- [x] Opens modal/form with: name, description, is_open toggle (pre-filled with current values)
+- [x] Uses same form component/pattern as create team
+- [x] Save updates team and shows success toast
+- [x] Cancel closes modal without changes
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-011: Team leader - invite code management

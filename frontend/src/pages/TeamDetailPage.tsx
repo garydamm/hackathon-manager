@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X } from "lucide-react"
+import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,6 +10,7 @@ import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { ApiError } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
+import { EditTeamModal } from "@/components/EditTeamModal"
 
 export function TeamDetailPage() {
   const { slug, teamId } = useParams<{ slug: string; teamId: string }>()
@@ -20,6 +21,7 @@ export function TeamDetailPage() {
   const [joinError, setJoinError] = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [leaveError, setLeaveError] = useState<string | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const {
     data: hackathon,
@@ -202,6 +204,16 @@ export function TeamDetailPage() {
                       Join Team
                     </>
                   )}
+                </Button>
+              )}
+              {/* Edit Team Button (leader only) */}
+              {isLeader && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEditModal(true)}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit Team
                 </Button>
               )}
               {/* Leave Team Button */}
@@ -484,6 +496,16 @@ export function TeamDetailPage() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Edit Team Modal */}
+      {team && hackathon && (
+        <EditTeamModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          team={team}
+          hackathonId={hackathon.id}
+        />
+      )}
     </AppLayout>
   )
 }

@@ -221,3 +221,47 @@
   - Use `useMutation` with `refetch` to refresh data after successful mutation
   - E2e tests can use `test.skip()` to gracefully handle unavailable endpoints
 ---
+
+## Iteration 11 - US-009: Leave team functionality
+- What was implemented:
+  - Added "Leave Team" button on team detail page for team members
+  - Button visible when `isOnThisTeam` is true (user is a member of the current team)
+  - Shows confirmation dialog with consequences explanation
+  - Leadership transfer warning displayed when leader leaves and other members exist
+  - Successful leave redirects to hackathon detail page
+  - Error handling displays API error messages
+  - Created e2e tests in `frontend/e2e/leave-team.spec.ts` (4 tests)
+- Files changed:
+  - frontend/src/pages/TeamDetailPage.tsx (modified - added leave button, leaveMutation, confirmation dialog)
+  - frontend/e2e/leave-team.spec.ts (new)
+  - PRD.md (marked checkboxes complete)
+- Learnings for future iterations:
+  - Use `useAuth()` hook to get current user for checking if they're the team leader
+  - LogOut icon from lucide-react for leave team UI
+  - canLeave condition: isOnThisTeam (myTeam?.id === team.id)
+  - isLeader check: currentUserMember?.isLeader === true where currentUserMember = members.find(m => m.user.id === user?.id)
+  - Button uses variant="destructive" for the confirm action in the dialog
+  - Dialog backdrop styling: bg-destructive/10 for warning, bg-amber-100/text-amber-800 for leadership transfer warning
+  - E2e tests for leave functionality best use team leader (who is auto-member) rather than trying to join via API
+---
+
+## Iteration 12 - US-010: Team leader - edit team functionality
+- What was implemented:
+  - Created `/frontend/src/components/EditTeamModal.tsx` component
+  - Modal pre-fills form with current team values (name, description, isOpen)
+  - Uses same form pattern as CreateTeamModal (React Hook Form + Zod validation)
+  - Reset form values when modal opens via useEffect
+  - Added "Edit Team" button to TeamDetailPage (visible for team leader only)
+  - Pencil icon from lucide-react for edit button and modal header
+  - Save updates team via teamService.updateTeam and invalidates queries
+  - Cancel resets form and closes modal without changes
+- Files changed:
+  - frontend/src/components/EditTeamModal.tsx (new)
+  - frontend/src/pages/TeamDetailPage.tsx (modified - added edit button, state, modal)
+  - PRD.md (marked checkboxes complete)
+- Learnings for future iterations:
+  - Use `import type { X }` (not just `import { X }`) when importing types with verbatimModuleSyntax enabled
+  - Reset form in useEffect([isOpen, team]) to ensure fresh values when modal opens
+  - isLeader is already computed in TeamDetailPage, reuse it for conditional rendering
+  - Edit modal should show icon in header for visual consistency with other modals
+---
