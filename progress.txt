@@ -265,3 +265,38 @@
   - isLeader is already computed in TeamDetailPage, reuse it for conditional rendering
   - Edit modal should show icon in header for visual consistency with other modals
 ---
+
+## Iteration 13 - US-010: Verify Edit Team works in browser
+- What was implemented:
+  - Created `/frontend/e2e/edit-team.spec.ts` with 7 e2e tests
+  - Tests verify: Edit Team button visibility (leader only), modal pre-fill, cancel without changes, edit name/description, toggle open/closed status, validation
+- Files changed:
+  - frontend/e2e/edit-team.spec.ts (new)
+  - PRD.md (marked "Verify changes work in browser" complete)
+- Learnings for future iterations:
+  - Switch component toggle: click on `label.relative.inline-flex.cursor-pointer` selector, not the label text
+  - When testing toggle state, check current state first with `isVisible()` and adapt assertions accordingly
+  - Serial test suites can have state from previous tests - design tests to handle unknown initial state
+---
+
+## Iteration 14 - US-011: Team leader - invite code management
+- What was implemented:
+  - Added invite code section to TeamDetailPage.tsx (visible for team members)
+  - Shows current invite code in a styled copyable format with monospace font
+  - Copy button with Check icon feedback and "Copied to clipboard!" message
+  - Regenerate Code button visible for team leader only
+  - Confirmation dialog for regenerate action (warns old code will stop working)
+  - Successful regenerate updates displayed code and refetches team data
+  - Created e2e tests in `frontend/e2e/invite-code-management.spec.ts` (5 tests)
+- Files changed:
+  - frontend/src/pages/TeamDetailPage.tsx (modified - added invite code section, handlers, regenerate dialog)
+  - frontend/e2e/invite-code-management.spec.ts (new)
+  - PRD.md (marked checkboxes complete)
+- Learnings for future iterations:
+  - Ticket icon from lucide-react for invite code related UI
+  - Use `isOnThisTeam` check (not `isLeader`) to show invite code section to all team members
+  - Copy to clipboard with visual feedback: set copied state true, use setTimeout to reset after 2s
+  - Check and RefreshCw icons for copy and regenerate buttons
+  - When selecting buttons in dialogs that have same name as page buttons, use `.nth(1)` to select the dialog button
+  - Backend returns inviteCode for all users viewing a team (not role-restricted)
+---

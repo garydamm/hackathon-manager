@@ -164,10 +164,10 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a developer, I need routes configured for team pages so users can navigate to them.
 
 **Acceptance Criteria:**
-- [ ] Add route `/hackathons/:slug/teams` for teams list page
-- [ ] Add route `/hackathons/:slug/teams/:teamId` for team detail page
-- [ ] Routes are protected (require authentication)
-- [ ] Typecheck passes
+- [x] Add route `/hackathons/:slug/teams` for teams list page
+- [x] Add route `/hackathons/:slug/teams/:teamId` for team detail page
+- [x] Routes are protected (require authentication)
+- [x] Typecheck passes
 
 ## Non-Goals
 
