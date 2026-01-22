@@ -94,3 +94,50 @@
   - Empty state messages differ: "No teams have been created..." vs "Try adjusting your filters..."
   - E2e test patterns: serial mode for shared state, beforeAll for setup, beforeEach for login
 ---
+
+## Iteration 6 - US-004: Teams section on hackathon detail page
+- What was implemented:
+  - Added TeamsSection component to HackathonDetail.tsx
+  - Shows teams count for the hackathon (fetched via teamService.getTeamsByHackathon)
+  - Shows "My Team" card with team name and "View Team" link when user has a team (fetched via teamService.getMyTeam)
+  - Shows "Create Team" button for registered participants without a team (checks userRole === "participant")
+  - "Browse Teams" button always visible, links to /hackathons/:slug/teams
+  - Section only visible for registration_open or in_progress status hackathons
+  - Added e2e tests for Teams section functionality
+- Files changed:
+  - frontend/src/pages/HackathonDetail.tsx (modified - added TeamsSection component)
+  - frontend/e2e/hackathon-detail-teams-section.spec.ts (new)
+  - PRD.md (marked checkboxes complete)
+- Learnings for future iterations:
+  - Use exact: true in Playwright getByRole when hackathon name might contain common words like "Teams"
+  - hackathon.userRole === "participant" indicates user is registered for the hackathon
+  - Can use Link component from react-router-dom with Button asChild pattern for navigation
+  - UsersRound icon from lucide-react for teams section
+  - Conditional section rendering: define showTeamsSection boolean in ViewMode, use && in JSX
+---
+
+## Iteration 7 - US-005: Team detail page - view mode
+- What was implemented:
+  - Created `/frontend/src/pages/TeamDetailPage.tsx` with full view functionality
+  - Added route `/hackathons/:slug/teams/:teamId` to App.tsx (protected route)
+  - Displays team name with open/closed status badge (green/gray colors)
+  - Shows "Participating in" card with link to hackathon detail page
+  - Shows full description in "About" card (only if description exists)
+  - Members section with "X of Y members" capacity indicator
+  - Member list shows avatar (or initial), name, bio, and "Leader" badge for team leader
+  - Back link "Back to Teams" navigates to teams list page
+  - Created e2e tests in `frontend/e2e/team-detail.spec.ts` (7 tests)
+- Files changed:
+  - frontend/src/pages/TeamDetailPage.tsx (new)
+  - frontend/src/App.tsx (modified - added route and import)
+  - frontend/e2e/team-detail.spec.ts (new)
+  - PRD.md (marked checkboxes complete)
+- Learnings for future iterations:
+  - No Badge component in this codebase - use inline span with tailwind classes
+  - Use same badge styling as TeamCard: `px-3 py-1 rounded-full text-sm font-medium`
+  - E2e tests can call backend API directly using `http://localhost:8080/api` prefix
+  - Use `localStorage.getItem('accessToken')` (not 'auth') to get JWT token
+  - Team member list uses `team.members ?? []` since members can be null
+  - Crown icon from lucide-react for leader badge
+  - Use getByRole('listitem') to scope to specific list items when names appear elsewhere
+---

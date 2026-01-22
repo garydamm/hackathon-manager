@@ -75,14 +75,14 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a participant, I want to view a team's profile so I can learn about them before joining.
 
 **Acceptance Criteria:**
-- [ ] New route: `/hackathons/:slug/teams/:teamId` renders team detail page
-- [ ] Displays team name, full description, open/closed status badge
-- [ ] Shows member list with names and leader badge indicator
-- [ ] Shows hackathon name with link back to hackathon detail
-- [ ] Shows "X of Y members" capacity indicator
-- [ ] Back link to teams list page
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] New route: `/hackathons/:slug/teams/:teamId` renders team detail page
+- [x] Displays team name, full description, open/closed status badge
+- [x] Shows member list with names and leader badge indicator
+- [x] Shows hackathon name with link back to hackathon detail
+- [x] Shows "X of Y members" capacity indicator
+- [x] Back link to teams list page
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-006: Create team functionality
 **Description:** As a registered participant, I want to create a team so I can start forming my group.
