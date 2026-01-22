@@ -145,7 +145,7 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 - [x] Save updates team and shows success toast
 - [x] Cancel closes modal without changes
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-011: Team leader - invite code management
 **Description:** As a team leader, I want to share and regenerate my team's invite code so I can invite specific people.
