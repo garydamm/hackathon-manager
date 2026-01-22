@@ -151,14 +151,14 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a team leader, I want to share and regenerate my team's invite code so I can invite specific people.
 
 **Acceptance Criteria:**
-- [ ] Invite code section visible on team detail page for team members
-- [ ] Shows current invite code in a copyable format
-- [ ] "Copy" button copies code to clipboard with toast confirmation
-- [ ] "Regenerate Code" button visible for team leader only
-- [ ] Regenerate shows confirmation dialog (old code will stop working)
-- [ ] Successful regenerate shows new code and success toast
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Invite code section visible on team detail page for team members
+- [x] Shows current invite code in a copyable format
+- [x] "Copy" button copies code to clipboard with toast confirmation
+- [x] "Regenerate Code" button visible for team leader only
+- [x] Regenerate shows confirmation dialog (old code will stop working)
+- [x] Successful regenerate shows new code and success toast
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-012: Navigation and routing setup
 **Description:** As a developer, I need routes configured for team pages so users can navigate to them.

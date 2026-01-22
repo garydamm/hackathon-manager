@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil } from "lucide-react"
+import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,6 +22,8 @@ export function TeamDetailPage() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [leaveError, setLeaveError] = useState<string | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const {
     data: hackathon,
@@ -91,6 +93,15 @@ export function TeamDetailPage() {
     },
   })
 
+  const regenerateMutation = useMutation({
+    mutationFn: () => teamService.regenerateInviteCode(teamId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["team", teamId] })
+      setShowRegenerateConfirm(false)
+      refetchTeam()
+    },
+  })
+
   const isLoading = isLoadingHackathon || isLoadingTeam || isLoadingMyTeam
   const error = hackathonError || teamError
 
@@ -155,6 +166,22 @@ export function TeamDetailPage() {
 
   const handleConfirmLeave = () => {
     leaveMutation.mutate()
+  }
+
+  const handleCopyInviteCode = async () => {
+    if (team?.inviteCode) {
+      await navigator.clipboard.writeText(team.inviteCode)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const handleRegenerateClick = () => {
+    setShowRegenerateConfirm(true)
+  }
+
+  const handleConfirmRegenerate = () => {
+    regenerateMutation.mutate()
   }
 
   return (
@@ -313,6 +340,59 @@ export function TeamDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Invite Code Section (visible for team members) */}
+          {isOnThisTeam && team.inviteCode && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Ticket className="h-5 w-5" />
+                  Invite Code
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Share this code with others to invite them to your team.
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 px-4 py-3 bg-muted rounded-lg font-mono text-lg tracking-wider">
+                    {team.inviteCode}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleCopyInviteCode}
+                    className="shrink-0"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {copied && (
+                  <p className="text-sm text-green-600">Copied to clipboard!</p>
+                )}
+                {/* Regenerate button (leader only) */}
+                {isLeader && (
+                  <div className="pt-2 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={handleRegenerateClick}
+                      disabled={regenerateMutation.isPending}
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-2 ${regenerateMutation.isPending ? "animate-spin" : ""}`} />
+                      Regenerate Code
+                    </Button>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Regenerating will invalidate the current code.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
       </div>
 
@@ -506,6 +586,81 @@ export function TeamDetailPage() {
           hackathonId={hackathon.id}
         />
       )}
+
+      {/* Regenerate Invite Code Confirmation Dialog */}
+      <AnimatePresence>
+        {showRegenerateConfirm && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowRegenerateConfirm(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="bg-background rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                      <RefreshCw className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <h2 className="text-xl font-semibold">Regenerate Invite Code</h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowRegenerateConfirm(false)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <p className="text-muted-foreground">
+                  Are you sure you want to regenerate the invite code? The current code will stop working immediately and anyone using it won't be able to join.
+                </p>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowRegenerateConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleConfirmRegenerate}
+                    disabled={regenerateMutation.isPending}
+                  >
+                    {regenerateMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Regenerating...
+                      </>
+                    ) : (
+                      "Regenerate Code"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </AppLayout>
   )
 }
