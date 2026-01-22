@@ -88,14 +88,14 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a registered participant, I want to create a team so I can start forming my group.
 
 **Acceptance Criteria:**
-- [ ] Create team form/modal accessible from hackathon detail and teams list pages
-- [ ] Form fields: team name (required), description (optional), open for joining toggle (default true)
-- [ ] Form validates name is not empty
-- [ ] Uses React Hook Form with Zod validation (matching existing patterns)
-- [ ] Successful creation shows success toast and navigates to new team detail page
-- [ ] Error displays appropriate message (already on team, not registered, etc.)
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create team form/modal accessible from hackathon detail and teams list pages
+- [x] Form fields: team name (required), description (optional), open for joining toggle (default true)
+- [x] Form validates name is not empty
+- [x] Uses React Hook Form with Zod validation (matching existing patterns)
+- [x] Successful creation shows success toast and navigates to new team detail page
+- [x] Error displays appropriate message (already on team, not registered, etc.)
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-007: Join team via invite code
 **Description:** As a participant, I want to join a team using an invite code so I can join teams that aren't publicly open.

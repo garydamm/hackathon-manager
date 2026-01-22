@@ -1,22 +1,45 @@
-import { useState, useMemo } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useState, useMemo, useEffect } from "react"
+import { useParams, Link, useSearchParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
-import { ArrowLeft, Loader2, Search, Users } from "lucide-react"
+import { ArrowLeft, Loader2, Search, Users, Plus } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { TeamCard } from "@/components/TeamCard"
+import { CreateTeamModal } from "@/components/CreateTeamModal"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { ApiError } from "@/services/api"
 
 export function TeamsListPage() {
   const { slug } = useParams<{ slug: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState("")
   const [showOpenOnly, setShowOpenOnly] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+  // Open modal if URL has ?create=true
+  useEffect(() => {
+    if (searchParams.get("create") === "true") {
+      setIsCreateModalOpen(true)
+    }
+  }, [searchParams])
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false)
+    // Remove ?create=true from URL
+    if (searchParams.has("create")) {
+      searchParams.delete("create")
+      setSearchParams(searchParams, { replace: true })
+    }
+  }
+
+  const handleOpenCreateModal = () => {
+    setIsCreateModalOpen(true)
+  }
 
   const {
     data: hackathon,
@@ -37,6 +60,15 @@ export function TeamsListPage() {
     queryFn: () => teamService.getTeamsByHackathon(hackathon!.id),
     enabled: !!hackathon?.id,
   })
+
+  const { data: myTeam } = useQuery({
+    queryKey: ["myTeam", hackathon?.id],
+    queryFn: () => teamService.getMyTeam(hackathon!.id),
+    enabled: !!hackathon?.id,
+  })
+
+  // User can create a team if they're a registered participant and don't have a team
+  const canCreateTeam = hackathon?.userRole === "participant" && !myTeam
 
   const filteredTeams = useMemo(() => {
     if (!teams) return []
@@ -102,11 +134,19 @@ export function TeamsListPage() {
           </div>
 
           {/* Header */}
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold">Teams</h1>
-            <p className="text-muted-foreground">
-              Browse teams participating in {hackathon.name}
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold">Teams</h1>
+              <p className="text-muted-foreground">
+                Browse teams participating in {hackathon.name}
+              </p>
+            </div>
+            {canCreateTeam && (
+              <Button onClick={handleOpenCreateModal}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Team
+              </Button>
+            )}
           </div>
 
           {/* Filters */}
@@ -157,6 +197,14 @@ export function TeamsListPage() {
             </div>
           )}
         </motion.div>
+
+        {/* Create Team Modal */}
+        <CreateTeamModal
+          isOpen={isCreateModalOpen}
+          onClose={handleCloseCreateModal}
+          hackathonId={hackathon.id}
+          hackathonSlug={slug!}
+        />
       </div>
     </AppLayout>
   )
