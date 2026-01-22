@@ -56,3 +56,41 @@
   - Build verification (`npm run build`) validates module compilation
   - TeamCard component won't be visually testable until Teams list page (US-003) uses it
 ---
+
+## Iteration 4 - US-003: Teams list page
+- What was implemented:
+  - Created `/frontend/src/pages/TeamsListPage.tsx` with full functionality
+  - Route `/hackathons/:slug/teams` added to App.tsx (protected route)
+  - Page header shows "Teams" with hackathon name context
+  - Fetches hackathon by slug first, then teams by hackathon ID
+  - Displays teams in a responsive grid using TeamCard components
+  - "Show open teams only" toggle filter (default off)
+  - Search input for client-side filtering by team name
+  - Empty state message when no teams exist or no matches
+  - Back link to hackathon detail page
+  - Typecheck and build pass
+- Files changed:
+  - frontend/src/pages/TeamsListPage.tsx (new)
+  - frontend/src/App.tsx (modified - added route and import)
+  - PRD.md (marked checkboxes complete)
+- Learnings for future iterations:
+  - teamService.getTeamsByHackathon requires hackathon ID, not slug
+  - Must first fetch hackathon by slug to get ID for teams query
+  - Use React Query's `enabled` option to chain dependent queries
+  - Filter logic: useMemo for performance with search + toggle filters
+  - Grid layout: sm:grid-cols-2 lg:grid-cols-3 for responsive cards
+---
+
+## Iteration 5 - US-003: Verify Teams List works in browser
+- What was implemented:
+  - Created `/frontend/e2e/teams-list.spec.ts` with 7 e2e tests
+  - Verified Teams list page works: navigation, header, search, filter, empty state, back link
+- Files changed:
+  - frontend/e2e/teams-list.spec.ts (new)
+  - PRD.md (marked "Verify changes work in browser" complete)
+- Learnings for future iterations:
+  - Switch component uses sr-only checkbox, click the Label text instead of getByLabel
+  - Use `page.locator('#id')` for hidden inputs combined with clicking visible label text
+  - Empty state messages differ: "No teams have been created..." vs "Try adjusting your filters..."
+  - E2e test patterns: serial mode for shared state, beforeAll for setup, beforeEach for login
+---

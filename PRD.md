@@ -56,7 +56,7 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 - [x] Empty state message when no teams exist or match filters
 - [x] Back link to hackathon detail page
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-004: Teams section on hackathon detail page
 **Description:** As a participant, I want to see team information on the hackathon page so I can quickly access team features.
