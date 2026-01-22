@@ -48,14 +48,14 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a participant, I want to browse all teams in a hackathon so I can find one to join.
 
 **Acceptance Criteria:**
-- [ ] New route: `/hackathons/:slug/teams` renders teams browse page
-- [ ] Page header shows "Teams" with hackathon name
-- [ ] Fetches and displays all teams using TeamCard components
-- [ ] Filter toggle: "Show open teams only" (default off - shows all teams)
-- [ ] Search input filters teams by name (client-side filtering)
-- [ ] Empty state message when no teams exist or match filters
-- [ ] Back link to hackathon detail page
-- [ ] Typecheck passes
+- [x] New route: `/hackathons/:slug/teams` renders teams browse page
+- [x] Page header shows "Teams" with hackathon name
+- [x] Fetches and displays all teams using TeamCard components
+- [x] Filter toggle: "Show open teams only" (default off - shows all teams)
+- [x] Search input filters teams by name (client-side filtering)
+- [x] Empty state message when no teams exist or match filters
+- [x] Back link to hackathon detail page
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-004: Teams section on hackathon detail page
