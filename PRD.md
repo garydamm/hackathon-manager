@@ -30,11 +30,11 @@ Enable logged-in users to register and unregister for hackathons through the UI.
 **Description:** As a user, I want to see a clear "Registered" indicator on hackathon detail pages so I know my registration status at a glance.
 
 **Acceptance Criteria:**
-- [ ] Display "Registered" badge next to status badge when `userRole === 'participant'`
-- [ ] Badge uses green styling (bg-green-100 text-green-700) with checkmark icon
-- [ ] Badge is visible in the header area near the hackathon title/status
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Display "Registered" badge next to status badge when `userRole === 'participant'`
+- [x] Badge uses green styling (bg-green-100 text-green-700) with checkmark icon
+- [x] Badge is visible in the header area near the hackathon title/status
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-003: Add Register button with confirmation modal to hackathon detail page
 **Description:** As a user viewing a hackathon detail page, I want to click a Register button and see a confirmation modal with next steps so I understand what happens after registration.

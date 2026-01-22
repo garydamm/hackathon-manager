@@ -27,3 +27,18 @@
   - HackathonUserRepository has `findByHackathonIdAndUserId` to lookup registration
   - After deletion, recalculate participant count to return in response
 ---
+
+## Iteration 2 - US-002: Add Registered badge to hackathon detail page
+- What was implemented:
+  - Added "Registered" badge next to status badge in ViewMode component
+  - Badge displays when `hackathon.userRole === 'participant'`
+  - Uses green styling (bg-green-100 text-green-700) with CheckCircle icon from lucide-react
+  - Badge positioned in header area near hackathon title/status
+- Files changed:
+  - frontend/src/pages/HackathonDetail.tsx
+- Learnings for future iterations:
+  - Status badges in header area are in ViewMode component around line 200
+  - Use `inline-flex items-center gap-1` for badge with icon
+  - CheckCircle icon from lucide-react works well for "Registered" status
+  - userRole field on Hackathon indicates registration status ('participant' = registered)
+---
