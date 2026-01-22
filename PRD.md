@@ -127,13 +127,13 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a team member, I want to leave my team so I can join a different one.
 
 **Acceptance Criteria:**
-- [ ] "Leave Team" button visible on team detail page for team members
-- [ ] Button shows confirmation dialog explaining consequences
-- [ ] If user is leader and other members exist, dialog explains leadership will transfer
-- [ ] Successful leave shows toast and redirects to hackathon detail page
-- [ ] Error displays appropriate message
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] "Leave Team" button visible on team detail page for team members
+- [x] Button shows confirmation dialog explaining consequences
+- [x] If user is leader and other members exist, dialog explains leadership will transfer
+- [x] Successful leave shows toast and redirects to hackathon detail page
+- [x] Error displays appropriate message
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-010: Team leader - edit team
 **Description:** As a team leader, I want to edit my team's details so I can keep information accurate.

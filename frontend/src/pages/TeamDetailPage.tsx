@@ -2,20 +2,24 @@ import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Loader2, Users, Crown, UserPlus, X } from "lucide-react"
+import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { ApiError } from "@/services/api"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function TeamDetailPage() {
   const { slug, teamId } = useParams<{ slug: string; teamId: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const [showJoinConfirm, setShowJoinConfirm] = useState(false)
   const [joinError, setJoinError] = useState<string | null>(null)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [leaveError, setLeaveError] = useState<string | null>(null)
 
   const {
     data: hackathon,
@@ -65,6 +69,26 @@ export function TeamDetailPage() {
     },
   })
 
+  const leaveMutation = useMutation({
+    mutationFn: () => teamService.leaveTeam(teamId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["team", teamId] })
+      queryClient.invalidateQueries({ queryKey: ["myTeam", hackathon?.id] })
+      queryClient.invalidateQueries({ queryKey: ["teams", hackathon?.id] })
+      setShowLeaveConfirm(false)
+      setLeaveError(null)
+      // Navigate to hackathon detail page
+      navigate(`/hackathons/${slug}`)
+    },
+    onError: (err) => {
+      if (err instanceof ApiError) {
+        setLeaveError(err.message)
+      } else {
+        setLeaveError("Failed to leave team. Please try again.")
+      }
+    },
+  })
+
   const isLoading = isLoadingHackathon || isLoadingTeam || isLoadingMyTeam
   const error = hackathonError || teamError
 
@@ -103,8 +127,15 @@ export function TeamDetailPage() {
   const hasTeam = !!myTeam
   const isOnThisTeam = myTeam?.id === team.id
 
+  // Find if current user is the leader of this team
+  const currentUserMember = members.find((m) => m.user.id === user?.id)
+  const isLeader = isOnThisTeam && currentUserMember?.isLeader === true
+  const hasOtherMembers = members.length > 1
+
   // Show join button if: team is open, user is registered, user has no team
   const canJoin = team.isOpen && isRegistered && !hasTeam
+  // Show leave button if user is on this team
+  const canLeave = isOnThisTeam
 
   const handleJoinClick = () => {
     setJoinError(null)
@@ -113,6 +144,15 @@ export function TeamDetailPage() {
 
   const handleConfirmJoin = () => {
     joinMutation.mutate()
+  }
+
+  const handleLeaveClick = () => {
+    setLeaveError(null)
+    setShowLeaveConfirm(true)
+  }
+
+  const handleConfirmLeave = () => {
+    leaveMutation.mutate()
   }
 
   return (
@@ -162,6 +202,16 @@ export function TeamDetailPage() {
                       Join Team
                     </>
                   )}
+                </Button>
+              )}
+              {/* Leave Team Button */}
+              {canLeave && (
+                <Button
+                  variant="outline"
+                  onClick={handleLeaveClick}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Leave Team
                 </Button>
               )}
             </div>
@@ -332,6 +382,100 @@ export function TeamDetailPage() {
                       </>
                     ) : (
                       "Join Team"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Leave Confirmation Dialog */}
+      <AnimatePresence>
+        {showLeaveConfirm && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLeaveConfirm(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="bg-background rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+                      <LogOut className="h-5 w-5 text-destructive" />
+                    </div>
+                    <h2 className="text-xl font-semibold">Leave Team</h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowLeaveConfirm(false)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <p className="text-muted-foreground">
+                  Are you sure you want to leave <strong>{team.name}</strong>?
+                </p>
+
+                {/* Leadership transfer warning */}
+                {isLeader && hasOtherMembers && (
+                  <div className="p-3 rounded-lg bg-amber-100 text-amber-800 text-sm">
+                    As the team leader, your leadership will be automatically transferred to another team member.
+                  </div>
+                )}
+
+                {/* Error message */}
+                {leaveError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                  >
+                    {leaveError}
+                  </motion.div>
+                )}
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowLeaveConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleConfirmLeave}
+                    disabled={leaveMutation.isPending}
+                  >
+                    {leaveMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Leaving...
+                      </>
+                    ) : (
+                      "Leave Team"
                     )}
                   </Button>
                 </div>
