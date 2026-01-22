@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useParams, Link, useSearchParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
-import { ArrowLeft, Loader2, Search, Users, Plus } from "lucide-react"
+import { ArrowLeft, Loader2, Search, Users, Plus, Ticket } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { TeamCard } from "@/components/TeamCard"
 import { CreateTeamModal } from "@/components/CreateTeamModal"
+import { JoinTeamModal } from "@/components/JoinTeamModal"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { ApiError } from "@/services/api"
@@ -20,6 +21,7 @@ export function TeamsListPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [showOpenOnly, setShowOpenOnly] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false)
 
   // Open modal if URL has ?create=true
   useEffect(() => {
@@ -39,6 +41,14 @@ export function TeamsListPage() {
 
   const handleOpenCreateModal = () => {
     setIsCreateModalOpen(true)
+  }
+
+  const handleOpenJoinModal = () => {
+    setIsJoinModalOpen(true)
+  }
+
+  const handleCloseJoinModal = () => {
+    setIsJoinModalOpen(false)
   }
 
   const {
@@ -69,6 +79,9 @@ export function TeamsListPage() {
 
   // User can create a team if they're a registered participant and don't have a team
   const canCreateTeam = hackathon?.userRole === "participant" && !myTeam
+
+  // User can join a team with invite code if they're a registered participant and don't have a team
+  const canJoinTeam = hackathon?.userRole === "participant" && !myTeam
 
   const filteredTeams = useMemo(() => {
     if (!teams) return []
@@ -141,12 +154,20 @@ export function TeamsListPage() {
                 Browse teams participating in {hackathon.name}
               </p>
             </div>
-            {canCreateTeam && (
-              <Button onClick={handleOpenCreateModal}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Team
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {canJoinTeam && (
+                <Button variant="outline" onClick={handleOpenJoinModal}>
+                  <Ticket className="h-4 w-4 mr-2" />
+                  Join with Invite Code
+                </Button>
+              )}
+              {canCreateTeam && (
+                <Button onClick={handleOpenCreateModal}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Team
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Filters */}
@@ -202,6 +223,14 @@ export function TeamsListPage() {
         <CreateTeamModal
           isOpen={isCreateModalOpen}
           onClose={handleCloseCreateModal}
+          hackathonId={hackathon.id}
+          hackathonSlug={slug!}
+        />
+
+        {/* Join Team Modal */}
+        <JoinTeamModal
+          isOpen={isJoinModalOpen}
+          onClose={handleCloseJoinModal}
           hackathonId={hackathon.id}
           hackathonSlug={slug!}
         />

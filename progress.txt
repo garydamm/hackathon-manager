@@ -141,3 +141,53 @@
   - Crown icon from lucide-react for leader badge
   - Use getByRole('listitem') to scope to specific list items when names appear elsewhere
 ---
+
+## Iteration 8 - US-006: Create team functionality
+- What was implemented:
+  - Created `/frontend/src/components/CreateTeamModal.tsx` component
+  - Modal with form fields: team name (required), description (optional), isOpen toggle (default true)
+  - Uses React Hook Form with Zod validation (matches existing CreateHackathon patterns)
+  - AnimatePresence from framer-motion for modal open/close animations
+  - Modal accessible via "Create Team" button on Teams list page (for registered participants)
+  - Modal opens via URL param `?create=true` (linked from hackathon detail page)
+  - Successful creation invalidates queries and navigates to new team detail page
+  - Error handling displays API error messages
+  - Added CreateTeamModal to TeamsListPage with URL param support
+  - Created e2e tests in `frontend/e2e/create-team.spec.ts` (7 tests)
+- Files changed:
+  - frontend/src/components/CreateTeamModal.tsx (new)
+  - frontend/src/pages/TeamsListPage.tsx (modified - added modal and state management)
+  - frontend/e2e/create-team.spec.ts (new)
+  - PRD.md (marked checkboxes complete)
+- Learnings for future iterations:
+  - API endpoint for hackathon by slug is `/hackathons/:slug`, not `/hackathons/slug/:slug`
+  - hackathon.userRole === "participant" means user is registered, but creator is "organizer"
+  - E2e tests for create functionality need separate organizer and participant users
+  - Use `useSearchParams` hook to read/write URL query parameters
+  - Use `exact: true` in Playwright `getByRole` to avoid matching partial text (e.g., "Back to Create Team E2E" contains "Create Team")
+  - Modal positioning: `fixed inset-0 z-50` with flex centering for overlay modals
+  - Form reset on close: call `reset()` from useForm in close handler
+---
+
+## Iteration 9 - US-007: Join team via invite code
+- What was implemented:
+  - Created `/frontend/src/components/JoinTeamModal.tsx` component
+  - Modal with single invite code input field and Zod validation
+  - Uses same modal pattern as CreateTeamModal (AnimatePresence, backdrop, etc.)
+  - Displays icon header with Ticket icon
+  - Shows error messages for invalid code, team full, already on team
+  - Successful join navigates to team detail page
+  - Added "Join with Invite Code" button to TeamsListPage (visible for registered participants without a team)
+  - Created e2e tests in `frontend/e2e/join-team-invite-code.spec.ts` (6 tests)
+- Files changed:
+  - frontend/src/components/JoinTeamModal.tsx (new)
+  - frontend/src/pages/TeamsListPage.tsx (modified - added button and modal)
+  - frontend/e2e/join-team-invite-code.spec.ts (new)
+  - PRD.md (marked checkboxes complete)
+- Learnings for future iterations:
+  - Backend requires isOpen=true for invite code joining (line 117-119 in TeamService.kt)
+  - This contradicts PRD which says invite codes are for "teams that aren't publicly open"
+  - Ticket icon from lucide-react for invite code related UI
+  - canJoinTeam and canCreateTeam have same condition: participant && !myTeam
+  - Button layout with gap-2 for multiple action buttons in header
+---

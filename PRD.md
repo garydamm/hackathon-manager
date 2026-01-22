@@ -101,13 +101,13 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 **Description:** As a participant, I want to join a team using an invite code so I can join teams that aren't publicly open.
 
 **Acceptance Criteria:**
-- [ ] "Join with Invite Code" button on teams list page
-- [ ] Opens modal with single input field for invite code
-- [ ] Validates code is not empty
-- [ ] Successful join shows success toast and navigates to team detail page
-- [ ] Error displays appropriate message (invalid code, team full, already on team)
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] "Join with Invite Code" button on teams list page
+- [x] Opens modal with single input field for invite code
+- [x] Validates code is not empty
+- [x] Successful join shows success toast and navigates to team detail page
+- [x] Error displays appropriate message (invalid code, team full, already on team)
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-008: Join open team from detail page
 **Description:** As a participant, I want to join an open team directly so I can quickly join teams accepting members.
