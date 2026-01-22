@@ -42,7 +42,7 @@ Add team management UI to the hackathon frontend, allowing participants to creat
 - [x] Card is clickable and navigates to team detail page
 - [x] Matches existing HackathonCard styling patterns
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-003: Teams list page
 **Description:** As a participant, I want to browse all teams in a hackathon so I can find one to join.
