@@ -151,3 +151,26 @@
   - host.docker.internal works on macOS/Windows for container-to-host connections
   - Container starts in ~4 seconds when database is properly initialized
 ---
+
+## Iteration 10 - US-009: Deploy to Render (BLOCKED)
+- What was implemented: Nothing - this task requires manual human intervention
+- Status: BLOCKED - requires external actions
+- Blocking reasons:
+  - Branch is 19 commits ahead of origin/main (needs `git push` to remote)
+  - Creating Render Blueprint requires login to Render dashboard
+  - Verifying deployment health requires manual testing on deployed URLs
+  - User registration/login testing requires human interaction with deployed app
+- Action needed from user:
+  1. Run `git push origin main` to push all commits including render.yaml
+  2. Go to https://dashboard.render.com and create Blueprint from repository
+  3. Set FRONTEND_URL environment variable manually (not auto-configured)
+  4. Wait for services to deploy
+  5. Test the deployed application
+  6. Mark US-009 tasks complete once verified
+- Files changed:
+  - None
+- Learnings for future iterations:
+  - Deployment tasks that require external service interaction cannot be automated
+  - render.yaml Blueprint should auto-create most resources on Render
+  - FRONTEND_URL must be set manually after initial deploy to know the static site URL
+---
