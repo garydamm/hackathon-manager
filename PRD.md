@@ -40,11 +40,11 @@ Prepare the hackathon-manager application for production deployment on Render. T
 **Description:** As a developer, I need the backend to accept Render's database configuration so it can connect to managed Postgres.
 
 **Acceptance Criteria:**
-- [ ] Add `application-prod.yml` profile that uses DATABASE_URL, DB_USERNAME, and DB_PASSWORD environment variables
-- [ ] Support Render's Postgres connection string format for DATABASE_URL
-- [ ] Use DB_USERNAME and DB_PASSWORD for authentication credentials
-- [ ] Fallback to existing local config when env vars not set
-- [ ] Typecheck passes (Kotlin compiles without errors)
+- [x] Add `application-prod.yml` profile that uses DATABASE_URL, DB_USERNAME, and DB_PASSWORD environment variables
+- [x] Support Render's Postgres connection string format for DATABASE_URL
+- [x] Use DB_USERNAME and DB_PASSWORD for authentication credentials
+- [x] Fallback to existing local config when env vars not set
+- [x] Typecheck passes (Kotlin compiles without errors)
 
 ---
 
