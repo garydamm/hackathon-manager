@@ -4,119 +4,23 @@
 (Patterns discovered during implementation)
 
 - Backend is Kotlin + Spring Boot in `src/main/kotlin/com/hackathon/manager/`
-- Controllers in `controller/` directory, services in `service/` directory
-- Frontend service uses api.get<T>, api.post<T>, api.put<T>, api.delete<T> for HTTP requests
+- Frontend is React + Vite in `frontend/`
 - Typecheck: `./gradlew compileKotlin` for backend, `npx tsc --noEmit` for frontend
-- Tests: `./gradlew test` for backend
-- Modal state pattern: use useState with union type to manage multi-screen modals
-- Reuse existing modal structure from CreateTeamModal (AnimatePresence, backdrop, motion.div)
-- No tooltip UI component - use native HTML title attribute instead
-- Backend DTOs in `src/main/kotlin/com/hackathon/manager/dto/` - check these for exact field names
-- SubmissionStatus enum values: draft, submitted, under_review, accepted, rejected
+- Tests: `./gradlew test` for backend (JaCoCo 70% coverage required)
+- Application config in `src/main/resources/application.yml`
+- Security config in `src/main/kotlin/com/hackathon/manager/config/SecurityConfig.kt`
 
 ---
 
-## Iteration 1 - US-001: Add Project TypeScript types
-- What was implemented: Added Project, CreateProjectRequest, UpdateProjectRequest interfaces and ProjectStatus type to frontend types
-- Files changed: frontend/src/types/index.ts, PRD.md
+## Iteration 1 - US-001: Run existing backend tests
+- What was implemented: Ran `./gradlew test` and `./gradlew jacocoTestCoverageVerification`. Coverage was at 69%, below 70% threshold.
+- Added tests for JwtConfig and CorsConfig/CorsProperties to boost coverage to 70%+
+- Files changed:
+  - `src/test/kotlin/com/hackathon/manager/config/JwtConfigTest.kt` (created)
+  - `src/test/kotlin/com/hackathon/manager/config/CorsConfigTest.kt` (created)
 - Learnings for future iterations:
-  - Backend ProjectResponse DTO includes teamName (not just teamId) - useful for display
-  - Nullable fields use `| null` in TypeScript to match Kotlin nullable types
-  - UUIDs from backend are represented as strings in TypeScript
----
-
-## Iteration 2 - US-002: Add project service layer
-- What was implemented: Created projectService with all CRUD and submission endpoints
-- Files changed: frontend/src/services/projects.ts, PRD.md
-- Learnings for future iterations:
-  - getProjectByTeam returns null on 404 (when team has no project) - handled with try/catch
-  - Service pattern: export const serviceName = { async method(): Promise<T> { return api.verb<T>(url) } }
-  - All endpoints are under /projects path: /projects, /projects/{id}, /projects/team/{teamId}, /projects/hackathon/{hackathonId}
----
-
-## Iteration 3 - US-003: Create ProjectCard component
-- What was implemented: Created ProjectCard component with status badge, team name, submission date, and URL links
-- Files changed: frontend/src/components/ProjectCard.tsx, PRD.md
-- Learnings for future iterations:
-  - Card pattern: use motion.div wrapper with Card from @/components/ui/card
-  - URL icons use native title attribute for tooltips (no tooltip UI component)
-  - Use e.stopPropagation() on link clicks to prevent card click handler from firing
-  - Lucide icons: Globe for demo, Video for video, Github for repository, Presentation for presentation
-  - Status colors: draft=gray, submitted=blue, under_review=yellow, accepted=green, rejected=red
----
-
-## Iteration 4 - US-004: Create ProjectDetailModal component
-- What was implemented: Created ProjectDetailModal component to display full project details in a modal
-- Files changed: frontend/src/components/ProjectDetailModal.tsx, PRD.md
-- Learnings for future iterations:
-  - Modal pattern for display-only: simpler than action modals - no modalState management needed
-  - Use max-w-2xl for modals with more content, max-w-md for simpler ones
-  - Use max-h-[90vh] overflow-y-auto for modals that could have long content
-  - ExternalLink icon from lucide-react useful for indicating links open in new tab
-  - whitespace-pre-wrap preserves line breaks in description text
----
-
-## Iteration 5 - US-005: Create ProjectForm component
-- What was implemented: Created ProjectForm component for creating and editing projects
-- Files changed: frontend/src/components/ProjectForm.tsx, PRD.md
-- Learnings for future iterations:
-  - Form modal pattern: use react-hook-form with zodResolver for validation
-  - Support both create/edit modes via optional project prop (isEditMode = !!project)
-  - Use .optional().or(z.literal("")) for optional URL fields that can be empty strings
-  - Reset form values in useEffect when isOpen changes to handle both modes cleanly
-  - Use max-w-lg for form modals with many fields (larger than max-w-md)
-  - Button text should change based on mode: "Create Project" vs "Save Changes"
-  - Different header icons: FolderPlus for create, Pencil for edit
----
-
-## Iteration 6 - US-006: Add project section to TeamDetailPage
-- What was implemented: Added Project section to TeamDetailPage with create/edit functionality
-- Files changed: frontend/src/pages/TeamDetailPage.tsx, PRD.md
-- Learnings for future iterations:
-  - Project section only visible to team members (isOnThisTeam check)
-  - Edit button only shown for draft projects (project.status === "draft")
-  - Use separate state for editingProject to track which project is being edited
-  - Clean empty strings from form data before sending to API (convert "" to undefined)
-  - Use FolderKanban icon for Project section header
-  - projectService.getProjectByTeam returns null on 404 (no project yet)
-  - Mutation pattern: mutateAsync for chained operations, mutate for simple fire-and-forget
----
-
-## Iteration 7 - US-007: Add submit/unsubmit actions to team project section
-- What was implemented: Added Submit Project and Unsubmit Project buttons with confirmation modals
-- Files changed: frontend/src/pages/TeamDetailPage.tsx, PRD.md
-- Learnings for future iterations:
-  - Confirmation modal pattern: use AnimatePresence with backdrop and dialog motion.div
-  - Submit button uses Send icon, Unsubmit uses Undo2 icon from lucide-react
-  - Submit confirmation uses primary/10 background, Unsubmit uses amber-100 background for icon container
-  - Multiple buttons in card header: wrap in flex div with gap-2
-  - Mutation.mutate() takes the argument directly (id), not an object
-  - Edit functionality is already disabled for non-draft projects from US-006 (status === "draft" check)
----
-
-## Iteration 8 - US-007: Verify submit/unsubmit changes work in browser
-- What was implemented: Verified that submit/unsubmit functionality implementation is correct
-- Files changed: PRD.md, progress.txt
-- Verification performed:
-  - TypeScript typecheck passes
-  - Submit button appears only for draft projects (line 509-526)
-  - Unsubmit button appears only for submitted projects (line 528-537)
-  - Both confirmation modals implemented correctly (lines 840-989)
-  - Mutations properly invalidate queries and refetch project data
-  - Edit functionality disabled for non-draft projects
-- Learnings for future iterations:
-  - "Verify in browser" tasks can be verified by checking code compiles and logic matches acceptance criteria when no interactive browser access is available
----
-
-## Iteration 9 - US-008: Add projects list to HackathonDetail page
-- What was implemented: Added Projects section to HackathonDetail.tsx with ProjectCard grid and ProjectDetailModal
-- Files changed: frontend/src/pages/HackathonDetail.tsx, PRD.md
-- Learnings for future iterations:
-  - ProjectsSection pattern: similar to TeamsSection - uses useQuery to fetch data, shows loading state, handles empty state
-  - Use useState<Project | null> to track selected project for detail modal
-  - Grid layout: use `grid gap-4 sm:grid-cols-2` for responsive 2-column layout
-  - Show project count in header: `Projects ({projectsCount})`
-  - Empty state message: "No projects have been submitted yet."
-  - Query key pattern: ["projects", "hackathon", hackathonId] for hackathon-specific project lists
-- Browser verification: Code structure verified - ProjectsSection renders for all hackathons, uses correct service and components
+  - Tests use AssertJ for assertions (not kotlin.test or JUnit)
+  - `org.springframework.mock.web.MockHttpServletRequest` available for testing CORS
+  - Config data classes (CorsProperties, JwtConfig) were at 0% coverage - easy wins
+  - `./gradlew jacocoTestCoverageVerification` to verify the 70% threshold
 ---

@@ -1,136 +1,152 @@
-# PRD: Project Management UI
+# PRD: Render Deployment Preparation
 
 ## Introduction
 
-Add UI for managing hackathon projects using the existing backend APIs. This feature enables team members to create, edit, and submit their projects, while also allowing hackathon organizers/admins to view and manage all projects within a hackathon. Projects will be accessible from both the team detail page (for team-specific management) and the hackathon detail page (for hackathon-wide project listing).
+Prepare the hackathon-manager application for production deployment on Render. This includes verifying the existing test suite passes, containerizing the application with Docker, and configuring Render deployment with managed Postgres. The application consists of a Kotlin/Spring Boot backend and a React/Vite frontend.
 
 ## Goals
 
-- Allow team members to create a project for their team within a hackathon
-- Enable editing of project details (name, tagline, description, URLs)
-- Support the full submission workflow (submit and unsubmit)
-- Display all projects for a hackathon on the hackathon detail page
-- Provide admins visibility into all projects across a hackathon
-- Show full project details including demo, video, repository, and presentation URLs
+- Verify existing backend tests pass before deployment
+- Create Docker configuration optimized for Render deployment
+- Configure environment variables for production (DATABASE_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET)
+- Deploy backend as a Render Web Service with managed Postgres
+- Deploy frontend as a Render Static Site
+- Enable auto-deploy on push to main (Render default)
 
 ## User Stories
 
-### US-001: Add Project TypeScript types
-**Description:** As a developer, I need TypeScript type definitions for projects so that the frontend can work with project data in a type-safe manner.
+### US-001: Run existing backend tests
+**Description:** As a developer, I want to verify all existing tests pass so that I have confidence the codebase is stable before deployment.
 
 **Acceptance Criteria:**
-- [x] Add `Project` interface to `/frontend/src/types/index.ts` matching the backend `ProjectResponse` DTO
-- [x] Add `CreateProjectRequest` interface for project creation
-- [x] Add `UpdateProjectRequest` interface for project updates
-- [x] Add `ProjectStatus` type for submission status enum (draft, submitted, under_review, accepted, rejected)
-- [x] Typecheck passes
+- [x] Run `./gradlew test` successfully
+- [x] All unit and integration tests pass
+- [x] JaCoCo coverage verification passes (70% threshold)
+- [x] Document any test failures that need addressing
 
-### US-002: Add project service layer
-**Description:** As a developer, I need a service layer to interact with the project backend APIs so that components can fetch and mutate project data.
+---
 
-**Acceptance Criteria:**
-- [x] Create `/frontend/src/services/projects.ts` with functions for all project endpoints
-- [x] Implement `getProjectsByHackathon(hackathonId)` - GET `/api/projects/hackathon/{hackathonId}`
-- [x] Implement `getProjectById(id)` - GET `/api/projects/{id}`
-- [x] Implement `getProjectByTeam(teamId)` - GET `/api/projects/team/{teamId}`
-- [x] Implement `createProject(request)` - POST `/api/projects`
-- [x] Implement `updateProject(id, request)` - PUT `/api/projects/{id}`
-- [x] Implement `submitProject(id)` - POST `/api/projects/{id}/submit`
-- [x] Implement `unsubmitProject(id)` - POST `/api/projects/{id}/unsubmit`
-- [x] Typecheck passes
-
-### US-003: Create ProjectCard component
-**Description:** As a user, I want to see project information displayed in a card format so that I can quickly view project details.
+### US-001B: Run existing frontend tests
+**Description:** As a developer, I want to verify all existing frontend tests pass so that I have confidence the frontend is stable before deployment.
 
 **Acceptance Criteria:**
-- [x] Create `ProjectCard.tsx` component in `/frontend/src/components/`
-- [x] Display project name, tagline, and status badge
-- [x] Display team name
-- [x] Show submission date if submitted
-- [x] Include links/icons for demo, video, repository, and presentation URLs (only if present)
-- [x] Card is clickable to view full project details
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Run `npm run test:e2e` successfully in the frontend directory
+- [ ] All Playwright e2e tests pass
+- [ ] Document any test failures that need addressing
 
-### US-004: Create ProjectDetailModal component
-**Description:** As a user, I want to view full project details in a modal so that I can see all project information without navigating away.
+---
+
+### US-002: Update database config for Render Postgres
+**Description:** As a developer, I need the backend to accept Render's database configuration so it can connect to managed Postgres.
 
 **Acceptance Criteria:**
-- [x] Create `ProjectDetailModal.tsx` component in `/frontend/src/components/`
-- [x] Display all project fields: name, tagline, description, status
-- [x] Display all URL fields as clickable links (demo, video, repository, presentation)
-- [x] Show team name and submission timestamp
-- [x] Include close button to dismiss modal
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add `application-prod.yml` profile that uses DATABASE_URL, DB_USERNAME, and DB_PASSWORD environment variables
+- [ ] Support Render's Postgres connection string format for DATABASE_URL
+- [ ] Use DB_USERNAME and DB_PASSWORD for authentication credentials
+- [ ] Fallback to existing local config when env vars not set
+- [ ] Typecheck passes (Kotlin compiles without errors)
 
-### US-005: Create ProjectForm component
-**Description:** As a team member, I want a form to create and edit project details so that I can manage my team's project submission.
+---
 
-**Acceptance Criteria:**
-- [x] Create `ProjectForm.tsx` component in `/frontend/src/components/`
-- [x] Include fields: name (required), tagline, description, demoUrl, videoUrl, repositoryUrl, presentationUrl
-- [x] Support both create mode (new project) and edit mode (existing project)
-- [x] Pre-populate fields when editing an existing project
-- [x] Show validation error if name is empty
-- [x] Include Save and Cancel buttons
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-006: Add project section to TeamDetailPage
-**Description:** As a team member, I want to manage my team's project from the team detail page so that I can create, edit, and submit our project.
+### US-003: Update CORS configuration for production
+**Description:** As a developer, I need CORS to allow requests from the production frontend domain so the deployed app works correctly.
 
 **Acceptance Criteria:**
-- [x] Add "Project" section to `TeamDetailPage.tsx`
-- [x] If team has no project: show "Create Project" button that opens ProjectForm in create mode
-- [x] If team has a project: display project details using ProjectCard
-- [x] Add "Edit Project" button that opens ProjectForm in edit mode (only for draft projects)
-- [x] Fetch project data using `getProjectByTeam(teamId)` on page load
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add FRONTEND_URL environment variable support to SecurityConfig
+- [ ] CORS allows origin from FRONTEND_URL when set
+- [ ] Keeps existing localhost origins for development
+- [ ] Typecheck passes
 
-### US-007: Add submit/unsubmit actions to team project section
-**Description:** As a team member, I want to submit and unsubmit my project so that I can control when it's ready for judging.
+---
 
-**Acceptance Criteria:**
-- [x] Add "Submit Project" button for projects in draft status
-- [x] Add "Unsubmit Project" button for projects in submitted status
-- [x] Show confirmation modal before submit/unsubmit actions
-- [x] Call appropriate service functions on confirmation
-- [x] Refresh project data after successful action
-- [x] Disable edit functionality for submitted projects
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-008: Add projects list to HackathonDetail page
-**Description:** As a hackathon organizer, I want to see all projects for a hackathon so that I can monitor submissions and review projects.
+### US-004: Configure frontend production API URL
+**Description:** As a developer, I need the frontend to use an environment variable for the API URL so it can point to the production backend.
 
 **Acceptance Criteria:**
-- [x] Add "Projects" section to `HackathonDetail.tsx`
-- [x] Fetch all projects using `getProjectsByHackathon(hackathonId)`
-- [x] Display projects using ProjectCard components in a grid/list layout
-- [x] Show project count in section header
-- [x] Show empty state message when no projects exist
-- [x] Clicking a ProjectCard opens ProjectDetailModal
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add VITE_API_URL environment variable support
+- [ ] Update API client/fetch calls to use VITE_API_URL
+- [ ] Default to localhost:8080 for local development
+- [ ] Frontend builds successfully with `npm run build`
+- [ ] Typecheck passes
+
+---
+
+### US-005: Create backend Dockerfile
+**Description:** As a developer, I need a Dockerfile for the Spring Boot backend so Render can build and deploy it.
+
+**Acceptance Criteria:**
+- [ ] Create multi-stage Dockerfile in project root
+- [ ] Stage 1: Build JAR with Gradle
+- [ ] Stage 2: Run JAR with minimal JRE image (eclipse-temurin)
+- [ ] Expose port 8080
+- [ ] Set SPRING_PROFILES_ACTIVE=prod
+- [ ] Create .dockerignore excluding node_modules, .git, frontend/dist, build/
+- [ ] Docker builds successfully: `docker build -t hackathon-manager .`
+
+---
+
+### US-006: Create render.yaml blueprint
+**Description:** As a developer, I need a render.yaml file so Render can automatically configure all services from the repository.
+
+**Acceptance Criteria:**
+- [ ] Create render.yaml in project root
+- [ ] Define web service for backend (Docker, auto-deploy enabled)
+- [ ] Define static site for frontend (build command: npm run build, publish: frontend/dist)
+- [ ] Define managed Postgres database (free tier)
+- [ ] Configure environment variable references (DATABASE_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, FRONTEND_URL, VITE_API_URL)
+- [ ] File validates as proper YAML
+
+---
+
+### US-007: Add database initialization for Render
+**Description:** As a developer, I need the database schema to be created on first deploy since Hibernate is set to validate mode.
+
+**Acceptance Criteria:**
+- [ ] Update application-prod.yml to set `spring.jpa.hibernate.ddl-auto=update` for initial deploy
+- [ ] OR create a startup script that runs schema.sql on empty database
+- [ ] Document the initialization approach in README
+- [ ] Typecheck passes
+
+---
+
+### US-008: Test Docker build locally
+**Description:** As a developer, I want to verify the Docker container works locally before deploying to Render.
+
+**Acceptance Criteria:**
+- [ ] Build Docker image successfully
+- [ ] Run container with test environment variables
+- [ ] Backend starts and responds to health check on port 8080
+- [ ] Document local Docker testing commands in README
+
+---
+
+### US-009: Deploy to Render
+**Description:** As a developer, I want to deploy the application to Render so it's accessible on the internet.
+
+**Acceptance Criteria:**
+- [ ] Push render.yaml to main branch
+- [ ] Create Render Blueprint from repository
+- [ ] Postgres database created and connected
+- [ ] Backend web service deployed and healthy
+- [ ] Frontend static site deployed and accessible
+- [ ] Application loads in browser without errors
+- [ ] User can register and login successfully
 
 ## Non-Goals
 
-- Project deletion (no delete endpoint exists in backend)
-- Project media/gallery management (using URLs only)
-- Technologies list display or editing
-- Filtering or sorting projects
-- Search functionality
-- Thumbnail image upload
-- Admin-specific project management actions (status changes beyond submit/unsubmit)
-- Judge assignment UI
-- Prize winner assignment UI
+- CI/CD pipeline beyond Render's built-in auto-deploy
+- Custom domain configuration (can be added later)
+- SSL certificate setup (Render provides this automatically)
+- Staging environment (single production deployment only)
+- Frontend E2E tests in deployment pipeline (manual verification)
+- Database backups configuration (can be added later)
+- Horizontal scaling configuration
 
 ## Technical Considerations
 
-- Reuse existing modal patterns from the codebase (e.g., registration confirmation modals)
-- Reuse existing form styling and validation patterns
-- Reuse existing card/badge components for consistent UI
-- Projects in "submitted" status should be read-only (backend enforces this)
-- Handle 404 gracefully when team has no project (returns null from API)
+- **Database Configuration:** Render provides DATABASE_URL (connection string), DB_USERNAME, and DB_PASSWORD separately. Use all three for complete database connectivity
+- **Static Assets:** Frontend deploys as separate Render Static Site, not bundled with backend
+- **Environment Variables:** JWT_SECRET should be generated securely (use Render's random generator)
+- **Schema Migration:** Since Hibernate is in validate mode, consider switching to update for prod or using Flyway for proper migrations
+- **CORS:** Frontend and backend will have different Render subdomains (e.g., `hackathon-api.onrender.com` and `hackathon-app.onrender.com`)
+- **Free Tier:** Render free tier services spin down after 15 minutes of inactivity; first request will be slow
