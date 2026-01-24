@@ -114,3 +114,40 @@
   - SPA routing requires rewrite rules: `source: /*` -> `destination: /index.html`
   - Validate YAML with: `npx js-yaml render.yaml`
 ---
+
+## Iteration 8 - US-007: Add database initialization for Render
+- What was implemented: Updated application-prod.yml to use ddl-auto=update instead of validate
+- Added comprehensive Render deployment documentation to README including:
+  - Deploy steps with render.yaml blueprint
+  - Database initialization explanation
+  - Environment variables table
+  - Local Docker testing commands
+- Files changed:
+  - `src/main/resources/application-prod.yml` (updated ddl-auto setting)
+  - `README.md` (added Deployment to Render section)
+  - `PRD.md` (marked US-007 complete)
+- Learnings for future iterations:
+  - ddl-auto=update is safe for initial deployment but consider Flyway for production
+  - Render blueprint auto-configures most env vars except FRONTEND_URL (manual setup)
+  - Local Docker testing requires host.docker.internal for database connection on macOS
+  - YAML changes don't require typecheck but always verify anyway
+---
+
+## Iteration 9 - US-008: Test Docker build locally
+- What was implemented: Successfully tested Docker build and container locally
+- Docker image builds successfully (~65s build time including Gradle download)
+- Changed application-prod.yml to use ddl-auto=validate (schema must be initialized separately)
+- Tested container with PostgreSQL, API returns 200 with empty array for /api/hackathons
+- User registration works correctly in containerized environment
+- Updated README with comprehensive local Docker testing commands
+- Files changed:
+  - `src/main/resources/application-prod.yml` (ddl-auto changed from update to validate)
+  - `README.md` (updated Database Initialization section and Local Docker Testing section)
+  - `PRD.md` (marked US-008 complete)
+- Learnings for future iterations:
+  - PostgreSQL enum types (user_role, hackathon_status, etc.) cannot be auto-created by Hibernate ddl-auto=update
+  - Must initialize database with schema.sql before running with ddl-auto=validate
+  - Use port 5433 for test Postgres to avoid conflicts with local Postgres on 5432
+  - host.docker.internal works on macOS/Windows for container-to-host connections
+  - Container starts in ~4 seconds when database is properly initialized
+---

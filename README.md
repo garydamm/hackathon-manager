@@ -153,11 +153,18 @@ This application is configured for deployment on [Render](https://render.com) us
 
 ### Database Initialization
 
-The production configuration (`application-prod.yml`) uses `spring.jpa.hibernate.ddl-auto=update`, which allows Hibernate to automatically create and update the database schema on startup. This is suitable for initial deployment and development.
+The production configuration uses `spring.jpa.hibernate.ddl-auto=validate`, which requires the database schema to be initialized before the application starts.
 
-**For production stability**, consider:
-- Switching to `ddl-auto=validate` after the schema is stable
-- Implementing database migrations with [Flyway](https://flywaydb.org/) for version-controlled schema changes
+**For Render deployment:**
+1. After the PostgreSQL database is created, connect to it and run `schema.sql`:
+   ```bash
+   # Get connection details from Render dashboard
+   psql -h <host> -U <user> -d <database> -f schema.sql
+   ```
+
+2. Alternatively, you can temporarily set `ddl-auto=update` for initial deployment, then switch back to `validate`.
+
+**For production stability**, consider implementing database migrations with [Flyway](https://flywaydb.org/) for version-controlled schema changes.
 
 ### Environment Variables
 
@@ -174,22 +181,52 @@ The following environment variables are configured automatically via `render.yam
 
 ### Local Docker Testing
 
+Test the Docker build locally before deploying to Render:
+
 ```bash
-# Build the Docker image
+# 1. Start a test PostgreSQL container
+docker run --name test-postgres \
+  -e POSTGRES_USER=test \
+  -e POSTGRES_PASSWORD=test \
+  -e POSTGRES_DB=hackathon \
+  -p 5433:5432 \
+  -d postgres:15-alpine
+
+# 2. Wait for Postgres to be ready
+sleep 3 && docker exec test-postgres pg_isready -U test -d hackathon
+
+# 3. Initialize the database schema
+docker exec -i test-postgres psql -U test -d hackathon < schema.sql
+
+# 4. Build the Docker image
 docker build -t hackathon-manager .
 
-# Run with test environment variables
-docker run -p 8080:8080 \
-  -e DATABASE_URL=jdbc:postgresql://host.docker.internal:5432/hackathon_manager \
-  -e DB_USERNAME=postgres \
-  -e DB_PASSWORD=postgres \
-  -e JWT_SECRET=test-secret-key-for-local-development-only \
-  -e FRONTEND_URL=http://localhost:5173 \
-  hackathon-manager
+# 5. Run the backend container
+docker run --name hackathon-api \
+  -e DATABASE_URL=jdbc:postgresql://host.docker.internal:5433/hackathon \
+  -e DB_USERNAME=test \
+  -e DB_PASSWORD=test \
+  -e JWT_SECRET=test-jwt-secret-key-for-local-docker-testing-12345 \
+  -e FRONTEND_URL=http://localhost:3000 \
+  -p 8081:8080 \
+  -d hackathon-manager
 
-# Test health check
-curl http://localhost:8080/api/hackathons
+# 6. Verify the backend is running
+sleep 5 && curl http://localhost:8081/api/hackathons
+# Expected: [] (empty array with 200 status)
+
+# 7. Test user registration
+curl -X POST http://localhost:8081/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"testpassword123","firstName":"Test","lastName":"User"}'
+# Expected: JSON response with accessToken and user data
+
+# Cleanup
+docker stop hackathon-api test-postgres
+docker rm hackathon-api test-postgres
 ```
+
+**Note:** On macOS/Windows, `host.docker.internal` resolves to the host machine. On Linux, you may need to use `--network host` or the actual host IP.
 
 ## License
 

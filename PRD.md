@@ -113,10 +113,10 @@ Prepare the hackathon-manager application for production deployment on Render. T
 **Description:** As a developer, I want to verify the Docker container works locally before deploying to Render.
 
 **Acceptance Criteria:**
-- [ ] Build Docker image successfully
-- [ ] Run container with test environment variables
-- [ ] Backend starts and responds to health check on port 8080
-- [ ] Document local Docker testing commands in README
+- [x] Build Docker image successfully
+- [x] Run container with test environment variables
+- [x] Backend starts and responds to health check on port 8080
+- [x] Document local Docker testing commands in README
 
 ---
 

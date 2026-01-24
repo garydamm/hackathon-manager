@@ -10,10 +10,9 @@ spring:
 
   jpa:
     hibernate:
-      # Use 'update' to allow Hibernate to create/update schema on startup
-      # This is safe for initial deployment; consider switching to 'validate'
-      # with Flyway migrations for production once schema is stable
-      ddl-auto: update
+      # Use 'validate' since schema is initialized separately via schema.sql
+      # Database must be initialized before first deployment
+      ddl-auto: validate
     show-sql: false
 
 app:
