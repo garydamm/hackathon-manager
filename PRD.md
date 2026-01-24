@@ -29,15 +29,15 @@ Add UI for managing hackathon projects using the existing backend APIs. This fea
 **Description:** As a developer, I need a service layer to interact with the project backend APIs so that components can fetch and mutate project data.
 
 **Acceptance Criteria:**
-- [ ] Create `/frontend/src/services/projects.ts` with functions for all project endpoints
-- [ ] Implement `getProjectsByHackathon(hackathonId)` - GET `/api/projects/hackathon/{hackathonId}`
-- [ ] Implement `getProjectById(id)` - GET `/api/projects/{id}`
-- [ ] Implement `getProjectByTeam(teamId)` - GET `/api/projects/team/{teamId}`
-- [ ] Implement `createProject(request)` - POST `/api/projects`
-- [ ] Implement `updateProject(id, request)` - PUT `/api/projects/{id}`
-- [ ] Implement `submitProject(id)` - POST `/api/projects/{id}/submit`
-- [ ] Implement `unsubmitProject(id)` - POST `/api/projects/{id}/unsubmit`
-- [ ] Typecheck passes
+- [x] Create `/frontend/src/services/projects.ts` with functions for all project endpoints
+- [x] Implement `getProjectsByHackathon(hackathonId)` - GET `/api/projects/hackathon/{hackathonId}`
+- [x] Implement `getProjectById(id)` - GET `/api/projects/{id}`
+- [x] Implement `getProjectByTeam(teamId)` - GET `/api/projects/team/{teamId}`
+- [x] Implement `createProject(request)` - POST `/api/projects`
+- [x] Implement `updateProject(id, request)` - PUT `/api/projects/{id}`
+- [x] Implement `submitProject(id)` - POST `/api/projects/{id}/submit`
+- [x] Implement `unsubmitProject(id)` - POST `/api/projects/{id}/unsubmit`
+- [x] Typecheck passes
 
 ### US-003: Create ProjectCard component
 **Description:** As a user, I want to see project information displayed in a card format so that I can quickly view project details.

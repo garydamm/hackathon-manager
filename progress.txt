@@ -5,99 +5,31 @@
 
 - Backend is Kotlin + Spring Boot in `src/main/kotlin/com/hackathon/manager/`
 - Controllers in `controller/` directory, services in `service/` directory
-- Use `@Transactional` without readOnly for write operations
-- Use `ApiException` with HttpStatus for error handling
-- Frontend service uses api.delete<T> for DELETE requests
+- Frontend service uses api.get<T>, api.post<T>, api.put<T>, api.delete<T> for HTTP requests
 - Typecheck: `./gradlew compileKotlin` for backend, `npx tsc --noEmit` for frontend
 - Tests: `./gradlew test` for backend
+- Modal state pattern: use useState with union type to manage multi-screen modals
+- Reuse existing modal structure from CreateTeamModal (AnimatePresence, backdrop, motion.div)
+- No tooltip UI component - use native HTML title attribute instead
+- Backend DTOs in `src/main/kotlin/com/hackathon/manager/dto/` - check these for exact field names
+- SubmissionStatus enum values: draft, submitted, under_review, accepted, rejected
 
 ---
 
-## Iteration 1 - US-001: Add unregister backend endpoint
-- What was implemented:
-  - Added `DELETE /api/hackathons/{id}/register` endpoint to HackathonController
-  - Added `unregisterForHackathon` method to HackathonService (validates registration, deletes HackathonUser, returns updated count)
-  - Added `unregister(hackathonId: string)` method to frontend hackathonService
-- Files changed:
-  - src/main/kotlin/com/hackathon/manager/controller/HackathonController.kt
-  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt
-  - frontend/src/services/hackathons.ts
+## Iteration 1 - US-001: Add Project TypeScript types
+- What was implemented: Added Project, CreateProjectRequest, UpdateProjectRequest interfaces and ProjectStatus type to frontend types
+- Files changed: frontend/src/types/index.ts, PRD.md
 - Learnings for future iterations:
-  - Follow existing register pattern for unregister (same endpoint path, different HTTP method)
-  - HackathonUserRepository has `findByHackathonIdAndUserId` to lookup registration
-  - After deletion, recalculate participant count to return in response
+  - Backend ProjectResponse DTO includes teamName (not just teamId) - useful for display
+  - Nullable fields use `| null` in TypeScript to match Kotlin nullable types
+  - UUIDs from backend are represented as strings in TypeScript
 ---
 
-## Iteration 2 - US-002: Add Registered badge to hackathon detail page
-- What was implemented:
-  - Added "Registered" badge next to status badge in ViewMode component
-  - Badge displays when `hackathon.userRole === 'participant'`
-  - Uses green styling (bg-green-100 text-green-700) with CheckCircle icon from lucide-react
-  - Badge positioned in header area near hackathon title/status
-- Files changed:
-  - frontend/src/pages/HackathonDetail.tsx
+## Iteration 2 - US-002: Add project service layer
+- What was implemented: Created projectService with all CRUD and submission endpoints
+- Files changed: frontend/src/services/projects.ts, PRD.md
 - Learnings for future iterations:
-  - Status badges in header area are in ViewMode component around line 200
-  - Use `inline-flex items-center gap-1` for badge with icon
-  - CheckCircle icon from lucide-react works well for "Registered" status
-  - userRole field on Hackathon indicates registration status ('participant' = registered)
----
-
-## Iteration 3 - US-003: Add Register button with confirmation modal to hackathon detail page
-- What was implemented:
-  - Created new RegisterModal component with three states: confirm, success, error
-  - Confirm state shows hackathon dates and participant count with Cancel/Confirm Registration buttons
-  - Success state shows "You're registered!" with Browse Teams and Create Team action buttons
-  - Error state displays error message with Try Again option
-  - Added Register button to ViewMode in HackathonDetail page
-  - Button shows when status is 'registration_open' AND user is not already registered
-  - Button is disabled with "Registration Full" text when at max capacity
-  - Uses hackathonService.register() and invalidates cache on success
-- Files changed:
-  - frontend/src/components/RegisterModal.tsx (new file)
-  - frontend/src/pages/HackathonDetail.tsx
-- Learnings for future iterations:
-  - Modal state pattern: use useState with union type ('confirm' | 'success' | 'error') to manage multi-screen modals
-  - Reuse existing modal structure from CreateTeamModal (AnimatePresence, backdrop, motion.div)
-  - For registration checks: isRegistered = userRole === 'participant', isRegistrationOpen = status === 'registration_open'
-  - isFull check: maxParticipants != null && (participantCount ?? 0) >= maxParticipants
-  - Pass callbacks via props (onRegisterClick) to keep modal state in parent component
----
-
-## Iteration 4 - US-004: Add Unregister button with confirmation to hackathon detail page
-- What was implemented:
-  - Created new UnregisterModal component with three states: confirm, success, error
-  - Confirm state shows warning about being removed from teams with Cancel/Confirm Unregister buttons
-  - Confirm Unregister button uses destructive variant for visual warning
-  - Success state shows confirmation message with close button
-  - Error state displays error message with Try Again option
-  - Added Unregister button (outline variant) to ViewMode when user is registered
-  - Uses hackathonService.unregister() and invalidates cache on success
-  - Register button reappears automatically after unregistration (due to cache invalidation)
-- Files changed:
-  - frontend/src/components/UnregisterModal.tsx (new file)
-  - frontend/src/pages/HackathonDetail.tsx
-- Learnings for future iterations:
-  - Follow same modal pattern as RegisterModal (three states: confirm, success, error)
-  - Use AlertTriangle icon with yellow bg for warning messages
-  - Use variant="destructive" for confirm buttons that perform destructive actions
-  - Add onUnregisterClick callback prop to ViewMode alongside onRegisterClick
----
-
-## Iteration 5 - US-005: Add registration status and actions to HackathonCard
-- What was implemented:
-  - Added "Registered" badge to HackathonCard in top-right corner near status badge
-  - Badge displays when `hackathon.userRole === 'participant'` with CheckCircle icon
-  - Added "Register" button that appears when status is 'registration_open' and user not registered
-  - Button is disabled with "Full" text and title tooltip when at max capacity
-  - Button is hidden for non-open hackathons
-  - Clicking Register opens RegisterModal (reused from US-003)
-  - RegisterModal invalidates both hackathon and hackathons queries for cache refresh
-- Files changed:
-  - frontend/src/components/HackathonCard.tsx
-- Learnings for future iterations:
-  - No tooltip UI component exists in this codebase - use native HTML title attribute instead
-  - Reuse RegisterModal component by importing and controlling visibility with useState
-  - Same registration logic patterns (isRegistered, isRegistrationOpen, isFull) can be reused across components
-  - Place Registered badge before status badge in flex container for consistent top-right positioning
+  - getProjectByTeam returns null on 404 (when team has no project) - handled with try/catch
+  - Service pattern: export const serviceName = { async method(): Promise<T> { return api.verb<T>(url) } }
+  - All endpoints are under /projects path: /projects, /projects/{id}, /projects/team/{teamId}, /projects/hackathon/{hackathonId}
 ---
