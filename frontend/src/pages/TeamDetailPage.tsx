@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket, FolderKanban, FolderPlus } from "lucide-react"
+import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket, FolderKanban, FolderPlus, Send, Undo2 } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +30,8 @@ export function TeamDetailPage() {
   const [copied, setCopied] = useState(false)
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
+  const [showUnsubmitConfirm, setShowUnsubmitConfirm] = useState(false)
 
   const {
     data: hackathon,
@@ -135,6 +137,24 @@ export function TeamDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
       setShowProjectForm(false)
       setEditingProject(null)
+      refetchProject()
+    },
+  })
+
+  const submitProjectMutation = useMutation({
+    mutationFn: (id: string) => projectService.submitProject(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      setShowSubmitConfirm(false)
+      refetchProject()
+    },
+  })
+
+  const unsubmitProjectMutation = useMutation({
+    mutationFn: (id: string) => projectService.unsubmitProject(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      setShowUnsubmitConfirm(false)
       refetchProject()
     },
   })
@@ -485,16 +505,37 @@ export function TeamDetailPage() {
                     <FolderKanban className="h-5 w-5" />
                     Project
                   </span>
-                  {project && project.status === "draft" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleEditProject}
-                    >
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Edit Project
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {project && project.status === "draft" && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleEditProject}
+                        >
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Edit Project
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setShowSubmitConfirm(true)}
+                        >
+                          <Send className="h-4 w-4 mr-2" />
+                          Submit Project
+                        </Button>
+                      </>
+                    )}
+                    {project && project.status === "submitted" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowUnsubmitConfirm(true)}
+                      >
+                        <Undo2 className="h-4 w-4 mr-2" />
+                        Unsubmit Project
+                      </Button>
+                    )}
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -795,6 +836,158 @@ export function TeamDetailPage() {
         project={editingProject}
         isLoading={createProjectMutation.isPending || updateProjectMutation.isPending}
       />
+
+      {/* Submit Project Confirmation Dialog */}
+      <AnimatePresence>
+        {showSubmitConfirm && project && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSubmitConfirm(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="bg-background rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                      <Send className="h-5 w-5 text-primary" />
+                    </div>
+                    <h2 className="text-xl font-semibold">Submit Project</h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowSubmitConfirm(false)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <p className="text-muted-foreground">
+                  Are you sure you want to submit <strong>{project.name}</strong>?
+                  Once submitted, you won't be able to edit the project until you unsubmit it.
+                </p>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowSubmitConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => submitProjectMutation.mutate(project.id)}
+                    disabled={submitProjectMutation.isPending}
+                  >
+                    {submitProjectMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Project"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Unsubmit Project Confirmation Dialog */}
+      <AnimatePresence>
+        {showUnsubmitConfirm && project && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowUnsubmitConfirm(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="bg-background rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                      <Undo2 className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <h2 className="text-xl font-semibold">Unsubmit Project</h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowUnsubmitConfirm(false)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <p className="text-muted-foreground">
+                  Are you sure you want to unsubmit <strong>{project.name}</strong>?
+                  The project will return to draft status and you can make further edits before resubmitting.
+                </p>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowUnsubmitConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => unsubmitProjectMutation.mutate(project.id)}
+                    disabled={unsubmitProjectMutation.isPending}
+                  >
+                    {unsubmitProjectMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Unsubmitting...
+                      </>
+                    ) : (
+                      "Unsubmit Project"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </AppLayout>
   )
 }

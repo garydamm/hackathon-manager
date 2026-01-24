@@ -93,13 +93,13 @@ Add UI for managing hackathon projects using the existing backend APIs. This fea
 **Description:** As a team member, I want to submit and unsubmit my project so that I can control when it's ready for judging.
 
 **Acceptance Criteria:**
-- [ ] Add "Submit Project" button for projects in draft status
-- [ ] Add "Unsubmit Project" button for projects in submitted status
-- [ ] Show confirmation modal before submit/unsubmit actions
-- [ ] Call appropriate service functions on confirmation
-- [ ] Refresh project data after successful action
-- [ ] Disable edit functionality for submitted projects
-- [ ] Typecheck passes
+- [x] Add "Submit Project" button for projects in draft status
+- [x] Add "Unsubmit Project" button for projects in submitted status
+- [x] Show confirmation modal before submit/unsubmit actions
+- [x] Call appropriate service functions on confirmation
+- [x] Refresh project data after successful action
+- [x] Disable edit functionality for submitted projects
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-008: Add projects list to HackathonDetail page
