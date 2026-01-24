@@ -68,3 +68,16 @@
   - Button text should change based on mode: "Create Project" vs "Save Changes"
   - Different header icons: FolderPlus for create, Pencil for edit
 ---
+
+## Iteration 6 - US-006: Add project section to TeamDetailPage
+- What was implemented: Added Project section to TeamDetailPage with create/edit functionality
+- Files changed: frontend/src/pages/TeamDetailPage.tsx, PRD.md
+- Learnings for future iterations:
+  - Project section only visible to team members (isOnThisTeam check)
+  - Edit button only shown for draft projects (project.status === "draft")
+  - Use separate state for editingProject to track which project is being edited
+  - Clean empty strings from form data before sending to API (convert "" to undefined)
+  - Use FolderKanban icon for Project section header
+  - projectService.getProjectByTeam returns null on 404 (no project yet)
+  - Mutation pattern: mutateAsync for chained operations, mutate for simple fire-and-forget
+---

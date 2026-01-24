@@ -2,15 +2,19 @@ import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket } from "lucide-react"
+import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket, FolderKanban, FolderPlus } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
+import { projectService } from "@/services/projects"
 import { ApiError } from "@/services/api"
 import { useAuth } from "@/contexts/AuthContext"
 import { EditTeamModal } from "@/components/EditTeamModal"
+import { ProjectCard } from "@/components/ProjectCard"
+import { ProjectForm } from "@/components/ProjectForm"
+import type { Project, CreateProjectRequest, UpdateProjectRequest } from "@/types"
 
 export function TeamDetailPage() {
   const { slug, teamId } = useParams<{ slug: string; teamId: string }>()
@@ -24,6 +28,8 @@ export function TeamDetailPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showProjectForm, setShowProjectForm] = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
 
   const {
     data: hackathon,
@@ -51,6 +57,17 @@ export function TeamDetailPage() {
     queryKey: ["myTeam", hackathon?.id],
     queryFn: () => teamService.getMyTeam(hackathon!.id),
     enabled: !!hackathon?.id,
+  })
+
+  // Fetch team's project
+  const {
+    data: project,
+    isLoading: isLoadingProject,
+    refetch: refetchProject,
+  } = useQuery({
+    queryKey: ["project", "team", teamId],
+    queryFn: () => projectService.getProjectByTeam(teamId!),
+    enabled: !!teamId,
   })
 
   const joinMutation = useMutation({
@@ -102,7 +119,27 @@ export function TeamDetailPage() {
     },
   })
 
-  const isLoading = isLoadingHackathon || isLoadingTeam || isLoadingMyTeam
+  const createProjectMutation = useMutation({
+    mutationFn: (request: CreateProjectRequest) => projectService.createProject(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      setShowProjectForm(false)
+      refetchProject()
+    },
+  })
+
+  const updateProjectMutation = useMutation({
+    mutationFn: ({ id, request }: { id: string; request: UpdateProjectRequest }) =>
+      projectService.updateProject(id, request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      setShowProjectForm(false)
+      setEditingProject(null)
+      refetchProject()
+    },
+  })
+
+  const isLoading = isLoadingHackathon || isLoadingTeam || isLoadingMyTeam || isLoadingProject
   const error = hackathonError || teamError
 
   if (isLoading) {
@@ -182,6 +219,51 @@ export function TeamDetailPage() {
 
   const handleConfirmRegenerate = () => {
     regenerateMutation.mutate()
+  }
+
+  const handleCreateProject = () => {
+    setEditingProject(null)
+    setShowProjectForm(true)
+  }
+
+  const handleEditProject = () => {
+    if (project) {
+      setEditingProject(project)
+      setShowProjectForm(true)
+    }
+  }
+
+  const handleProjectFormSubmit = async (data: {
+    name: string
+    tagline?: string
+    description?: string
+    demoUrl?: string
+    videoUrl?: string
+    repositoryUrl?: string
+    presentationUrl?: string
+  }) => {
+    // Filter out empty strings
+    const cleanedData = {
+      name: data.name,
+      tagline: data.tagline || undefined,
+      description: data.description || undefined,
+      demoUrl: data.demoUrl || undefined,
+      videoUrl: data.videoUrl || undefined,
+      repositoryUrl: data.repositoryUrl || undefined,
+      presentationUrl: data.presentationUrl || undefined,
+    }
+
+    if (editingProject) {
+      await updateProjectMutation.mutateAsync({
+        id: editingProject.id,
+        request: cleanedData,
+      })
+    } else {
+      await createProjectMutation.mutateAsync({
+        teamId: teamId!,
+        ...cleanedData,
+      })
+    }
   }
 
   return (
@@ -388,6 +470,46 @@ export function TeamDetailPage() {
                     <p className="mt-2 text-xs text-muted-foreground">
                       Regenerating will invalidate the current code.
                     </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Project Section (visible for team members) */}
+          {isOnThisTeam && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <FolderKanban className="h-5 w-5" />
+                    Project
+                  </span>
+                  {project && project.status === "draft" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditProject}
+                    >
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Edit Project
+                    </Button>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {project ? (
+                  <ProjectCard project={project} index={0} />
+                ) : (
+                  <div className="text-center py-8">
+                    <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <p className="text-muted-foreground mb-4">
+                      Your team hasn't created a project yet.
+                    </p>
+                    <Button onClick={handleCreateProject}>
+                      <FolderPlus className="h-4 w-4 mr-2" />
+                      Create Project
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -661,6 +783,18 @@ export function TeamDetailPage() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Project Form Modal */}
+      <ProjectForm
+        isOpen={showProjectForm}
+        onClose={() => {
+          setShowProjectForm(false)
+          setEditingProject(null)
+        }}
+        onSubmit={handleProjectFormSubmit}
+        project={editingProject}
+        isLoading={createProjectMutation.isPending || updateProjectMutation.isPending}
+      />
     </AppLayout>
   )
 }

@@ -81,13 +81,13 @@ Add UI for managing hackathon projects using the existing backend APIs. This fea
 **Description:** As a team member, I want to manage my team's project from the team detail page so that I can create, edit, and submit our project.
 
 **Acceptance Criteria:**
-- [ ] Add "Project" section to `TeamDetailPage.tsx`
-- [ ] If team has no project: show "Create Project" button that opens ProjectForm in create mode
-- [ ] If team has a project: display project details using ProjectCard
-- [ ] Add "Edit Project" button that opens ProjectForm in edit mode (only for draft projects)
-- [ ] Fetch project data using `getProjectByTeam(teamId)` on page load
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Add "Project" section to `TeamDetailPage.tsx`
+- [x] If team has no project: show "Create Project" button that opens ProjectForm in create mode
+- [x] If team has a project: display project details using ProjectCard
+- [x] Add "Edit Project" button that opens ProjectForm in edit mode (only for draft projects)
+- [x] Fetch project data using `getProjectByTeam(teamId)` on page load
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-007: Add submit/unsubmit actions to team project section
 **Description:** As a team member, I want to submit and unsubmit my project so that I can control when it's ready for judging.
