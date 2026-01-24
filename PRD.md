@@ -52,10 +52,10 @@ Prepare the hackathon-manager application for production deployment on Render. T
 **Description:** As a developer, I need CORS to allow requests from the production frontend domain so the deployed app works correctly.
 
 **Acceptance Criteria:**
-- [ ] Add FRONTEND_URL environment variable support to SecurityConfig
-- [ ] CORS allows origin from FRONTEND_URL when set
-- [ ] Keeps existing localhost origins for development
-- [ ] Typecheck passes
+- [x] Add FRONTEND_URL environment variable support to SecurityConfig
+- [x] CORS allows origin from FRONTEND_URL when set
+- [x] Keeps existing localhost origins for development
+- [x] Typecheck passes
 
 ---
 

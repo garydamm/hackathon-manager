@@ -37,3 +37,29 @@
   - Tests use 6 parallel workers and run against chromium
   - Test coverage includes: auth, dashboard, hackathon CRUD, team CRUD, invite codes, navigation
 ---
+
+## Iteration 3 - US-002: Update database config for Render Postgres
+- What was implemented: Created `application-prod.yml` profile for Render production deployment
+- Configuration uses DATABASE_URL, DB_USERNAME, DB_PASSWORD environment variables
+- Falls back to existing local config via Spring profile mechanism (base application.yml used when prod profile not active)
+- Files changed:
+  - `src/main/resources/application-prod.yml` (created)
+- Learnings for future iterations:
+  - Spring Boot profile system: `-prod.yml` file activated via SPRING_PROFILES_ACTIVE=prod
+  - Base `application.yml` provides defaults, profile-specific files override
+  - Production logging set to INFO level (vs DEBUG in development)
+  - Render provides DATABASE_URL as full JDBC connection string
+---
+
+## Iteration 4 - US-003: Update CORS configuration for production
+- What was implemented: Added FRONTEND_URL environment variable support to application-prod.yml
+- CORS configuration in prod profile reads from FRONTEND_URL env var (defaults to localhost:3000 if not set)
+- Also includes localhost origins for development flexibility
+- Files changed:
+  - `src/main/resources/application-prod.yml` (updated - added app.cors section)
+- Learnings for future iterations:
+  - CORS is configured via CorsConfig.kt which reads from CorsProperties (app.cors.* in YAML)
+  - Profile-specific YAML overrides base application.yml CORS settings
+  - Environment variable syntax in YAML: ${VAR_NAME:default_value}
+  - No code changes needed - just YAML configuration updates
+---
