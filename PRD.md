@@ -56,13 +56,13 @@ Add UI for managing hackathon projects using the existing backend APIs. This fea
 **Description:** As a user, I want to view full project details in a modal so that I can see all project information without navigating away.
 
 **Acceptance Criteria:**
-- [ ] Create `ProjectDetailModal.tsx` component in `/frontend/src/components/`
-- [ ] Display all project fields: name, tagline, description, status
-- [ ] Display all URL fields as clickable links (demo, video, repository, presentation)
-- [ ] Show team name and submission timestamp
-- [ ] Include close button to dismiss modal
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create `ProjectDetailModal.tsx` component in `/frontend/src/components/`
+- [x] Display all project fields: name, tagline, description, status
+- [x] Display all URL fields as clickable links (demo, video, repository, presentation)
+- [x] Show team name and submission timestamp
+- [x] Include close button to dismiss modal
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-005: Create ProjectForm component
 **Description:** As a team member, I want a form to create and edit project details so that I can manage my team's project submission.

@@ -44,3 +44,14 @@
   - Lucide icons: Globe for demo, Video for video, Github for repository, Presentation for presentation
   - Status colors: draft=gray, submitted=blue, under_review=yellow, accepted=green, rejected=red
 ---
+
+## Iteration 4 - US-004: Create ProjectDetailModal component
+- What was implemented: Created ProjectDetailModal component to display full project details in a modal
+- Files changed: frontend/src/components/ProjectDetailModal.tsx, PRD.md
+- Learnings for future iterations:
+  - Modal pattern for display-only: simpler than action modals - no modalState management needed
+  - Use max-w-2xl for modals with more content, max-w-md for simpler ones
+  - Use max-h-[90vh] overflow-y-auto for modals that could have long content
+  - ExternalLink icon from lucide-react useful for indicating links open in new tab
+  - whitespace-pre-wrap preserves line breaks in description text
+---
