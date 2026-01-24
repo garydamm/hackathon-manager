@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# Build outputs
+build/
+frontend/dist/
+frontend/node_modules/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Node
+node_modules/
+
+# Gradle
+.gradle/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Documentation and metadata
+*.md
+!README.md
+CHECKPOINT.md
+PRD.md
+progress.txt
+
+# Frontend (not needed for backend Docker build)
+frontend/
+
+# Claude configuration
+.claude/
+
+# Misc
+.DS_Store
+*.log
+gradle.zip
+ralph.sh

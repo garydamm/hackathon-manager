@@ -78,3 +78,20 @@
   - All services (auth.ts, teams.ts, hackathons.ts, projects.ts) use the centralized api object
   - For production deployment, set VITE_API_URL at build time or in .env.production
 ---
+
+## Iteration 6 - US-005: Create backend Dockerfile
+- What was implemented: Created multi-stage Dockerfile for Spring Boot backend
+- Stage 1 (builder): Uses eclipse-temurin:17-jdk, builds JAR with Gradle
+- Stage 2 (runtime): Uses eclipse-temurin:17-jre minimal image, runs the JAR
+- Sets SPRING_PROFILES_ACTIVE=prod and exposes port 8080
+- Created .dockerignore to exclude unnecessary files (frontend/, node_modules/, .git/, build/, etc.)
+- Files changed:
+  - `Dockerfile` (created)
+  - `.dockerignore` (created)
+- Learnings for future iterations:
+  - Build Docker image: `docker build -t hackathon-manager .`
+  - Use `--no-daemon` in Docker builds to avoid daemon overhead
+  - Skip tests with `-x test` in Docker builds (tests should run in CI before build)
+  - Final image size is ~345MB (JRE + app JAR)
+  - Gradle wrapper downloads during build (~72s for initial build including download)
+---

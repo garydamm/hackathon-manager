@@ -75,13 +75,13 @@ Prepare the hackathon-manager application for production deployment on Render. T
 **Description:** As a developer, I need a Dockerfile for the Spring Boot backend so Render can build and deploy it.
 
 **Acceptance Criteria:**
-- [ ] Create multi-stage Dockerfile in project root
-- [ ] Stage 1: Build JAR with Gradle
-- [ ] Stage 2: Run JAR with minimal JRE image (eclipse-temurin)
-- [ ] Expose port 8080
-- [ ] Set SPRING_PROFILES_ACTIVE=prod
-- [ ] Create .dockerignore excluding node_modules, .git, frontend/dist, build/
-- [ ] Docker builds successfully: `docker build -t hackathon-manager .`
+- [x] Create multi-stage Dockerfile in project root
+- [x] Stage 1: Build JAR with Gradle
+- [x] Stage 2: Run JAR with minimal JRE image (eclipse-temurin)
+- [x] Expose port 8080
+- [x] Set SPRING_PROFILES_ACTIVE=prod
+- [x] Create .dockerignore excluding node_modules, .git, frontend/dist, build/
+- [x] Docker builds successfully: `docker build -t hackathon-manager .`
 
 ---
 
