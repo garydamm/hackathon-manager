@@ -15,10 +15,18 @@ services:
     plan: free
     healthCheckPath: /api/health
     envVars:
-      - key: DATABASE_URL
+      - key: DB_HOST
         fromDatabase:
           name: hackathon-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: hackathon-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: hackathon-db
+          property: database
       - key: DB_USERNAME
         fromDatabase:
           name: hackathon-db
