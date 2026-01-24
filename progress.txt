@@ -24,3 +24,16 @@
   - Config data classes (CorsProperties, JwtConfig) were at 0% coverage - easy wins
   - `./gradlew jacocoTestCoverageVerification` to verify the 70% threshold
 ---
+
+## Iteration 2 - US-001B: Run existing frontend tests
+- What was implemented: Ran `npm run test:e2e` in the frontend directory
+- All 86 Playwright e2e tests passed successfully in 1.1 minutes
+- No test failures to document - all tests pass
+- Files changed:
+  - None (verification task only)
+- Learnings for future iterations:
+  - Frontend e2e tests: `cd frontend && npm run test:e2e`
+  - Playwright tests located in `frontend/e2e/` directory
+  - Tests use 6 parallel workers and run against chromium
+  - Test coverage includes: auth, dashboard, hackathon CRUD, team CRUD, invite codes, navigation
+---
