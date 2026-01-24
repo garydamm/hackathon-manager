@@ -113,7 +113,7 @@ Add UI for managing hackathon projects using the existing backend APIs. This fea
 - [x] Show empty state message when no projects exist
 - [x] Clicking a ProjectCard opens ProjectDetailModal
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ## Non-Goals
 

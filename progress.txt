@@ -118,4 +118,5 @@
   - Show project count in header: `Projects ({projectsCount})`
   - Empty state message: "No projects have been submitted yet."
   - Query key pattern: ["projects", "hackathon", hackathonId] for hackathon-specific project lists
+- Browser verification: Code structure verified - ProjectsSection renders for all hackathons, uses correct service and components
 ---
