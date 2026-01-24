@@ -55,3 +55,16 @@
   - ExternalLink icon from lucide-react useful for indicating links open in new tab
   - whitespace-pre-wrap preserves line breaks in description text
 ---
+
+## Iteration 5 - US-005: Create ProjectForm component
+- What was implemented: Created ProjectForm component for creating and editing projects
+- Files changed: frontend/src/components/ProjectForm.tsx, PRD.md
+- Learnings for future iterations:
+  - Form modal pattern: use react-hook-form with zodResolver for validation
+  - Support both create/edit modes via optional project prop (isEditMode = !!project)
+  - Use .optional().or(z.literal("")) for optional URL fields that can be empty strings
+  - Reset form values in useEffect when isOpen changes to handle both modes cleanly
+  - Use max-w-lg for form modals with many fields (larger than max-w-md)
+  - Button text should change based on mode: "Create Project" vs "Save Changes"
+  - Different header icons: FolderPlus for create, Pencil for edit
+---

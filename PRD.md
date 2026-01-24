@@ -68,14 +68,14 @@ Add UI for managing hackathon projects using the existing backend APIs. This fea
 **Description:** As a team member, I want a form to create and edit project details so that I can manage my team's project submission.
 
 **Acceptance Criteria:**
-- [ ] Create `ProjectForm.tsx` component in `/frontend/src/components/`
-- [ ] Include fields: name (required), tagline, description, demoUrl, videoUrl, repositoryUrl, presentationUrl
-- [ ] Support both create mode (new project) and edit mode (existing project)
-- [ ] Pre-populate fields when editing an existing project
-- [ ] Show validation error if name is empty
-- [ ] Include Save and Cancel buttons
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create `ProjectForm.tsx` component in `/frontend/src/components/`
+- [x] Include fields: name (required), tagline, description, demoUrl, videoUrl, repositoryUrl, presentationUrl
+- [x] Support both create mode (new project) and edit mode (existing project)
+- [x] Pre-populate fields when editing an existing project
+- [x] Show validation error if name is empty
+- [x] Include Save and Cancel buttons
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-006: Add project section to TeamDetailPage
 **Description:** As a team member, I want to manage my team's project from the team detail page so that I can create, edit, and submit our project.
