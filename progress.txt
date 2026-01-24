@@ -63,3 +63,18 @@
   - Environment variable syntax in YAML: ${VAR_NAME:default_value}
   - No code changes needed - just YAML configuration updates
 ---
+
+## Iteration 5 - US-004: Configure frontend production API URL
+- What was implemented: Verified existing VITE_API_URL support was already implemented
+- VITE_API_URL environment variable support exists in frontend/src/services/api.ts line 1
+- All API calls use the centralized ApiClient class which uses this configuration
+- Default fallback to http://localhost:8080/api for local development
+- Verified npm run build succeeds and typecheck passes
+- Files changed:
+  - None (verification task - implementation already existed)
+- Learnings for future iterations:
+  - Vite env vars use import.meta.env.VITE_* syntax
+  - Frontend API client in frontend/src/services/api.ts - centralized fetch wrapper
+  - All services (auth.ts, teams.ts, hackathons.ts, projects.ts) use the centralized api object
+  - For production deployment, set VITE_API_URL at build time or in .env.production
+---

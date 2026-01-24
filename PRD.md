@@ -63,11 +63,11 @@ Prepare the hackathon-manager application for production deployment on Render. T
 **Description:** As a developer, I need the frontend to use an environment variable for the API URL so it can point to the production backend.
 
 **Acceptance Criteria:**
-- [ ] Add VITE_API_URL environment variable support
-- [ ] Update API client/fetch calls to use VITE_API_URL
-- [ ] Default to localhost:8080 for local development
-- [ ] Frontend builds successfully with `npm run build`
-- [ ] Typecheck passes
+- [x] Add VITE_API_URL environment variable support
+- [x] Update API client/fetch calls to use VITE_API_URL
+- [x] Default to localhost:8080 for local development
+- [x] Frontend builds successfully with `npm run build`
+- [x] Typecheck passes
 
 ---
 
