@@ -131,6 +131,66 @@ hackathon-manager/
 └── seed.sql                  # Sample data
 ```
 
+## Deployment to Render
+
+This application is configured for deployment on [Render](https://render.com) using the included `render.yaml` blueprint.
+
+### Prerequisites
+
+- A Render account
+- This repository pushed to GitHub/GitLab
+
+### Deploy Steps
+
+1. Push your code to a GitHub or GitLab repository
+2. In Render Dashboard, click "New" → "Blueprint"
+3. Connect your repository
+4. Render will detect `render.yaml` and create:
+   - **hackathon-db**: PostgreSQL database (free tier)
+   - **hackathon-api**: Backend web service (Docker)
+   - **hackathon-app**: Frontend static site
+5. After deployment, set `FRONTEND_URL` in the hackathon-api service settings to match your static site URL
+
+### Database Initialization
+
+The production configuration (`application-prod.yml`) uses `spring.jpa.hibernate.ddl-auto=update`, which allows Hibernate to automatically create and update the database schema on startup. This is suitable for initial deployment and development.
+
+**For production stability**, consider:
+- Switching to `ddl-auto=validate` after the schema is stable
+- Implementing database migrations with [Flyway](https://flywaydb.org/) for version-controlled schema changes
+
+### Environment Variables
+
+The following environment variables are configured automatically via `render.yaml`:
+
+| Variable | Service | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | hackathon-api | PostgreSQL connection URL (from database) |
+| `DB_USERNAME` | hackathon-api | Database username (from database) |
+| `DB_PASSWORD` | hackathon-api | Database password (from database) |
+| `JWT_SECRET` | hackathon-api | Auto-generated secure secret |
+| `FRONTEND_URL` | hackathon-api | Frontend URL for CORS (set manually) |
+| `VITE_API_URL` | hackathon-app | Backend API URL (auto-linked) |
+
+### Local Docker Testing
+
+```bash
+# Build the Docker image
+docker build -t hackathon-manager .
+
+# Run with test environment variables
+docker run -p 8080:8080 \
+  -e DATABASE_URL=jdbc:postgresql://host.docker.internal:5432/hackathon_manager \
+  -e DB_USERNAME=postgres \
+  -e DB_PASSWORD=postgres \
+  -e JWT_SECRET=test-secret-key-for-local-development-only \
+  -e FRONTEND_URL=http://localhost:5173 \
+  hackathon-manager
+
+# Test health check
+curl http://localhost:8080/api/hackathons
+```
+
 ## License
 
 MIT

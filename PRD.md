@@ -102,10 +102,10 @@ Prepare the hackathon-manager application for production deployment on Render. T
 **Description:** As a developer, I need the database schema to be created on first deploy since Hibernate is set to validate mode.
 
 **Acceptance Criteria:**
-- [ ] Update application-prod.yml to set `spring.jpa.hibernate.ddl-auto=update` for initial deploy
-- [ ] OR create a startup script that runs schema.sql on empty database
-- [ ] Document the initialization approach in README
-- [ ] Typecheck passes
+- [x] Update application-prod.yml to set `spring.jpa.hibernate.ddl-auto=update` for initial deploy
+- [x] OR create a startup script that runs schema.sql on empty database
+- [x] Document the initialization approach in README
+- [x] Typecheck passes
 
 ---
 
