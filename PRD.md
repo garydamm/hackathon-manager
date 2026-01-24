@@ -43,14 +43,14 @@ Add UI for managing hackathon projects using the existing backend APIs. This fea
 **Description:** As a user, I want to see project information displayed in a card format so that I can quickly view project details.
 
 **Acceptance Criteria:**
-- [ ] Create `ProjectCard.tsx` component in `/frontend/src/components/`
-- [ ] Display project name, tagline, and status badge
-- [ ] Display team name
-- [ ] Show submission date if submitted
-- [ ] Include links/icons for demo, video, repository, and presentation URLs (only if present)
-- [ ] Card is clickable to view full project details
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create `ProjectCard.tsx` component in `/frontend/src/components/`
+- [x] Display project name, tagline, and status badge
+- [x] Display team name
+- [x] Show submission date if submitted
+- [x] Include links/icons for demo, video, repository, and presentation URLs (only if present)
+- [x] Card is clickable to view full project details
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-004: Create ProjectDetailModal component
 **Description:** As a user, I want to view full project details in a modal so that I can see all project information without navigating away.

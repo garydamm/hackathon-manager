@@ -33,3 +33,14 @@
   - Service pattern: export const serviceName = { async method(): Promise<T> { return api.verb<T>(url) } }
   - All endpoints are under /projects path: /projects, /projects/{id}, /projects/team/{teamId}, /projects/hackathon/{hackathonId}
 ---
+
+## Iteration 3 - US-003: Create ProjectCard component
+- What was implemented: Created ProjectCard component with status badge, team name, submission date, and URL links
+- Files changed: frontend/src/components/ProjectCard.tsx, PRD.md
+- Learnings for future iterations:
+  - Card pattern: use motion.div wrapper with Card from @/components/ui/card
+  - URL icons use native title attribute for tooltips (no tooltip UI component)
+  - Use e.stopPropagation() on link clicks to prevent card click handler from firing
+  - Lucide icons: Globe for demo, Video for video, Github for repository, Presentation for presentation
+  - Status colors: draft=gray, submitted=blue, under_review=yellow, accepted=green, rejected=red
+---
