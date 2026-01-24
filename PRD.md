@@ -89,12 +89,12 @@ Prepare the hackathon-manager application for production deployment on Render. T
 **Description:** As a developer, I need a render.yaml file so Render can automatically configure all services from the repository.
 
 **Acceptance Criteria:**
-- [ ] Create render.yaml in project root
-- [ ] Define web service for backend (Docker, auto-deploy enabled)
-- [ ] Define static site for frontend (build command: npm run build, publish: frontend/dist)
-- [ ] Define managed Postgres database (free tier)
-- [ ] Configure environment variable references (DATABASE_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, FRONTEND_URL, VITE_API_URL)
-- [ ] File validates as proper YAML
+- [x] Create render.yaml in project root
+- [x] Define web service for backend (Docker, auto-deploy enabled)
+- [x] Define static site for frontend (build command: npm run build, publish: frontend/dist)
+- [x] Define managed Postgres database (free tier)
+- [x] Configure environment variable references (DATABASE_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, FRONTEND_URL, VITE_API_URL)
+- [x] File validates as proper YAML
 
 ---
 

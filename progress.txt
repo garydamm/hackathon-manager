@@ -95,3 +95,22 @@
   - Final image size is ~345MB (JRE + app JAR)
   - Gradle wrapper downloads during build (~72s for initial build including download)
 ---
+
+## Iteration 7 - US-006: Create render.yaml blueprint
+- What was implemented: Created render.yaml blueprint for Render deployment
+- Defines 3 resources:
+  - hackathon-db: Free tier Postgres database
+  - hackathon-api: Docker-based web service for Spring Boot backend
+  - hackathon-app: Static site for React/Vite frontend
+- Files changed:
+  - `render.yaml` (created)
+- Learnings for future iterations:
+  - Render Blueprint spec: https://render.com/docs/blueprint-spec
+  - Static sites use `runtime: static` with `staticPublishPath`
+  - Database properties: connectionString, user, password can be referenced via fromDatabase
+  - JWT_SECRET uses `generateValue: true` for secure random generation
+  - FRONTEND_URL uses `sync: false` (must be set manually in Render dashboard after deployment)
+  - VITE_API_URL uses `fromService` to reference the backend's RENDER_EXTERNAL_URL
+  - SPA routing requires rewrite rules: `source: /*` -> `destination: /index.html`
+  - Validate YAML with: `npx js-yaml render.yaml`
+---
