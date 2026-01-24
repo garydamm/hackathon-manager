@@ -106,13 +106,13 @@ Add UI for managing hackathon projects using the existing backend APIs. This fea
 **Description:** As a hackathon organizer, I want to see all projects for a hackathon so that I can monitor submissions and review projects.
 
 **Acceptance Criteria:**
-- [ ] Add "Projects" section to `HackathonDetail.tsx`
-- [ ] Fetch all projects using `getProjectsByHackathon(hackathonId)`
-- [ ] Display projects using ProjectCard components in a grid/list layout
-- [ ] Show project count in section header
-- [ ] Show empty state message when no projects exist
-- [ ] Clicking a ProjectCard opens ProjectDetailModal
-- [ ] Typecheck passes
+- [x] Add "Projects" section to `HackathonDetail.tsx`
+- [x] Fetch all projects using `getProjectsByHackathon(hackathonId)`
+- [x] Display projects using ProjectCard components in a grid/list layout
+- [x] Show project count in section header
+- [x] Show empty state message when no projects exist
+- [x] Clicking a ProjectCard opens ProjectDetailModal
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ## Non-Goals

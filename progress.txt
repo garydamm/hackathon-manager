@@ -107,3 +107,15 @@
 - Learnings for future iterations:
   - "Verify in browser" tasks can be verified by checking code compiles and logic matches acceptance criteria when no interactive browser access is available
 ---
+
+## Iteration 9 - US-008: Add projects list to HackathonDetail page
+- What was implemented: Added Projects section to HackathonDetail.tsx with ProjectCard grid and ProjectDetailModal
+- Files changed: frontend/src/pages/HackathonDetail.tsx, PRD.md
+- Learnings for future iterations:
+  - ProjectsSection pattern: similar to TeamsSection - uses useQuery to fetch data, shows loading state, handles empty state
+  - Use useState<Project | null> to track selected project for detail modal
+  - Grid layout: use `grid gap-4 sm:grid-cols-2` for responsive 2-column layout
+  - Show project count in header: `Projects ({projectsCount})`
+  - Empty state message: "No projects have been submitted yet."
+  - Query key pattern: ["projects", "hackathon", hackathonId] for hackathon-specific project lists
+---

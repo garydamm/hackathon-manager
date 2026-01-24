@@ -18,6 +18,7 @@ import {
   X,
   UsersRound,
   CheckCircle,
+  FolderKanban,
 } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
@@ -28,8 +29,12 @@ import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RegisterModal } from "@/components/RegisterModal"
 import { UnregisterModal } from "@/components/UnregisterModal"
+import { ProjectCard } from "@/components/ProjectCard"
+import { ProjectDetailModal } from "@/components/ProjectDetailModal"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
+import { projectService } from "@/services/projects"
+import type { Project } from "@/types"
 import { ApiError } from "@/services/api"
 import type { Hackathon, HackathonStatus } from "@/types"
 
@@ -171,6 +176,75 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
         </Button>
       </CardContent>
     </Card>
+  )
+}
+
+function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+
+  const { data: projects, isLoading: projectsLoading } = useQuery({
+    queryKey: ["projects", "hackathon", hackathon.id],
+    queryFn: () => projectService.getProjectsByHackathon(hackathon.id),
+  })
+
+  const projectsCount = projects?.length ?? 0
+
+  if (projectsLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FolderKanban className="h-5 w-5" />
+            Projects
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FolderKanban className="h-5 w-5" />
+            Projects ({projectsCount})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {projectsCount === 0 ? (
+            <p className="text-muted-foreground text-center py-4">
+              No projects have been submitted yet.
+            </p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {projects!.map((project, index) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  index={index}
+                  onClick={() => setSelectedProject(project)}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Project Detail Modal */}
+      {selectedProject && (
+        <ProjectDetailModal
+          isOpen={!!selectedProject}
+          onClose={() => setSelectedProject(null)}
+          project={selectedProject}
+        />
+      )}
+    </>
   )
 }
 
@@ -352,6 +426,9 @@ function ViewMode({
 
       {/* Teams Section */}
       {showTeamsSection && <TeamsSection hackathon={hackathon} />}
+
+      {/* Projects Section */}
+      <ProjectsSection hackathon={hackathon} />
     </div>
   )
 }
