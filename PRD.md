@@ -100,7 +100,7 @@ Add UI for managing hackathon projects using the existing backend APIs. This fea
 - [x] Refresh project data after successful action
 - [x] Disable edit functionality for submitted projects
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-008: Add projects list to HackathonDetail page
 **Description:** As a hackathon organizer, I want to see all projects for a hackathon so that I can monitor submissions and review projects.
