@@ -150,3 +150,49 @@ export interface UpdateTeamRequest {
 export interface JoinTeamRequest {
   inviteCode: string
 }
+
+// Project types
+export type ProjectStatus = "draft" | "submitted" | "under_review" | "accepted" | "rejected"
+
+export interface Project {
+  id: string
+  teamId: string
+  teamName: string
+  hackathonId: string
+  name: string
+  tagline?: string | null
+  description?: string | null
+  status: ProjectStatus
+  demoUrl?: string | null
+  videoUrl?: string | null
+  repositoryUrl?: string | null
+  presentationUrl?: string | null
+  thumbnailUrl?: string | null
+  technologies?: string[] | null
+  submittedAt?: string | null
+  createdAt?: string | null
+}
+
+export interface CreateProjectRequest {
+  teamId: string
+  name: string
+  tagline?: string
+  description?: string
+  demoUrl?: string
+  videoUrl?: string
+  repositoryUrl?: string
+  presentationUrl?: string
+  technologies?: string[]
+}
+
+export interface UpdateProjectRequest {
+  name?: string
+  tagline?: string
+  description?: string
+  demoUrl?: string
+  videoUrl?: string
+  repositoryUrl?: string
+  presentationUrl?: string
+  thumbnailUrl?: string
+  technologies?: string[]
+}

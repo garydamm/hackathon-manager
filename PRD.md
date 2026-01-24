@@ -1,103 +1,136 @@
-# PRD: Hackathon Registration UI
+# PRD: Project Management UI
 
 ## Introduction
 
-Enable logged-in users to register and unregister for hackathons through the UI. The backend `registerForHackathon` endpoint already exists on `HackathonController`. Users should be able to register from both the hackathon detail page and the hackathon list/card view. Registration status should be clearly visible through badges and button states, with confirmation modals providing next steps after actions.
+Add UI for managing hackathon projects using the existing backend APIs. This feature enables team members to create, edit, and submit their projects, while also allowing hackathon organizers/admins to view and manage all projects within a hackathon. Projects will be accessible from both the team detail page (for team-specific management) and the hackathon detail page (for hackathon-wide project listing).
 
 ## Goals
 
-- Allow users to register for hackathons with open registration
-- Display clear "Registered" status on hackathons the user has joined
-- Provide confirmation modals with next steps after registration/unregistration
-- Enable users to unregister from hackathons they've joined
-- Support registration from both list view (cards) and detail page
-- Handle edge cases gracefully (full capacity, registration closed, already registered)
+- Allow team members to create a project for their team within a hackathon
+- Enable editing of project details (name, tagline, description, URLs)
+- Support the full submission workflow (submit and unsubmit)
+- Display all projects for a hackathon on the hackathon detail page
+- Provide admins visibility into all projects across a hackathon
+- Show full project details including demo, video, repository, and presentation URLs
 
 ## User Stories
 
-### US-001: Add unregister backend endpoint
-**Description:** As a registered participant, I want to unregister from a hackathon so that I can free up my spot if I can no longer attend.
+### US-001: Add Project TypeScript types
+**Description:** As a developer, I need TypeScript type definitions for projects so that the frontend can work with project data in a type-safe manner.
 
 **Acceptance Criteria:**
-- [x] Add `DELETE /api/hackathons/{id}/register` endpoint to `HackathonController`
-- [x] Service validates user is currently registered (returns 404 if not)
-- [x] Service removes the `HackathonUser` record for this user/hackathon
-- [x] Returns updated `HackathonResponse` with decremented participant count
-- [x] Add `unregister(hackathonId: string)` method to frontend `hackathonService`
+- [x] Add `Project` interface to `/frontend/src/types/index.ts` matching the backend `ProjectResponse` DTO
+- [x] Add `CreateProjectRequest` interface for project creation
+- [x] Add `UpdateProjectRequest` interface for project updates
+- [x] Add `ProjectStatus` type for submission status enum (draft, submitted, under_review, accepted, rejected)
 - [x] Typecheck passes
 
-### US-002: Add Registered badge to hackathon detail page
-**Description:** As a user, I want to see a clear "Registered" indicator on hackathon detail pages so I know my registration status at a glance.
+### US-002: Add project service layer
+**Description:** As a developer, I need a service layer to interact with the project backend APIs so that components can fetch and mutate project data.
 
 **Acceptance Criteria:**
-- [x] Display "Registered" badge next to status badge when `userRole === 'participant'`
-- [x] Badge uses green styling (bg-green-100 text-green-700) with checkmark icon
-- [x] Badge is visible in the header area near the hackathon title/status
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Create `/frontend/src/services/projects.ts` with functions for all project endpoints
+- [ ] Implement `getProjectsByHackathon(hackathonId)` - GET `/api/projects/hackathon/{hackathonId}`
+- [ ] Implement `getProjectById(id)` - GET `/api/projects/{id}`
+- [ ] Implement `getProjectByTeam(teamId)` - GET `/api/projects/team/{teamId}`
+- [ ] Implement `createProject(request)` - POST `/api/projects`
+- [ ] Implement `updateProject(id, request)` - PUT `/api/projects/{id}`
+- [ ] Implement `submitProject(id)` - POST `/api/projects/{id}/submit`
+- [ ] Implement `unsubmitProject(id)` - POST `/api/projects/{id}/unsubmit`
+- [ ] Typecheck passes
 
-### US-003: Add Register button with confirmation modal to hackathon detail page
-**Description:** As a user viewing a hackathon detail page, I want to click a Register button and see a confirmation modal with next steps so I understand what happens after registration.
-
-**Acceptance Criteria:**
-- [x] Show "Register" button when `status === 'registration_open'` AND user is not already registered
-- [x] Button is disabled with "Registration Full" text when `participantCount >= maxParticipants`
-- [x] Button is hidden when registration is not open
-- [x] Clicking Register opens confirmation modal asking "Register for {hackathon name}?"
-- [x] Modal shows hackathon dates and participant count
-- [x] Modal has Cancel and "Confirm Registration" buttons
-- [x] On confirm, calls `hackathonService.register()` with loading state
-- [x] On success, shows success modal with next steps: "You're registered! You can now create or join a team."
-- [x] Success modal has "Browse Teams" and "Create Team" action buttons
-- [x] On error, displays error message in modal (capacity full, registration closed, etc.)
-- [x] Invalidates hackathon query cache on success to refresh UI state
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-004: Add Unregister button with confirmation to hackathon detail page
-**Description:** As a registered participant, I want to unregister from a hackathon so I can free up my spot if plans change.
+### US-003: Create ProjectCard component
+**Description:** As a user, I want to see project information displayed in a card format so that I can quickly view project details.
 
 **Acceptance Criteria:**
-- [x] Show "Unregister" button (outline/secondary variant) when user is registered participant
-- [x] Clicking Unregister opens confirmation modal: "Are you sure you want to unregister from {hackathon name}?"
-- [x] Modal warns: "You will be removed from any team you've joined."
-- [x] Modal has Cancel and "Confirm Unregister" buttons (destructive variant)
-- [x] On confirm, calls `hackathonService.unregister()` with loading state
-- [x] On success, closes modal and shows brief success message
-- [x] On error, displays error message in modal
-- [x] Invalidates hackathon query cache on success
-- [x] Register button reappears after successful unregistration
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Create `ProjectCard.tsx` component in `/frontend/src/components/`
+- [ ] Display project name, tagline, and status badge
+- [ ] Display team name
+- [ ] Show submission date if submitted
+- [ ] Include links/icons for demo, video, repository, and presentation URLs (only if present)
+- [ ] Card is clickable to view full project details
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-005: Add registration status and actions to HackathonCard
-**Description:** As a user browsing hackathons, I want to see my registration status on each card and be able to register directly from the list so I don't have to navigate to the detail page.
+### US-004: Create ProjectDetailModal component
+**Description:** As a user, I want to view full project details in a modal so that I can see all project information without navigating away.
 
 **Acceptance Criteria:**
-- [x] Display small "Registered" badge on cards where `userRole === 'participant'`
-- [x] Badge positioned in top-right corner of card or near status badge
-- [x] Show "Register" button on cards with `status === 'registration_open'` and user not registered
-- [x] Register button disabled with tooltip when at max capacity
-- [x] Hide Register button for non-open hackathons
-- [x] Clicking Register opens same confirmation modal flow as detail page
-- [x] Reuse modal components created in US-003
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Create `ProjectDetailModal.tsx` component in `/frontend/src/components/`
+- [ ] Display all project fields: name, tagline, description, status
+- [ ] Display all URL fields as clickable links (demo, video, repository, presentation)
+- [ ] Show team name and submission timestamp
+- [ ] Include close button to dismiss modal
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-005: Create ProjectForm component
+**Description:** As a team member, I want a form to create and edit project details so that I can manage my team's project submission.
+
+**Acceptance Criteria:**
+- [ ] Create `ProjectForm.tsx` component in `/frontend/src/components/`
+- [ ] Include fields: name (required), tagline, description, demoUrl, videoUrl, repositoryUrl, presentationUrl
+- [ ] Support both create mode (new project) and edit mode (existing project)
+- [ ] Pre-populate fields when editing an existing project
+- [ ] Show validation error if name is empty
+- [ ] Include Save and Cancel buttons
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-006: Add project section to TeamDetailPage
+**Description:** As a team member, I want to manage my team's project from the team detail page so that I can create, edit, and submit our project.
+
+**Acceptance Criteria:**
+- [ ] Add "Project" section to `TeamDetailPage.tsx`
+- [ ] If team has no project: show "Create Project" button that opens ProjectForm in create mode
+- [ ] If team has a project: display project details using ProjectCard
+- [ ] Add "Edit Project" button that opens ProjectForm in edit mode (only for draft projects)
+- [ ] Fetch project data using `getProjectByTeam(teamId)` on page load
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-007: Add submit/unsubmit actions to team project section
+**Description:** As a team member, I want to submit and unsubmit my project so that I can control when it's ready for judging.
+
+**Acceptance Criteria:**
+- [ ] Add "Submit Project" button for projects in draft status
+- [ ] Add "Unsubmit Project" button for projects in submitted status
+- [ ] Show confirmation modal before submit/unsubmit actions
+- [ ] Call appropriate service functions on confirmation
+- [ ] Refresh project data after successful action
+- [ ] Disable edit functionality for submitted projects
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-008: Add projects list to HackathonDetail page
+**Description:** As a hackathon organizer, I want to see all projects for a hackathon so that I can monitor submissions and review projects.
+
+**Acceptance Criteria:**
+- [ ] Add "Projects" section to `HackathonDetail.tsx`
+- [ ] Fetch all projects using `getProjectsByHackathon(hackathonId)`
+- [ ] Display projects using ProjectCard components in a grid/list layout
+- [ ] Show project count in section header
+- [ ] Show empty state message when no projects exist
+- [ ] Clicking a ProjectCard opens ProjectDetailModal
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
 ## Non-Goals
 
-- No email notifications for registration/unregistration (future feature)
-- No waitlist functionality when hackathon is full
-- No automatic team assignment upon registration
-- No registration deadline warnings/reminders
-- No bulk registration for multiple hackathons
-- No registration approval workflow (registration is immediate)
+- Project deletion (no delete endpoint exists in backend)
+- Project media/gallery management (using URLs only)
+- Technologies list display or editing
+- Filtering or sorting projects
+- Search functionality
+- Thumbnail image upload
+- Admin-specific project management actions (status changes beyond submit/unsubmit)
+- Judge assignment UI
+- Prize winner assignment UI
 
 ## Technical Considerations
 
-- Reuse existing modal pattern from `CreateTeamModal.tsx` and `JoinTeamModal.tsx`
-- Use existing `hackathonService.register()` method in frontend
-- Follow existing badge color patterns for consistency
-- Use React Query's `invalidateQueries` for cache management after mutations
-- The `userRole` field on `Hackathon` response indicates registration status
-- Handle 409 Conflict (already registered), 400 Bad Request (full/closed), 404 Not Found errors
+- Reuse existing modal patterns from the codebase (e.g., registration confirmation modals)
+- Reuse existing form styling and validation patterns
+- Reuse existing card/badge components for consistent UI
+- Projects in "submitted" status should be read-only (backend enforces this)
+- Handle 404 gracefully when team has no project (returns null from API)
