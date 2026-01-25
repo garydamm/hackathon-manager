@@ -38,7 +38,10 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        sync: false
+        fromService:
+          type: web
+          name: hackathon-app
+          envVarKey: RENDER_EXTERNAL_URL
       - key: SPRING_PROFILES_ACTIVE
         value: prod
 
