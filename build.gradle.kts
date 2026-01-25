@@ -36,7 +36,6 @@ dependencies {
 
     // Flyway for database migrations
     implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-database-postgresql")
 
     // Environment variables from .env file
     implementation("me.paulschwarz:spring-dotenv:4.0.0")
