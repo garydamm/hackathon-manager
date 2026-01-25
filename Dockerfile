@@ -32,5 +32,5 @@ ENV SPRING_PROFILES_ACTIVE=prod
 # Expose port 8080
 EXPOSE 8080
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the application with memory constraints for Render free tier (512MB)
+ENTRYPOINT ["java", "-Xmx400m", "-Xms200m", "-XX:+UseContainerSupport", "-jar", "app.jar"]
