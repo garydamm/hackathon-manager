@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api"
+// VITE_API_URL from Render doesn't include /api suffix, so we need to add it
+const envUrl = import.meta.env.VITE_API_URL || "http://localhost:8080"
+const API_BASE_URL = envUrl.endsWith("/api") ? envUrl : `${envUrl.replace(/\/$/, "")}/api`
 
 interface RequestOptions extends RequestInit {
   skipAuth?: boolean
