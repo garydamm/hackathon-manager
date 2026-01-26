@@ -4,6 +4,7 @@ import com.hackathon.manager.config.JwtConfig
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
 import io.jsonwebtoken.security.MacAlgorithm
+import io.jsonwebtoken.security.WeakKeyException
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
@@ -22,6 +23,12 @@ class JwtTokenProvider(private val jwtConfig: JwtConfig) {
         // Use first 32 bytes for HS256 (256 bits minimum)
         val keyBytes = if (secretBytes.size > 32) secretBytes.copyOf(32) else secretBytes
         Keys.hmacShaKeyFor(keyBytes)
+    }
+
+    private val jwtParser: JwtParser by lazy {
+        Jwts.parser()
+            .verifyWith(key)
+            .build()
     }
 
     fun generateToken(authentication: Authentication): String {
@@ -56,9 +63,7 @@ class JwtTokenProvider(private val jwtConfig: JwtConfig) {
     }
 
     fun getUserIdFromToken(token: String): UUID {
-        val claims = Jwts.parser()
-            .verifyWith(key)
-            .build()
+        val claims = jwtParser
             .parseSignedClaims(token)
             .payload
 
@@ -67,11 +72,11 @@ class JwtTokenProvider(private val jwtConfig: JwtConfig) {
 
     fun validateToken(token: String): Boolean {
         try {
-            Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
+            jwtParser.parseSignedClaims(token)
             return true
+        } catch (ex: WeakKeyException) {
+            // Token was signed with a different algorithm (e.g., HS384) that requires a larger key
+            logger.error("JWT signed with incompatible algorithm - token may be from old session")
         } catch (ex: SecurityException) {
             logger.error("Invalid JWT signature")
         } catch (ex: MalformedJwtException) {
