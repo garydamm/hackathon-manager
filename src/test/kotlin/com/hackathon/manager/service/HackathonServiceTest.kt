@@ -262,7 +262,7 @@ class HackathonServiceTest {
         )
 
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(openHackathon))
-        whenever(hackathonUserRepository.existsByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(false)
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(null)
         whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
             .thenReturn(emptyList())
         whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
@@ -284,11 +284,16 @@ class HackathonServiceTest {
     }
 
     @Test
-    fun `registerForHackathon should throw exception when already registered`() {
+    fun `registerForHackathon should throw exception when already registered as participant`() {
         val openHackathon = testHackathon.copy(status = HackathonStatus.registration_open)
+        val existingParticipant = HackathonUser(
+            hackathon = openHackathon,
+            user = testUser,
+            role = UserRole.participant
+        )
 
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(openHackathon))
-        whenever(hackathonUserRepository.existsByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(true)
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(existingParticipant)
 
         assertThatThrownBy { hackathonService.registerForHackathon(testHackathonId, testUserId) }
             .isInstanceOf(ApiException::class.java)
@@ -296,7 +301,33 @@ class HackathonServiceTest {
     }
 
     @Test
+    fun `registerForHackathon should return current status when user is organizer`() {
+        val openHackathon = testHackathon.copy(status = HackathonStatus.registration_open)
+        val existingOrganizer = HackathonUser(
+            hackathon = openHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(openHackathon))
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(existingOrganizer)
+        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
+            .thenReturn(emptyList())
+
+        val result = hackathonService.registerForHackathon(testHackathonId, testUserId)
+
+        assertThat(result.userRole).isEqualTo(UserRole.organizer)
+    }
+
+    @Test
     fun `registerForHackathon should throw exception when hackathon is full`() {
+        val otherUser = User(
+            id = UUID.randomUUID(),
+            email = "other@example.com",
+            passwordHash = "hash",
+            firstName = "Other",
+            lastName = "User"
+        )
         val fullHackathon = Hackathon(
             id = testHackathonId,
             name = "Test Hackathon",
@@ -310,12 +341,12 @@ class HackathonServiceTest {
 
         val existingParticipant = HackathonUser(
             hackathon = fullHackathon,
-            user = testUser,
+            user = otherUser,
             role = UserRole.participant
         )
 
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(fullHackathon))
-        whenever(hackathonUserRepository.existsByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(false)
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(null)
         whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
             .thenReturn(listOf(existingParticipant))
 

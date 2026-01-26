@@ -133,7 +133,14 @@ class HackathonService(
             throw ApiException("Registration is not open", HttpStatus.BAD_REQUEST)
         }
 
-        if (hackathonUserRepository.existsByHackathonIdAndUserId(hackathonId, userId)) {
+        // Check if user already has a role in this hackathon
+        val existingRole = hackathonUserRepository.findByHackathonIdAndUserId(hackathonId, userId)
+        if (existingRole != null) {
+            // Organizers, judges, and admins are already part of the hackathon - return their current status
+            if (existingRole.role != UserRole.participant) {
+                val participantCount = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.participant).size
+                return HackathonResponse.fromEntity(hackathon, participantCount, existingRole.role)
+            }
             throw ApiException("Already registered for this hackathon", HttpStatus.CONFLICT)
         }
 
