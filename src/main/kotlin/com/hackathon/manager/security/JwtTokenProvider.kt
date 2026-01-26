@@ -3,6 +3,7 @@ package com.hackathon.manager.security
 import com.hackathon.manager.config.JwtConfig
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
+import io.jsonwebtoken.security.MacAlgorithm
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
@@ -14,8 +15,13 @@ class JwtTokenProvider(private val jwtConfig: JwtConfig) {
 
     private val logger = LoggerFactory.getLogger(JwtTokenProvider::class.java)
 
+    private val algorithm: MacAlgorithm = Jwts.SIG.HS256
+
     private val key: SecretKey by lazy {
-        Keys.hmacShaKeyFor(jwtConfig.secret.toByteArray())
+        val secretBytes = jwtConfig.secret.toByteArray()
+        // Use first 32 bytes for HS256 (256 bits minimum)
+        val keyBytes = if (secretBytes.size > 32) secretBytes.copyOf(32) else secretBytes
+        Keys.hmacShaKeyFor(keyBytes)
     }
 
     fun generateToken(authentication: Authentication): String {
@@ -32,7 +38,7 @@ class JwtTokenProvider(private val jwtConfig: JwtConfig) {
             .claim("email", email)
             .issuedAt(now)
             .expiration(expiryDate)
-            .signWith(key)
+            .signWith(key, algorithm)
             .compact()
     }
 
@@ -45,7 +51,7 @@ class JwtTokenProvider(private val jwtConfig: JwtConfig) {
             .claim("type", "refresh")
             .issuedAt(now)
             .expiration(expiryDate)
-            .signWith(key)
+            .signWith(key, algorithm)
             .compact()
     }
 
