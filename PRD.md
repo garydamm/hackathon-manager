@@ -57,15 +57,15 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As a judge, I want to submit scores for projects so my evaluations are recorded.
 
 **Acceptance Criteria:**
-- [ ] `GET /api/judging/hackathons/{hackathonId}/assignments` - get judge's assigned projects with scoring status
-- [ ] `GET /api/judging/assignments/{assignmentId}` - get single assignment with scores
-- [ ] `POST /api/judging/assignments/{assignmentId}/scores` - submit/update scores for a project
-- [ ] Auto-create JudgeAssignment when judge first accesses a project (or on judge assignment to hackathon)
-- [ ] Mark assignment as completed when all criteria are scored
-- [ ] Validate score is within 0 to criteria.maxScore
-- [ ] Only judges assigned to hackathon can score
-- [ ] Typecheck passes
-- [ ] Tests pass
+- [x] `GET /api/judging/hackathons/{hackathonId}/assignments` - get judge's assigned projects with scoring status
+- [x] `GET /api/judging/assignments/{assignmentId}` - get single assignment with scores
+- [x] `POST /api/judging/assignments/{assignmentId}/scores` - submit/update scores for a project
+- [x] Auto-create JudgeAssignment when judge first accesses a project (or on judge assignment to hackathon)
+- [x] Mark assignment as completed when all criteria are scored
+- [x] Validate score is within 0 to criteria.maxScore
+- [x] Only judges assigned to hackathon can score
+- [x] Typecheck passes
+- [x] Tests pass
 
 ### US-005: Add leaderboard and results endpoints
 **Description:** As an organizer or participant, I want to see aggregated scores and rankings.

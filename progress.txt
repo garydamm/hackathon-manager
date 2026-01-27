@@ -51,3 +51,45 @@
   - Use ResponseEntity.noContent().build() for DELETE returning 204
   - Use ResponseEntity.status(HttpStatus.CREATED).body() for POST returning 201
 ---
+
+## Iteration 3 - US-003: Add judge management endpoints
+- What was implemented:
+  - Added AddJudgeRequest and JudgeInfoResponse DTOs to JudgingDtos.kt
+  - Added judge management methods to JudgingService: getJudgesByHackathon, addJudge, removeJudge
+  - Added judge management endpoints to JudgingController: GET/POST/DELETE /judges
+  - Created JudgingServiceTest with comprehensive tests for criteria and judge management
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/dto/JudgingDtos.kt (added DTOs)
+  - src/main/kotlin/com/hackathon/manager/service/JudgingService.kt (added methods and dependencies)
+  - src/main/kotlin/com/hackathon/manager/controller/JudgingController.kt (added endpoints)
+  - src/test/kotlin/com/hackathon/manager/service/JudgingServiceTest.kt (created)
+- Learnings for future iterations:
+  - HackathonUserRepository.findByHackathonIdAndRole returns list of HackathonUser by role
+  - ProjectRepository.findByHackathonIdAndStatus returns projects by status (use SubmissionStatus.submitted for submitted projects)
+  - JudgeAssignmentRepository.findByJudgeIdAndHackathonId returns judge assignments for a hackathon
+  - HackathonStatus enum uses snake_case: in_progress (not "active")
+  - Team entity requires createdBy parameter in constructor
+  - When adding judge, check if HackathonUser exists first (update role vs create new)
+---
+
+## Iteration 4 - US-004: Add scoring endpoints for judges
+- What was implemented:
+  - Added scoring service methods to JudgingService: getAssignmentsByJudge, getAssignment, submitScores
+  - Added scoring endpoints to JudgingController: GET /assignments, GET /assignments/{id}, POST /assignments/{id}/scores
+  - Auto-create JudgeAssignment when judge first accesses their assignments list (lazy creation per project)
+  - Mark assignment as completed when all criteria have been scored
+  - Validate score is within 0 to criteria.maxScore
+  - Added comprehensive tests for scoring functionality
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/JudgingService.kt (added scoring methods and ScoreRepository dependency)
+  - src/main/kotlin/com/hackathon/manager/controller/JudgingController.kt (added scoring endpoints)
+  - src/test/kotlin/com/hackathon/manager/service/JudgingServiceTest.kt (added scoring tests)
+- Learnings for future iterations:
+  - ScoreRepository.findByJudgeAssignmentIdAndCriteriaId returns existing score or null
+  - ScoreRepository.findByJudgeAssignmentId returns all scores for an assignment
+  - When saving new entities in tests, mock save() to return object with ID to avoid NPE in fromEntity methods
+  - JudgeAssignmentResponse.fromEntity(assignment, includeScores=true) includes scores list
+  - Judge authorization: check HackathonUser.role == UserRole.judge for hackathon access
+  - Assignment authorization: check assignment.judge.id == userId for assignment access
+  - Lazy user lookup: only fetch User entity when needed (e.g., when creating new assignments)
+---

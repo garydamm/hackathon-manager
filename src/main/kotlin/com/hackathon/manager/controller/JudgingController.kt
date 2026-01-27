@@ -2,8 +2,10 @@ package com.hackathon.manager.controller
 
 import com.hackathon.manager.dto.AddJudgeRequest
 import com.hackathon.manager.dto.CreateJudgingCriteriaRequest
+import com.hackathon.manager.dto.JudgeAssignmentResponse
 import com.hackathon.manager.dto.JudgeInfoResponse
 import com.hackathon.manager.dto.JudgingCriteriaResponse
+import com.hackathon.manager.dto.SubmitScoresRequest
 import com.hackathon.manager.dto.UpdateJudgingCriteriaRequest
 import com.hackathon.manager.security.UserPrincipal
 import com.hackathon.manager.service.JudgingService
@@ -86,5 +88,35 @@ class JudgingController(
     ): ResponseEntity<Void> {
         judgingService.removeJudge(hackathonId, userId, principal.id)
         return ResponseEntity.noContent().build()
+    }
+
+    // Scoring endpoints
+
+    @GetMapping("/hackathons/{hackathonId}/assignments")
+    fun getAssignments(
+        @PathVariable hackathonId: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<List<JudgeAssignmentResponse>> {
+        val assignments = judgingService.getAssignmentsByJudge(hackathonId, principal.id)
+        return ResponseEntity.ok(assignments)
+    }
+
+    @GetMapping("/assignments/{assignmentId}")
+    fun getAssignment(
+        @PathVariable assignmentId: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<JudgeAssignmentResponse> {
+        val assignment = judgingService.getAssignment(assignmentId, principal.id)
+        return ResponseEntity.ok(assignment)
+    }
+
+    @PostMapping("/assignments/{assignmentId}/scores")
+    fun submitScores(
+        @PathVariable assignmentId: UUID,
+        @Valid @RequestBody request: SubmitScoresRequest,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<JudgeAssignmentResponse> {
+        val assignment = judgingService.submitScores(assignmentId, request, principal.id)
+        return ResponseEntity.ok(assignment)
     }
 }
