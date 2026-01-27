@@ -133,15 +133,15 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As a judge, I want to score a project on all criteria with optional feedback.
 
 **Acceptance Criteria:**
-- [ ] Create scoring page/modal at `/hackathons/:slug/judge/:projectId`
-- [ ] Display project details (name, tagline, description, links)
-- [ ] Show form with all judging criteria
-- [ ] Each criteria: name, description, score input (0 to maxScore), optional feedback textarea
-- [ ] Pre-fill existing scores if previously saved
-- [ ] "Save Scores" button submits all scores
-- [ ] Show success message and return to judge dashboard
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create scoring page/modal at `/hackathons/:slug/judge/:projectId`
+- [x] Display project details (name, tagline, description, links)
+- [x] Show form with all judging criteria
+- [x] Each criteria: name, description, score input (0 to maxScore), optional feedback textarea
+- [x] Pre-fill existing scores if previously saved
+- [x] "Save Scores" button submits all scores
+- [x] Show success message and return to judge dashboard
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-011: Create leaderboard view for organizers
 **Description:** As an organizer, I want to see a leaderboard of all projects with their scores.

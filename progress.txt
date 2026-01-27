@@ -226,3 +226,27 @@
   - Use judgingService.getCriteria(hackathonId) to get total criteria count for progress calculation
   - Status badges pattern: inline-flex with icon + text, colored background
 ---
+
+## Iteration 11 - US-010: Create project scoring form
+- What was implemented:
+  - Created ProjectScoringPage component at /hackathons/:slug/judge/:projectId
+  - Displays project details (name, tagline, description, technologies, links)
+  - Shows form with all judging criteria dynamically loaded
+  - Each criteria shows: name, description, score input (0 to maxScore), optional feedback textarea
+  - Pre-fills existing scores using assignment.scores from getMyAssignments
+  - "Save Scores" button submits all scores via judgingService.submitScores
+  - Shows success message and automatically redirects to judge dashboard after 1.5s
+  - Judge role authorization check for access control
+  - Assignment validation to ensure project is assigned to the judge
+- Files changed:
+  - frontend/src/pages/ProjectScoring.tsx (created)
+  - frontend/src/App.tsx (added import and route)
+  - PRD.md (marked US-010 complete)
+- Learnings for future iterations:
+  - Use useFieldArray from react-hook-form for dynamic form fields based on criteria
+  - projectService.getProjectById(projectId) fetches full project details
+  - Find assignment by matching projectId from assignments list
+  - Score validation happens both in form schema and before submission
+  - External links pattern: Button variant="outline" with asChild prop wrapping anchor tag
+  - Technologies displayed as colored badges with flex-wrap gap-2
+---

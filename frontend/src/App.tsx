@@ -10,6 +10,7 @@ import { HackathonDetailPage } from "@/pages/HackathonDetail"
 import { TeamsListPage } from "@/pages/TeamsListPage"
 import { TeamDetailPage } from "@/pages/TeamDetailPage"
 import { JudgeDashboardPage } from "@/pages/JudgeDashboard"
+import { ProjectScoringPage } from "@/pages/ProjectScoring"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,6 +77,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <JudgeDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/hackathons/:slug/judge/:projectId"
+              element={
+                <ProtectedRoute>
+                  <ProjectScoringPage />
                 </ProtectedRoute>
               }
             />
