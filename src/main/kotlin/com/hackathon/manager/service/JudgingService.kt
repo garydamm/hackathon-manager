@@ -150,6 +150,9 @@ class JudgingService(
             if (existingHackathonUser.role == UserRole.judge) {
                 throw ApiException("User is already a judge for this hackathon", HttpStatus.CONFLICT)
             }
+            if (existingHackathonUser.role == UserRole.organizer) {
+                throw ApiException("Organizers already have judging capabilities and cannot be added as judges", HttpStatus.CONFLICT)
+            }
             // Update existing role to judge
             existingHackathonUser.role = UserRole.judge
             hackathonUserRepository.save(existingHackathonUser)
@@ -205,10 +208,10 @@ class JudgingService(
         val hackathon = hackathonRepository.findById(hackathonId)
             .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
 
-        // Verify user is a judge for this hackathon
+        // Verify user is a judge or organizer for this hackathon
         val hackathonUser = hackathonUserRepository.findByHackathonIdAndUserId(hackathonId, userId)
-        if (hackathonUser == null || hackathonUser.role != UserRole.judge) {
-            throw ApiException("User is not a judge for this hackathon", HttpStatus.FORBIDDEN)
+        if (hackathonUser == null || (hackathonUser.role != UserRole.judge && hackathonUser.role != UserRole.organizer)) {
+            throw ApiException("User is not a judge or organizer for this hackathon", HttpStatus.FORBIDDEN)
         }
 
         // Get all submitted projects for the hackathon

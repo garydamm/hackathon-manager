@@ -70,6 +70,16 @@ Start the backend server:
 
 The API will be available at `http://localhost:8080`
 
+Run the backend tests:
+
+```bash
+# Run all tests
+./gradlew test
+
+# View test report (after running tests)
+open build/reports/tests/test/index.html
+```
+
 ### 3. Frontend Setup
 
 Install dependencies and start the development server:
@@ -86,6 +96,19 @@ npm run dev
 ```
 
 The frontend will be available at `http://localhost:5173`
+
+Run the end-to-end tests:
+
+```bash
+# Install Playwright browsers (first time only)
+npx playwright install
+
+# Run all e2e tests (requires backend to be running)
+npm run test:e2e
+
+# Run tests with UI mode for debugging
+npx playwright test --ui
+```
 
 ## Usage
 

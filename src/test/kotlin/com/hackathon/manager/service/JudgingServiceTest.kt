@@ -480,14 +480,14 @@ class JudgingServiceTest {
     }
 
     @Test
-    fun `getAssignmentsByJudge should throw forbidden when user is not a judge`() {
+    fun `getAssignmentsByJudge should throw forbidden when user is not a judge or organizer`() {
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
         whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId))
             .thenReturn(null)
 
         assertThatThrownBy { judgingService.getAssignmentsByJudge(testHackathonId, testUserId) }
             .isInstanceOf(ApiException::class.java)
-            .hasMessage("User is not a judge for this hackathon")
+            .hasMessage("User is not a judge or organizer for this hackathon")
     }
 
     @Test
