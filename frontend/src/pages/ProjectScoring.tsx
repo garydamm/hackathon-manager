@@ -25,7 +25,7 @@ import { hackathonService } from "@/services/hackathons"
 import { projectService } from "@/services/projects"
 import { judgingService } from "@/services/judging"
 import { ApiError } from "@/services/api"
-import type { JudgingCriteria, JudgeAssignment, SubmitScoresRequest } from "@/types"
+import type { SubmitScoresRequest } from "@/types"
 
 const scoreSchema = z.object({
   scores: z.array(
@@ -104,9 +104,8 @@ export function ProjectScoringPage() {
     control,
     handleSubmit,
     reset,
-    setValue,
     watch,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm<ScoreFormData>({
     resolver: zodResolver(scoreSchema),
     defaultValues: {

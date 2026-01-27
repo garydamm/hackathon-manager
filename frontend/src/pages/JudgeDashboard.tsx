@@ -19,7 +19,7 @@ import { ApiError } from "@/services/api"
 
 type ScoringStatus = "not_started" | "in_progress" | "completed"
 
-function getScoringStatus(assignment: JudgeAssignment, totalCriteria: number): ScoringStatus {
+function getScoringStatus(assignment: JudgeAssignment, _totalCriteria: number): ScoringStatus {
   if (assignment.completedAt) {
     return "completed"
   }

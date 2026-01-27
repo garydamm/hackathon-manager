@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { judgingService } from "@/services/judging"
-import type { LeaderboardEntry } from "@/types"
 
 interface LeaderboardSectionProps {
   hackathonId: string
