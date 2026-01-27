@@ -83,13 +83,13 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As a developer, I need TypeScript types and API service for judging features.
 
 **Acceptance Criteria:**
-- [ ] Add judging types to `frontend/src/types/index.ts`: JudgingCriteria, JudgeAssignment, Score, JudgeInfo, LeaderboardEntry
-- [ ] Create `frontend/src/services/judging.ts` with all API methods
-- [ ] Methods: getCriteria, createCriteria, updateCriteria, deleteCriteria
-- [ ] Methods: getJudges, addJudge, removeJudge
-- [ ] Methods: getMyAssignments, getAssignment, submitScores
-- [ ] Methods: getLeaderboard
-- [ ] Typecheck passes
+- [x] Add judging types to `frontend/src/types/index.ts`: JudgingCriteria, JudgeAssignment, Score, JudgeInfo, LeaderboardEntry
+- [x] Create `frontend/src/services/judging.ts` with all API methods
+- [x] Methods: getCriteria, createCriteria, updateCriteria, deleteCriteria
+- [x] Methods: getJudges, addJudge, removeJudge
+- [x] Methods: getMyAssignments, getAssignment, submitScores
+- [x] Methods: getLeaderboard
+- [x] Typecheck passes
 
 ### US-007: Create judging criteria management UI
 **Description:** As an organizer, I want to manage judging criteria from the hackathon detail page.

@@ -196,3 +196,91 @@ export interface UpdateProjectRequest {
   thumbnailUrl?: string
   technologies?: string[]
 }
+
+// Judging types
+export interface JudgingCriteria {
+  id: string
+  hackathonId: string
+  name: string
+  description?: string | null
+  maxScore: number
+  weight: number
+  displayOrder: number
+}
+
+export interface CreateJudgingCriteriaRequest {
+  name: string
+  description?: string
+  maxScore?: number
+  weight?: number
+  displayOrder?: number
+}
+
+export interface UpdateJudgingCriteriaRequest {
+  name?: string
+  description?: string
+  maxScore?: number
+  weight?: number
+  displayOrder?: number
+}
+
+export interface Score {
+  id: string
+  criteriaId: string
+  criteriaName: string
+  score: number
+  maxScore: number
+  feedback?: string | null
+}
+
+export interface JudgeAssignment {
+  id: string
+  hackathonId: string
+  judgeId: string
+  projectId: string
+  projectName: string
+  assignedAt: string
+  completedAt?: string | null
+  scores?: Score[] | null
+}
+
+export interface SubmitScoreRequest {
+  criteriaId: string
+  score: number
+  feedback?: string
+}
+
+export interface SubmitScoresRequest {
+  scores: SubmitScoreRequest[]
+}
+
+export interface JudgeInfo {
+  userId: string
+  email: string
+  firstName: string
+  lastName: string
+  displayName?: string | null
+  projectsScored: number
+  totalProjects: number
+}
+
+export interface AddJudgeRequest {
+  userId: string
+}
+
+export interface CriteriaAverage {
+  criteriaId: string
+  criteriaName: string
+  averageScore: number
+  maxScore: number
+}
+
+export interface LeaderboardEntry {
+  rank: number
+  projectId: string
+  projectName: string
+  teamId: string
+  teamName: string
+  totalScore: number
+  criteriaAverages: CriteriaAverage[]
+}
