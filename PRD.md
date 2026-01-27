@@ -1,152 +1,205 @@
-# PRD: Render Deployment Preparation
+# PRD: Judging and Scoring System
 
 ## Introduction
 
-Prepare the hackathon-manager application for production deployment on Render. This includes verifying the existing test suite passes, containerizing the application with Docker, and configuring Render deployment with managed Postgres. The application consists of a Kotlin/Spring Boot backend and a React/Vite frontend.
+Add a complete judging and scoring system that allows organizers to define judging criteria, assign judges to hackathons, and enable judges to score all submitted projects. Participants can view results after the hackathon is completed.
 
 ## Goals
 
-- Verify existing backend tests pass before deployment
-- Create Docker configuration optimized for Render deployment
-- Configure environment variables for production (DATABASE_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET)
-- Deploy backend as a Render Web Service with managed Postgres
-- Deploy frontend as a Render Static Site
-- Enable auto-deploy on push to main (Render default)
+- Allow organizers to define weighted judging criteria for each hackathon
+- Enable organizers to assign/remove judges at the hackathon level
+- Provide judges with a clear workflow to score all submitted projects
+- Show organizers an aggregated leaderboard with all scores
+- Display final results to participants after hackathon completion
 
 ## User Stories
 
-### US-001: Run existing backend tests
-**Description:** As a developer, I want to verify all existing tests pass so that I have confidence the codebase is stable before deployment.
+### US-001: Create JudgingService for criteria management
+**Description:** As a developer, I need backend service methods to manage judging criteria so the API can support CRUD operations.
 
 **Acceptance Criteria:**
-- [x] Run `./gradlew test` successfully
-- [x] All unit and integration tests pass
-- [x] JaCoCo coverage verification passes (70% threshold)
-- [x] Document any test failures that need addressing
-
----
-
-### US-001B: Run existing frontend tests
-**Description:** As a developer, I want to verify all existing frontend tests pass so that I have confidence the frontend is stable before deployment.
-
-**Acceptance Criteria:**
-- [x] Run `npm run test:e2e` successfully in the frontend directory
-- [x] All Playwright e2e tests pass
-- [x] Document any test failures that need addressing
-
----
-
-### US-002: Update database config for Render Postgres
-**Description:** As a developer, I need the backend to accept Render's database configuration so it can connect to managed Postgres.
-
-**Acceptance Criteria:**
-- [x] Add `application-prod.yml` profile that uses DATABASE_URL, DB_USERNAME, and DB_PASSWORD environment variables
-- [x] Support Render's Postgres connection string format for DATABASE_URL
-- [x] Use DB_USERNAME and DB_PASSWORD for authentication credentials
-- [x] Fallback to existing local config when env vars not set
-- [x] Typecheck passes (Kotlin compiles without errors)
-
----
-
-### US-003: Update CORS configuration for production
-**Description:** As a developer, I need CORS to allow requests from the production frontend domain so the deployed app works correctly.
-
-**Acceptance Criteria:**
-- [x] Add FRONTEND_URL environment variable support to SecurityConfig
-- [x] CORS allows origin from FRONTEND_URL when set
-- [x] Keeps existing localhost origins for development
+- [x] Create `JudgingService` class with dependency injection for repositories
+- [x] Implement `getCriteriaByHackathon(hackathonId)` returning list ordered by displayOrder
+- [x] Implement `createCriteria(hackathonId, request)` with validation (organizer only)
+- [x] Implement `updateCriteria(criteriaId, request)` with validation
+- [x] Implement `deleteCriteria(criteriaId)` with validation
+- [x] Add `CreateJudgingCriteriaRequest` and `UpdateJudgingCriteriaRequest` DTOs to JudgingDtos.kt
 - [x] Typecheck passes
+- [x] Tests pass
 
----
-
-### US-004: Configure frontend production API URL
-**Description:** As a developer, I need the frontend to use an environment variable for the API URL so it can point to the production backend.
-
-**Acceptance Criteria:**
-- [x] Add VITE_API_URL environment variable support
-- [x] Update API client/fetch calls to use VITE_API_URL
-- [x] Default to localhost:8080 for local development
-- [x] Frontend builds successfully with `npm run build`
-- [x] Typecheck passes
-
----
-
-### US-005: Create backend Dockerfile
-**Description:** As a developer, I need a Dockerfile for the Spring Boot backend so Render can build and deploy it.
+### US-002: Create JudgingController for criteria endpoints
+**Description:** As an organizer, I want API endpoints to manage judging criteria so I can configure how projects are evaluated.
 
 **Acceptance Criteria:**
-- [x] Create multi-stage Dockerfile in project root
-- [x] Stage 1: Build JAR with Gradle
-- [x] Stage 2: Run JAR with minimal JRE image (eclipse-temurin)
-- [x] Expose port 8080
-- [x] Set SPRING_PROFILES_ACTIVE=prod
-- [x] Create .dockerignore excluding node_modules, .git, frontend/dist, build/
-- [x] Docker builds successfully: `docker build -t hackathon-manager .`
+- [ ] Create `JudgingController` with base path `/api/judging`
+- [ ] `GET /api/judging/hackathons/{hackathonId}/criteria` - list criteria (public)
+- [ ] `POST /api/judging/hackathons/{hackathonId}/criteria` - create criteria (organizer only)
+- [ ] `PUT /api/judging/criteria/{criteriaId}` - update criteria (organizer only)
+- [ ] `DELETE /api/judging/criteria/{criteriaId}` - delete criteria (organizer only)
+- [ ] Proper authorization checks using HackathonService.isUserOrganizer
+- [ ] Typecheck passes
+- [ ] Tests pass
 
----
-
-### US-006: Create render.yaml blueprint
-**Description:** As a developer, I need a render.yaml file so Render can automatically configure all services from the repository.
-
-**Acceptance Criteria:**
-- [x] Create render.yaml in project root
-- [x] Define web service for backend (Docker, auto-deploy enabled)
-- [x] Define static site for frontend (build command: npm run build, publish: frontend/dist)
-- [x] Define managed Postgres database (free tier)
-- [x] Configure environment variable references (DATABASE_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET, FRONTEND_URL, VITE_API_URL)
-- [x] File validates as proper YAML
-
----
-
-### US-007: Add database initialization for Render
-**Description:** As a developer, I need the database schema to be created on first deploy since Hibernate is set to validate mode.
+### US-003: Add judge management endpoints
+**Description:** As an organizer, I want to assign and remove judges from my hackathon so they can score projects.
 
 **Acceptance Criteria:**
-- [x] Update application-prod.yml to set `spring.jpa.hibernate.ddl-auto=update` for initial deploy
-- [x] OR create a startup script that runs schema.sql on empty database
-- [x] Document the initialization approach in README
-- [x] Typecheck passes
+- [ ] `POST /api/judging/hackathons/{hackathonId}/judges` - add judge by userId (organizer only)
+- [ ] `DELETE /api/judging/hackathons/{hackathonId}/judges/{userId}` - remove judge (organizer only)
+- [ ] `GET /api/judging/hackathons/{hackathonId}/judges` - list judges (organizer only)
+- [ ] Adding a judge creates HackathonUser with role=judge (or updates existing role)
+- [ ] Removing a judge removes the judge role (deletes HackathonUser or reverts to participant)
+- [ ] Return list of judges with their scoring progress (projects scored / total projects)
+- [ ] Typecheck passes
+- [ ] Tests pass
 
----
-
-### US-008: Test Docker build locally
-**Description:** As a developer, I want to verify the Docker container works locally before deploying to Render.
-
-**Acceptance Criteria:**
-- [x] Build Docker image successfully
-- [x] Run container with test environment variables
-- [x] Backend starts and responds to health check on port 8080
-- [x] Document local Docker testing commands in README
-
----
-
-### US-009: Deploy to Render
-**Description:** As a developer, I want to deploy the application to Render so it's accessible on the internet.
+### US-004: Add scoring endpoints for judges
+**Description:** As a judge, I want to submit scores for projects so my evaluations are recorded.
 
 **Acceptance Criteria:**
-- [ ] Push render.yaml to main branch
-- [ ] Create Render Blueprint from repository
-- [ ] Postgres database created and connected
-- [ ] Backend web service deployed and healthy
-- [ ] Frontend static site deployed and accessible
-- [ ] Application loads in browser without errors
-- [ ] User can register and login successfully
+- [ ] `GET /api/judging/hackathons/{hackathonId}/assignments` - get judge's assigned projects with scoring status
+- [ ] `GET /api/judging/assignments/{assignmentId}` - get single assignment with scores
+- [ ] `POST /api/judging/assignments/{assignmentId}/scores` - submit/update scores for a project
+- [ ] Auto-create JudgeAssignment when judge first accesses a project (or on judge assignment to hackathon)
+- [ ] Mark assignment as completed when all criteria are scored
+- [ ] Validate score is within 0 to criteria.maxScore
+- [ ] Only judges assigned to hackathon can score
+- [ ] Typecheck passes
+- [ ] Tests pass
+
+### US-005: Add leaderboard and results endpoints
+**Description:** As an organizer or participant, I want to see aggregated scores and rankings.
+
+**Acceptance Criteria:**
+- [ ] `GET /api/judging/hackathons/{hackathonId}/leaderboard` - get ranked projects with scores
+- [ ] Calculate weighted average score per project across all judges and criteria
+- [ ] Include: rank, project name, team name, total score, individual criteria averages
+- [ ] Organizers can view leaderboard anytime
+- [ ] Participants can only view when hackathon status is "completed"
+- [ ] Typecheck passes
+- [ ] Tests pass
+
+### US-006: Create frontend judging types and API service
+**Description:** As a developer, I need TypeScript types and API service for judging features.
+
+**Acceptance Criteria:**
+- [ ] Add judging types to `frontend/src/types/index.ts`: JudgingCriteria, JudgeAssignment, Score, JudgeInfo, LeaderboardEntry
+- [ ] Create `frontend/src/services/judging.ts` with all API methods
+- [ ] Methods: getCriteria, createCriteria, updateCriteria, deleteCriteria
+- [ ] Methods: getJudges, addJudge, removeJudge
+- [ ] Methods: getMyAssignments, getAssignment, submitScores
+- [ ] Methods: getLeaderboard
+- [ ] Typecheck passes
+
+### US-007: Create judging criteria management UI
+**Description:** As an organizer, I want to manage judging criteria from the hackathon detail page.
+
+**Acceptance Criteria:**
+- [ ] Add "Judging Criteria" section to HackathonDetail page (visible to organizers)
+- [ ] Display list of criteria with name, description, max score, weight
+- [ ] "Add Criteria" button opens modal with form (name, description, maxScore, weight)
+- [ ] Each criteria row has edit and delete buttons
+- [ ] Edit opens modal with pre-filled form
+- [ ] Delete shows confirmation dialog
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-008: Create judge management UI
+**Description:** As an organizer, I want to add and remove judges from my hackathon.
+
+**Acceptance Criteria:**
+- [ ] Add "Judges" section to HackathonDetail page (visible to organizers)
+- [ ] Display list of judges with name, email, scoring progress (X of Y projects scored)
+- [ ] "Add Judge" button opens modal to search/select user by email
+- [ ] Each judge row has remove button with confirmation
+- [ ] Show empty state when no judges assigned
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-009: Create judge dashboard page
+**Description:** As a judge, I want to see all projects I need to score and my progress.
+
+**Acceptance Criteria:**
+- [ ] Create new route `/hackathons/:slug/judge` for judge dashboard
+- [ ] Show list of all submitted projects in the hackathon
+- [ ] Each project card shows: name, team name, scoring status (Not Started / In Progress / Completed)
+- [ ] Click on project card navigates to scoring page
+- [ ] Show overall progress: "X of Y projects scored"
+- [ ] Only accessible to users with judge role in this hackathon
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-010: Create project scoring form
+**Description:** As a judge, I want to score a project on all criteria with optional feedback.
+
+**Acceptance Criteria:**
+- [ ] Create scoring page/modal at `/hackathons/:slug/judge/:projectId`
+- [ ] Display project details (name, tagline, description, links)
+- [ ] Show form with all judging criteria
+- [ ] Each criteria: name, description, score input (0 to maxScore), optional feedback textarea
+- [ ] Pre-fill existing scores if previously saved
+- [ ] "Save Scores" button submits all scores
+- [ ] Show success message and return to judge dashboard
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-011: Create leaderboard view for organizers
+**Description:** As an organizer, I want to see a leaderboard of all projects with their scores.
+
+**Acceptance Criteria:**
+- [ ] Add "Leaderboard" tab/section to HackathonDetail page (visible to organizers)
+- [ ] Display ranked table: Rank, Project Name, Team Name, Total Score
+- [ ] Expandable rows show per-criteria average scores
+- [ ] Show "Judging in progress" message if not all judges have completed
+- [ ] Sortable by rank or score
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-012: Create results view for participants
+**Description:** As a participant, I want to see final rankings after the hackathon is completed.
+
+**Acceptance Criteria:**
+- [ ] Add "Results" section to HackathonDetail page (visible when status=completed)
+- [ ] Display ranked list of projects with scores
+- [ ] Highlight user's own team/project
+- [ ] Show "Results not yet available" if hackathon not completed
+- [ ] Include congratulations message for top 3 projects
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-013: Add judge role navigation
+**Description:** As a judge, I want easy access to my judging dashboard from the hackathon page.
+
+**Acceptance Criteria:**
+- [ ] Show "Judge Projects" button on HackathonDetail when user has judge role
+- [ ] Button navigates to `/hackathons/:slug/judge`
+- [ ] Add judge dashboard link to hackathon card on main dashboard (for hackathons where user is judge)
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-014: Update PROJECT_STATUS.md with judging features
+**Description:** As a developer, I want the project documentation updated to reflect the new judging features.
+
+**Acceptance Criteria:**
+- [ ] Add Judging section to "Implemented Features" in PROJECT_STATUS.md
+- [ ] Add judging API endpoints to the API reference table
+- [ ] Add new routes to Application Routes table
+- [ ] Move "Judging & Scoring" from Future Roadmap to Implemented
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- CI/CD pipeline beyond Render's built-in auto-deploy
-- Custom domain configuration (can be added later)
-- SSL certificate setup (Render provides this automatically)
-- Staging environment (single production deployment only)
-- Frontend E2E tests in deployment pipeline (manual verification)
-- Database backups configuration (can be added later)
-- Horizontal scaling configuration
+- No automatic winner selection or prize assignment (separate feature)
+- No judge consensus/calibration tools
+- No blind judging (judges can see project details)
+- No per-project judge assignment (judges score all projects in hackathon)
+- No real-time score updates via WebSocket
+- No export functionality for scores (future enhancement)
 
 ## Technical Considerations
 
-- **Database Configuration:** Render provides DATABASE_URL (connection string), DB_USERNAME, and DB_PASSWORD separately. Use all three for complete database connectivity
-- **Static Assets:** Frontend deploys as separate Render Static Site, not bundled with backend
-- **Environment Variables:** JWT_SECRET should be generated securely (use Render's random generator)
-- **Schema Migration:** Since Hibernate is in validate mode, consider switching to update for prod or using Flyway for proper migrations
-- **CORS:** Frontend and backend will have different Render subdomains (e.g., `hackathon-api.onrender.com` and `hackathon-app.onrender.com`)
-- **Free Tier:** Render free tier services spin down after 15 minutes of inactivity; first request will be slow
+- Reuse existing entities: JudgingCriteria, JudgeAssignment, Score
+- JudgeAssignments should be auto-created for each judge-project pair when needed
+- Weighted average calculation: sum(score * weight) / sum(weight) for each judge, then average across judges
+- Use HackathonUser.role = "judge" to identify judges for a hackathon
+- Leaderboard should handle edge cases: no scores yet, partial scoring, ties

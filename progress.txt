@@ -7,170 +7,30 @@
 - Frontend is React + Vite in `frontend/`
 - Typecheck: `./gradlew compileKotlin` for backend, `npx tsc --noEmit` for frontend
 - Tests: `./gradlew test` for backend (JaCoCo 70% coverage required)
-- Application config in `src/main/resources/application.yml`
-- Security config in `src/main/kotlin/com/hackathon/manager/config/SecurityConfig.kt`
+- Existing judging entities: JudgingCriteria, JudgeAssignment, Score
+- Existing repositories: JudgingCriteriaRepository, JudgeAssignmentRepository, ScoreRepository
+- Existing DTOs: JudgingCriteriaResponse, JudgeAssignmentResponse, ScoreResponse, SubmitScoreRequest, SubmitScoresRequest
+- Judges identified by HackathonUser.role = "judge"
+- Service classes use constructor injection for dependencies
+- HackathonService.isUserOrganizer(hackathonId, userId) returns true for organizers or admins
+- DTOs use jakarta.validation.constraints for validation annotations (@NotNull, @Min, @Max)
+- JudgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder already exists and returns ordered list
 
 ---
 
-## Iteration 1 - US-001: Run existing backend tests
-- What was implemented: Ran `./gradlew test` and `./gradlew jacocoTestCoverageVerification`. Coverage was at 69%, below 70% threshold.
-- Added tests for JwtConfig and CorsConfig/CorsProperties to boost coverage to 70%+
+## Iteration 1 - US-001: Create JudgingService for criteria management
+- What was implemented:
+  - Created JudgingService class with dependency injection for repositories
+  - Implemented getCriteriaByHackathon(hackathonId) returning list ordered by displayOrder
+  - Implemented createCriteria(hackathonId, request, userId) with organizer validation
+  - Implemented updateCriteria(criteriaId, request, userId) with organizer validation
+  - Implemented deleteCriteria(criteriaId, userId) with organizer validation
+  - Added CreateJudgingCriteriaRequest and UpdateJudgingCriteriaRequest DTOs to JudgingDtos.kt
 - Files changed:
-  - `src/test/kotlin/com/hackathon/manager/config/JwtConfigTest.kt` (created)
-  - `src/test/kotlin/com/hackathon/manager/config/CorsConfigTest.kt` (created)
+  - src/main/kotlin/com/hackathon/manager/dto/JudgingDtos.kt (added DTOs)
+  - src/main/kotlin/com/hackathon/manager/service/JudgingService.kt (created)
 - Learnings for future iterations:
-  - Tests use AssertJ for assertions (not kotlin.test or JUnit)
-  - `org.springframework.mock.web.MockHttpServletRequest` available for testing CORS
-  - Config data classes (CorsProperties, JwtConfig) were at 0% coverage - easy wins
-  - `./gradlew jacocoTestCoverageVerification` to verify the 70% threshold
----
-
-## Iteration 2 - US-001B: Run existing frontend tests
-- What was implemented: Ran `npm run test:e2e` in the frontend directory
-- All 86 Playwright e2e tests passed successfully in 1.1 minutes
-- No test failures to document - all tests pass
-- Files changed:
-  - None (verification task only)
-- Learnings for future iterations:
-  - Frontend e2e tests: `cd frontend && npm run test:e2e`
-  - Playwright tests located in `frontend/e2e/` directory
-  - Tests use 6 parallel workers and run against chromium
-  - Test coverage includes: auth, dashboard, hackathon CRUD, team CRUD, invite codes, navigation
----
-
-## Iteration 3 - US-002: Update database config for Render Postgres
-- What was implemented: Created `application-prod.yml` profile for Render production deployment
-- Configuration uses DATABASE_URL, DB_USERNAME, DB_PASSWORD environment variables
-- Falls back to existing local config via Spring profile mechanism (base application.yml used when prod profile not active)
-- Files changed:
-  - `src/main/resources/application-prod.yml` (created)
-- Learnings for future iterations:
-  - Spring Boot profile system: `-prod.yml` file activated via SPRING_PROFILES_ACTIVE=prod
-  - Base `application.yml` provides defaults, profile-specific files override
-  - Production logging set to INFO level (vs DEBUG in development)
-  - Render provides DATABASE_URL as full JDBC connection string
----
-
-## Iteration 4 - US-003: Update CORS configuration for production
-- What was implemented: Added FRONTEND_URL environment variable support to application-prod.yml
-- CORS configuration in prod profile reads from FRONTEND_URL env var (defaults to localhost:3000 if not set)
-- Also includes localhost origins for development flexibility
-- Files changed:
-  - `src/main/resources/application-prod.yml` (updated - added app.cors section)
-- Learnings for future iterations:
-  - CORS is configured via CorsConfig.kt which reads from CorsProperties (app.cors.* in YAML)
-  - Profile-specific YAML overrides base application.yml CORS settings
-  - Environment variable syntax in YAML: ${VAR_NAME:default_value}
-  - No code changes needed - just YAML configuration updates
----
-
-## Iteration 5 - US-004: Configure frontend production API URL
-- What was implemented: Verified existing VITE_API_URL support was already implemented
-- VITE_API_URL environment variable support exists in frontend/src/services/api.ts line 1
-- All API calls use the centralized ApiClient class which uses this configuration
-- Default fallback to http://localhost:8080/api for local development
-- Verified npm run build succeeds and typecheck passes
-- Files changed:
-  - None (verification task - implementation already existed)
-- Learnings for future iterations:
-  - Vite env vars use import.meta.env.VITE_* syntax
-  - Frontend API client in frontend/src/services/api.ts - centralized fetch wrapper
-  - All services (auth.ts, teams.ts, hackathons.ts, projects.ts) use the centralized api object
-  - For production deployment, set VITE_API_URL at build time or in .env.production
----
-
-## Iteration 6 - US-005: Create backend Dockerfile
-- What was implemented: Created multi-stage Dockerfile for Spring Boot backend
-- Stage 1 (builder): Uses eclipse-temurin:17-jdk, builds JAR with Gradle
-- Stage 2 (runtime): Uses eclipse-temurin:17-jre minimal image, runs the JAR
-- Sets SPRING_PROFILES_ACTIVE=prod and exposes port 8080
-- Created .dockerignore to exclude unnecessary files (frontend/, node_modules/, .git/, build/, etc.)
-- Files changed:
-  - `Dockerfile` (created)
-  - `.dockerignore` (created)
-- Learnings for future iterations:
-  - Build Docker image: `docker build -t hackathon-manager .`
-  - Use `--no-daemon` in Docker builds to avoid daemon overhead
-  - Skip tests with `-x test` in Docker builds (tests should run in CI before build)
-  - Final image size is ~345MB (JRE + app JAR)
-  - Gradle wrapper downloads during build (~72s for initial build including download)
----
-
-## Iteration 7 - US-006: Create render.yaml blueprint
-- What was implemented: Created render.yaml blueprint for Render deployment
-- Defines 3 resources:
-  - hackathon-db: Free tier Postgres database
-  - hackathon-api: Docker-based web service for Spring Boot backend
-  - hackathon-app: Static site for React/Vite frontend
-- Files changed:
-  - `render.yaml` (created)
-- Learnings for future iterations:
-  - Render Blueprint spec: https://render.com/docs/blueprint-spec
-  - Static sites use `runtime: static` with `staticPublishPath`
-  - Database properties: connectionString, user, password can be referenced via fromDatabase
-  - JWT_SECRET uses `generateValue: true` for secure random generation
-  - FRONTEND_URL uses `sync: false` (must be set manually in Render dashboard after deployment)
-  - VITE_API_URL uses `fromService` to reference the backend's RENDER_EXTERNAL_URL
-  - SPA routing requires rewrite rules: `source: /*` -> `destination: /index.html`
-  - Validate YAML with: `npx js-yaml render.yaml`
----
-
-## Iteration 8 - US-007: Add database initialization for Render
-- What was implemented: Updated application-prod.yml to use ddl-auto=update instead of validate
-- Added comprehensive Render deployment documentation to README including:
-  - Deploy steps with render.yaml blueprint
-  - Database initialization explanation
-  - Environment variables table
-  - Local Docker testing commands
-- Files changed:
-  - `src/main/resources/application-prod.yml` (updated ddl-auto setting)
-  - `README.md` (added Deployment to Render section)
-  - `PRD.md` (marked US-007 complete)
-- Learnings for future iterations:
-  - ddl-auto=update is safe for initial deployment but consider Flyway for production
-  - Render blueprint auto-configures most env vars except FRONTEND_URL (manual setup)
-  - Local Docker testing requires host.docker.internal for database connection on macOS
-  - YAML changes don't require typecheck but always verify anyway
----
-
-## Iteration 9 - US-008: Test Docker build locally
-- What was implemented: Successfully tested Docker build and container locally
-- Docker image builds successfully (~65s build time including Gradle download)
-- Changed application-prod.yml to use ddl-auto=validate (schema must be initialized separately)
-- Tested container with PostgreSQL, API returns 200 with empty array for /api/hackathons
-- User registration works correctly in containerized environment
-- Updated README with comprehensive local Docker testing commands
-- Files changed:
-  - `src/main/resources/application-prod.yml` (ddl-auto changed from update to validate)
-  - `README.md` (updated Database Initialization section and Local Docker Testing section)
-  - `PRD.md` (marked US-008 complete)
-- Learnings for future iterations:
-  - PostgreSQL enum types (user_role, hackathon_status, etc.) cannot be auto-created by Hibernate ddl-auto=update
-  - Must initialize database with schema.sql before running with ddl-auto=validate
-  - Use port 5433 for test Postgres to avoid conflicts with local Postgres on 5432
-  - host.docker.internal works on macOS/Windows for container-to-host connections
-  - Container starts in ~4 seconds when database is properly initialized
----
-
-## Iteration 10 - US-009: Deploy to Render (BLOCKED)
-- What was implemented: Nothing - this task requires manual human intervention
-- Status: BLOCKED - requires external actions
-- Blocking reasons:
-  - Branch is 19 commits ahead of origin/main (needs `git push` to remote)
-  - Creating Render Blueprint requires login to Render dashboard
-  - Verifying deployment health requires manual testing on deployed URLs
-  - User registration/login testing requires human interaction with deployed app
-- Action needed from user:
-  1. Run `git push origin main` to push all commits including render.yaml
-  2. Go to https://dashboard.render.com and create Blueprint from repository
-  3. Set FRONTEND_URL environment variable manually (not auto-configured)
-  4. Wait for services to deploy
-  5. Test the deployed application
-  6. Mark US-009 tasks complete once verified
-- Files changed:
-  - None
-- Learnings for future iterations:
-  - Deployment tasks that require external service interaction cannot be automated
-  - render.yaml Blueprint should auto-create most resources on Render
-  - FRONTEND_URL must be set manually after initial deploy to know the static site URL
+  - Service methods that modify data should include userId param for authorization
+  - Use hackathonService.isUserOrganizer() for organizer-only operations
+  - @Transactional(readOnly = true) for read-only methods, @Transactional for writes
 ---

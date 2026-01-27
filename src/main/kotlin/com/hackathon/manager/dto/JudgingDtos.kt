@@ -97,3 +97,31 @@ data class SubmitScoreRequest(
 data class SubmitScoresRequest(
     val scores: List<SubmitScoreRequest>
 )
+
+data class CreateJudgingCriteriaRequest(
+    @field:NotNull(message = "Name is required")
+    val name: String,
+
+    val description: String? = null,
+
+    @field:Min(1, message = "Max score must be at least 1")
+    @field:Max(100, message = "Max score must be at most 100")
+    val maxScore: Int = 10,
+
+    @field:NotNull(message = "Weight is required")
+    val weight: BigDecimal = BigDecimal("1.00"),
+
+    val displayOrder: Int = 0
+)
+
+data class UpdateJudgingCriteriaRequest(
+    val name: String? = null,
+    val description: String? = null,
+
+    @field:Min(1, message = "Max score must be at least 1")
+    @field:Max(100, message = "Max score must be at most 100")
+    val maxScore: Int? = null,
+
+    val weight: BigDecimal? = null,
+    val displayOrder: Int? = null
+)
