@@ -120,14 +120,14 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As a judge, I want to see all projects I need to score and my progress.
 
 **Acceptance Criteria:**
-- [ ] Create new route `/hackathons/:slug/judge` for judge dashboard
-- [ ] Show list of all submitted projects in the hackathon
-- [ ] Each project card shows: name, team name, scoring status (Not Started / In Progress / Completed)
-- [ ] Click on project card navigates to scoring page
-- [ ] Show overall progress: "X of Y projects scored"
-- [ ] Only accessible to users with judge role in this hackathon
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create new route `/hackathons/:slug/judge` for judge dashboard
+- [x] Show list of all submitted projects in the hackathon
+- [x] Each project card shows: name, team name, scoring status (Not Started / In Progress / Completed)
+- [x] Click on project card navigates to scoring page
+- [x] Show overall progress: "X of Y projects scored"
+- [x] Only accessible to users with judge role in this hackathon
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-010: Create project scoring form
 **Description:** As a judge, I want to score a project on all criteria with optional feedback.
