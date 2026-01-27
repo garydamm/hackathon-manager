@@ -5,6 +5,7 @@ import com.hackathon.manager.dto.CreateJudgingCriteriaRequest
 import com.hackathon.manager.dto.JudgeAssignmentResponse
 import com.hackathon.manager.dto.JudgeInfoResponse
 import com.hackathon.manager.dto.JudgingCriteriaResponse
+import com.hackathon.manager.dto.LeaderboardEntryResponse
 import com.hackathon.manager.dto.SubmitScoresRequest
 import com.hackathon.manager.dto.UpdateJudgingCriteriaRequest
 import com.hackathon.manager.security.UserPrincipal
@@ -118,5 +119,16 @@ class JudgingController(
     ): ResponseEntity<JudgeAssignmentResponse> {
         val assignment = judgingService.submitScores(assignmentId, request, principal.id)
         return ResponseEntity.ok(assignment)
+    }
+
+    // Leaderboard endpoint
+
+    @GetMapping("/hackathons/{hackathonId}/leaderboard")
+    fun getLeaderboard(
+        @PathVariable hackathonId: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<List<LeaderboardEntryResponse>> {
+        val leaderboard = judgingService.getLeaderboard(hackathonId, principal.id)
+        return ResponseEntity.ok(leaderboard)
     }
 }

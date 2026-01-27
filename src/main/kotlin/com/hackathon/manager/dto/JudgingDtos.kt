@@ -140,3 +140,20 @@ data class JudgeInfoResponse(
     val projectsScored: Int,
     val totalProjects: Int
 )
+
+data class CriteriaAverageResponse(
+    val criteriaId: UUID,
+    val criteriaName: String,
+    val averageScore: Double,
+    val maxScore: Int
+)
+
+data class LeaderboardEntryResponse(
+    val rank: Int,
+    val projectId: UUID,
+    val projectName: String,
+    val teamId: UUID,
+    val teamName: String,
+    val totalScore: Double,
+    val criteriaAverages: List<CriteriaAverageResponse>
+)

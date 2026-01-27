@@ -71,13 +71,13 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As an organizer or participant, I want to see aggregated scores and rankings.
 
 **Acceptance Criteria:**
-- [ ] `GET /api/judging/hackathons/{hackathonId}/leaderboard` - get ranked projects with scores
-- [ ] Calculate weighted average score per project across all judges and criteria
-- [ ] Include: rank, project name, team name, total score, individual criteria averages
-- [ ] Organizers can view leaderboard anytime
-- [ ] Participants can only view when hackathon status is "completed"
-- [ ] Typecheck passes
-- [ ] Tests pass
+- [x] `GET /api/judging/hackathons/{hackathonId}/leaderboard` - get ranked projects with scores
+- [x] Calculate weighted average score per project across all judges and criteria
+- [x] Include: rank, project name, team name, total score, individual criteria averages
+- [x] Organizers can view leaderboard anytime
+- [x] Participants can only view when hackathon status is "completed"
+- [x] Typecheck passes
+- [x] Tests pass
 
 ### US-006: Create frontend judging types and API service
 **Description:** As a developer, I need TypeScript types and API service for judging features.

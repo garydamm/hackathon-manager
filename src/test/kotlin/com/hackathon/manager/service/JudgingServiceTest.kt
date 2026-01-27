@@ -697,4 +697,239 @@ class JudgingServiceTest {
         assertThat(testAssignment.completedAt).isNotNull()
         verify(judgeAssignmentRepository).save(testAssignment)
     }
+
+    // Leaderboard tests
+
+    @Test
+    fun `getLeaderboard should return ranked projects for organizer`() {
+        val testCriteria2 = JudgingCriteria(
+            id = UUID.randomUUID(),
+            hackathon = testHackathon,
+            name = "Technical Excellence",
+            description = "Quality of implementation",
+            maxScore = 10,
+            weight = BigDecimal("2.00"),
+            displayOrder = 2
+        )
+
+        val score1 = Score(
+            id = UUID.randomUUID(),
+            judgeAssignment = testAssignment,
+            criteria = testCriteria,
+            score = 8
+        )
+
+        val score2 = Score(
+            id = UUID.randomUUID(),
+            judgeAssignment = testAssignment,
+            criteria = testCriteria2,
+            score = 9
+        )
+
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(true)
+        whenever(judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(testHackathonId))
+            .thenReturn(listOf(testCriteria, testCriteria2))
+        whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
+            .thenReturn(listOf(testProject))
+        whenever(judgeAssignmentRepository.findByProjectId(testProjectId))
+            .thenReturn(listOf(testAssignment))
+        whenever(scoreRepository.findByJudgeAssignmentId(testAssignmentId))
+            .thenReturn(listOf(score1, score2))
+
+        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+
+        assertThat(result).hasSize(1)
+        assertThat(result[0].rank).isEqualTo(1)
+        assertThat(result[0].projectId).isEqualTo(testProjectId)
+        assertThat(result[0].projectName).isEqualTo("Test Project")
+        assertThat(result[0].teamId).isEqualTo(testTeamId)
+        assertThat(result[0].teamName).isEqualTo("Test Team")
+        assertThat(result[0].criteriaAverages).hasSize(2)
+    }
+
+    @Test
+    fun `getLeaderboard should calculate weighted average correctly`() {
+        // Create a scenario where we can verify weighted average calculation
+        // Criteria 1: weight 1.0, score 10 -> contributes 10
+        // Criteria 2: weight 2.0, score 5 -> contributes 10
+        // Total: (10*1 + 5*2) / (1+2) = 20/3 = 6.67
+
+        val testCriteria2 = JudgingCriteria(
+            id = UUID.randomUUID(),
+            hackathon = testHackathon,
+            name = "Technical Excellence",
+            maxScore = 10,
+            weight = BigDecimal("2.00"),
+            displayOrder = 2
+        )
+
+        val score1 = Score(
+            id = UUID.randomUUID(),
+            judgeAssignment = testAssignment,
+            criteria = testCriteria,
+            score = 10
+        )
+
+        val score2 = Score(
+            id = UUID.randomUUID(),
+            judgeAssignment = testAssignment,
+            criteria = testCriteria2,
+            score = 5
+        )
+
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(true)
+        whenever(judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(testHackathonId))
+            .thenReturn(listOf(testCriteria, testCriteria2))
+        whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
+            .thenReturn(listOf(testProject))
+        whenever(judgeAssignmentRepository.findByProjectId(testProjectId))
+            .thenReturn(listOf(testAssignment))
+        whenever(scoreRepository.findByJudgeAssignmentId(testAssignmentId))
+            .thenReturn(listOf(score1, score2))
+
+        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+
+        assertThat(result).hasSize(1)
+        // (10*1 + 5*2) / (1+2) = 20/3 ≈ 6.67
+        assertThat(result[0].totalScore).isBetween(6.66, 6.68)
+    }
+
+    @Test
+    fun `getLeaderboard should allow participant to view when hackathon is completed`() {
+        val completedHackathon = Hackathon(
+            id = testHackathonId,
+            name = "Test Hackathon",
+            slug = "test-hackathon",
+            status = HackathonStatus.completed,
+            startsAt = OffsetDateTime.now().minusDays(9),
+            endsAt = OffsetDateTime.now().minusDays(7),
+            createdBy = testUser
+        )
+
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(completedHackathon))
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testJudgeUserId)).thenReturn(false)
+        whenever(judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(testHackathonId))
+            .thenReturn(listOf(testCriteria))
+        whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
+            .thenReturn(listOf(testProject))
+        whenever(judgeAssignmentRepository.findByProjectId(testProjectId))
+            .thenReturn(emptyList())
+
+        val result = judgingService.getLeaderboard(testHackathonId, testJudgeUserId)
+
+        assertThat(result).hasSize(1)
+    }
+
+    @Test
+    fun `getLeaderboard should throw forbidden for participant when hackathon is not completed`() {
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testJudgeUserId)).thenReturn(false)
+
+        assertThatThrownBy { judgingService.getLeaderboard(testHackathonId, testJudgeUserId) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Results are only available after the hackathon is completed")
+    }
+
+    @Test
+    fun `getLeaderboard should throw not found when hackathon does not exist`() {
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy { judgingService.getLeaderboard(testHackathonId, testUserId) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Hackathon not found")
+    }
+
+    @Test
+    fun `getLeaderboard should return empty list when no criteria exist`() {
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(true)
+        whenever(judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(testHackathonId))
+            .thenReturn(emptyList())
+
+        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `getLeaderboard should return empty list when no submitted projects exist`() {
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(true)
+        whenever(judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(testHackathonId))
+            .thenReturn(listOf(testCriteria))
+        whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
+            .thenReturn(emptyList())
+
+        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `getLeaderboard should rank projects by total score descending`() {
+        val testTeam2 = Team(
+            id = UUID.randomUUID(),
+            hackathon = testHackathon,
+            name = "Test Team 2",
+            createdBy = testUser
+        )
+
+        val testProject2 = Project(
+            id = UUID.randomUUID(),
+            hackathon = testHackathon,
+            team = testTeam2,
+            name = "Test Project 2",
+            status = SubmissionStatus.submitted
+        )
+
+        val testAssignment2 = JudgeAssignment(
+            id = UUID.randomUUID(),
+            hackathon = testHackathon,
+            judge = testJudgeUser,
+            project = testProject2
+        )
+
+        val score1 = Score(
+            id = UUID.randomUUID(),
+            judgeAssignment = testAssignment,
+            criteria = testCriteria,
+            score = 5
+        )
+
+        val score2 = Score(
+            id = UUID.randomUUID(),
+            judgeAssignment = testAssignment2,
+            criteria = testCriteria,
+            score = 9
+        )
+
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(true)
+        whenever(judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(testHackathonId))
+            .thenReturn(listOf(testCriteria))
+        whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
+            .thenReturn(listOf(testProject, testProject2))
+        whenever(judgeAssignmentRepository.findByProjectId(testProjectId))
+            .thenReturn(listOf(testAssignment))
+        whenever(judgeAssignmentRepository.findByProjectId(testProject2.id!!))
+            .thenReturn(listOf(testAssignment2))
+        whenever(scoreRepository.findByJudgeAssignmentId(testAssignmentId))
+            .thenReturn(listOf(score1))
+        whenever(scoreRepository.findByJudgeAssignmentId(testAssignment2.id!!))
+            .thenReturn(listOf(score2))
+
+        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+
+        assertThat(result).hasSize(2)
+        // Project 2 should be ranked first with higher score
+        assertThat(result[0].rank).isEqualTo(1)
+        assertThat(result[0].projectName).isEqualTo("Test Project 2")
+        assertThat(result[0].totalScore).isEqualTo(9.0)
+
+        assertThat(result[1].rank).isEqualTo(2)
+        assertThat(result[1].projectName).isEqualTo("Test Project")
+        assertThat(result[1].totalScore).isEqualTo(5.0)
+    }
 }
