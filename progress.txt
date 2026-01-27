@@ -309,3 +309,18 @@
   - Gavel icon from lucide-react is used for judge-related UI
   - Judge button takes precedence over Register button (don't show both)
 ---
+
+## Iteration 15 - US-014: Update PROJECT_STATUS.md with judging features
+- What was implemented:
+  - Added "Judging & Scoring" section to Implemented Features (criteria mgmt, judge mgmt, scoring, leaderboard, results)
+  - Added new Application Routes: /hackathons/:slug/judge and /hackathons/:slug/judge/:projectId
+  - Added Judging API endpoints section with all 11 judging endpoints
+  - Added Users API section with by-email endpoint (used for judge lookup)
+  - Updated Future Features Roadmap: marked "Judging & Scoring" as ✅ Completed
+- Files changed:
+  - PROJECT_STATUS.md (updated documentation)
+  - PRD.md (marked US-014 complete)
+- Learnings for future iterations:
+  - Documentation-only tasks just need typecheck pass (no code tests needed)
+  - PROJECT_STATUS.md structure: Object Model, Implemented Features, Application Routes, API Endpoints, Future Roadmap, Tech Stack
+---
