@@ -31,6 +31,7 @@ import { RegisterModal } from "@/components/RegisterModal"
 import { UnregisterModal } from "@/components/UnregisterModal"
 import { ProjectCard } from "@/components/ProjectCard"
 import { ProjectDetailModal } from "@/components/ProjectDetailModal"
+import { JudgingCriteriaSection } from "@/components/JudgingCriteriaSection"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { projectService } from "@/services/projects"
@@ -252,10 +253,12 @@ function ViewMode({
   hackathon,
   onRegisterClick,
   onUnregisterClick,
+  isOrganizer,
 }: {
   hackathon: Hackathon
   onRegisterClick: () => void
   onUnregisterClick: () => void
+  isOrganizer: boolean
 }) {
   const showTeamsSection =
     hackathon.status === "registration_open" || hackathon.status === "in_progress"
@@ -423,6 +426,9 @@ function ViewMode({
           </div>
         </CardContent>
       </Card>
+
+      {/* Judging Criteria Section - visible to organizers only */}
+      {isOrganizer && <JudgingCriteriaSection hackathonId={hackathon.id} />}
 
       {/* Teams Section */}
       {showTeamsSection && <TeamsSection hackathon={hackathon} />}
@@ -798,6 +804,7 @@ export function HackathonDetailPage() {
               hackathon={hackathon}
               onRegisterClick={() => setIsRegisterModalOpen(true)}
               onUnregisterClick={() => setIsUnregisterModalOpen(true)}
+              isOrganizer={canEdit}
             />
           )}
         </motion.div>

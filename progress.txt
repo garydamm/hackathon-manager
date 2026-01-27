@@ -93,3 +93,70 @@
   - Assignment authorization: check assignment.judge.id == userId for assignment access
   - Lazy user lookup: only fetch User entity when needed (e.g., when creating new assignments)
 ---
+
+## Iteration 5 - US-005: Add leaderboard and results endpoints
+- What was implemented:
+  - Added LeaderboardEntryResponse and CriteriaAverageResponse DTOs to JudgingDtos.kt
+  - Implemented getLeaderboard method in JudgingService with weighted average calculation
+  - Added GET /api/judging/hackathons/{hackathonId}/leaderboard endpoint
+  - Authorization: organizers can view anytime, participants only when hackathon status is "completed"
+  - Weighted average calculation: sum(score * weight) / sum(weight) for each judge, then average across judges
+  - Projects ranked by total score descending with rank assignment
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/dto/JudgingDtos.kt (added DTOs)
+  - src/main/kotlin/com/hackathon/manager/service/JudgingService.kt (added getLeaderboard method)
+  - src/main/kotlin/com/hackathon/manager/controller/JudgingController.kt (added leaderboard endpoint)
+  - src/test/kotlin/com/hackathon/manager/service/JudgingServiceTest.kt (added leaderboard tests)
+- Learnings for future iterations:
+  - HackathonStatus enum: completed for finished hackathons
+  - JudgeAssignmentRepository.findByProjectId returns all judge assignments for a project
+  - Use BigDecimal.toDouble() to convert weights for calculation
+  - Private data class can be defined inside service class for intermediate calculations
+---
+
+## Iteration 6 - US-006: Create frontend judging types and API service
+- What was implemented:
+  - Added judging types to frontend/src/types/index.ts: JudgingCriteria, JudgeAssignment, Score, JudgeInfo, LeaderboardEntry, CriteriaAverage
+  - Added request types: CreateJudgingCriteriaRequest, UpdateJudgingCriteriaRequest, SubmitScoreRequest, SubmitScoresRequest, AddJudgeRequest
+  - Created frontend/src/services/judging.ts with all API methods
+  - Methods: getCriteria, createCriteria, updateCriteria, deleteCriteria
+  - Methods: getJudges, addJudge, removeJudge
+  - Methods: getMyAssignments, getAssignment, submitScores
+  - Methods: getLeaderboard
+- Files changed:
+  - frontend/src/types/index.ts (added judging types)
+  - frontend/src/services/judging.ts (created)
+  - PRD.md (marked US-006 complete)
+- Learnings for future iterations:
+  - Frontend services follow pattern: export const service = { async method(): Promise<Type> {...} }
+  - Services import api from "./api" and use api.get/post/put/delete
+  - Backend BigDecimal maps to number in TypeScript
+  - Backend UUID maps to string in TypeScript
+  - Backend OffsetDateTime maps to string in TypeScript
+  - Frontend typecheck: npx tsc --noEmit in frontend directory
+---
+
+## Iteration 7 - US-007: Create judging criteria management UI
+- What was implemented:
+  - Created CriteriaFormModal component for adding/editing judging criteria
+  - Created DeleteCriteriaModal component for confirming criteria deletion
+  - Created JudgingCriteriaSection component displaying list of criteria with add/edit/delete functionality
+  - Integrated JudgingCriteriaSection into HackathonDetail page (visible to organizers only)
+  - Criteria list displays name, description, max score, and weight
+  - Add button opens form modal with fields for name, description, maxScore, weight, displayOrder
+  - Edit button opens form modal with pre-filled values
+  - Delete button shows confirmation dialog with warning about deleting associated scores
+- Files changed:
+  - frontend/src/components/CriteriaFormModal.tsx (created)
+  - frontend/src/components/DeleteCriteriaModal.tsx (created)
+  - frontend/src/components/JudgingCriteriaSection.tsx (created)
+  - frontend/src/pages/HackathonDetail.tsx (added import and section)
+  - PRD.md (marked US-007 criteria complete except browser verification)
+- Learnings for future iterations:
+  - Modal components follow pattern: AnimatePresence wrapping backdrop + modal divs
+  - Use useForm with zodResolver for form validation
+  - Use useQuery for fetching data, useMutation for create/update/delete
+  - Pass isOrganizer prop to ViewMode to conditionally render organizer-only sections
+  - Query keys should be descriptive: ["judging-criteria", hackathonId]
+  - Card component with CardHeader/CardContent is the standard section container
+---

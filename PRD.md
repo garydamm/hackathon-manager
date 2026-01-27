@@ -95,13 +95,13 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As an organizer, I want to manage judging criteria from the hackathon detail page.
 
 **Acceptance Criteria:**
-- [ ] Add "Judging Criteria" section to HackathonDetail page (visible to organizers)
-- [ ] Display list of criteria with name, description, max score, weight
-- [ ] "Add Criteria" button opens modal with form (name, description, maxScore, weight)
-- [ ] Each criteria row has edit and delete buttons
-- [ ] Edit opens modal with pre-filled form
-- [ ] Delete shows confirmation dialog
-- [ ] Typecheck passes
+- [x] Add "Judging Criteria" section to HackathonDetail page (visible to organizers)
+- [x] Display list of criteria with name, description, max score, weight
+- [x] "Add Criteria" button opens modal with form (name, description, maxScore, weight)
+- [x] Each criteria row has edit and delete buttons
+- [x] Edit opens modal with pre-filled form
+- [x] Delete shows confirmation dialog
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-008: Create judge management UI
