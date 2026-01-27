@@ -34,6 +34,7 @@ import { ProjectDetailModal } from "@/components/ProjectDetailModal"
 import { JudgingCriteriaSection } from "@/components/JudgingCriteriaSection"
 import { JudgesSection } from "@/components/JudgesSection"
 import { LeaderboardSection } from "@/components/LeaderboardSection"
+import { ResultsSection } from "@/components/ResultsSection"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { projectService } from "@/services/projects"
@@ -437,6 +438,14 @@ function ViewMode({
 
       {/* Leaderboard Section - visible to organizers only */}
       {isOrganizer && <LeaderboardSection hackathonId={hackathon.id} />}
+
+      {/* Results Section - visible to all users */}
+      {!isOrganizer && (
+        <ResultsSection
+          hackathonId={hackathon.id}
+          hackathonStatus={hackathon.status}
+        />
+      )}
 
       {/* Teams Section */}
       {showTeamsSection && <TeamsSection hackathon={hackathon} />}

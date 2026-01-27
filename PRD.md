@@ -159,13 +159,13 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As a participant, I want to see final rankings after the hackathon is completed.
 
 **Acceptance Criteria:**
-- [ ] Add "Results" section to HackathonDetail page (visible when status=completed)
-- [ ] Display ranked list of projects with scores
-- [ ] Highlight user's own team/project
-- [ ] Show "Results not yet available" if hackathon not completed
-- [ ] Include congratulations message for top 3 projects
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Add "Results" section to HackathonDetail page (visible when status=completed)
+- [x] Display ranked list of projects with scores
+- [x] Highlight user's own team/project
+- [x] Show "Results not yet available" if hackathon not completed
+- [x] Include congratulations message for top 3 projects
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-013: Add judge role navigation
 **Description:** As a judge, I want easy access to my judging dashboard from the hackathon page.
