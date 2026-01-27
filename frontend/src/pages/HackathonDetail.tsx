@@ -314,24 +314,26 @@ function ViewMode({
                 </span>
               )}
             </div>
-            {showRegisterButton && (
-              <Button onClick={onRegisterClick} disabled={isFull} className="mt-2">
-                {isFull ? "Registration Full" : "Register"}
-              </Button>
-            )}
-            {isRegistered && (
-              <Button variant="outline" onClick={onUnregisterClick} className="mt-2">
-                Unregister
-              </Button>
-            )}
-            {isJudge && (
-              <Button asChild className="mt-2">
-                <Link to={`/hackathons/${hackathon.slug}/judge`}>
-                  <Gavel className="h-4 w-4 mr-2" />
-                  Judge Projects
-                </Link>
-              </Button>
-            )}
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {showRegisterButton && (
+                <Button onClick={onRegisterClick} disabled={isFull}>
+                  {isFull ? "Registration Full" : "Register"}
+                </Button>
+              )}
+              {isRegistered && (
+                <Button variant="outline" onClick={onUnregisterClick}>
+                  Unregister
+                </Button>
+              )}
+              {(isJudge || isOrganizer) && (
+                <Button asChild>
+                  <Link to={`/hackathons/${hackathon.slug}/judge`}>
+                    <Gavel className="h-4 w-4 mr-2" />
+                    Judge Projects
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

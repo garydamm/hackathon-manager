@@ -262,6 +262,7 @@ export interface JudgeInfo {
   displayName?: string | null
   projectsScored: number
   totalProjects: number
+  isOrganizer: boolean
 }
 
 export interface AddJudgeRequest {

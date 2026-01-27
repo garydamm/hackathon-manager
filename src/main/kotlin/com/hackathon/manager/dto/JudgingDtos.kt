@@ -138,7 +138,8 @@ data class JudgeInfoResponse(
     val lastName: String,
     val displayName: String?,
     val projectsScored: Int,
-    val totalProjects: Int
+    val totalProjects: Int,
+    val isOrganizer: Boolean = false
 )
 
 data class CriteriaAverageResponse(

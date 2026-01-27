@@ -125,6 +125,7 @@ export function TeamDetailPage() {
     mutationFn: (request: CreateProjectRequest) => projectService.createProject(request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon?.id] })
       setShowProjectForm(false)
       refetchProject()
     },
@@ -135,6 +136,7 @@ export function TeamDetailPage() {
       projectService.updateProject(id, request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon?.id] })
       setShowProjectForm(false)
       setEditingProject(null)
       refetchProject()
@@ -145,6 +147,7 @@ export function TeamDetailPage() {
     mutationFn: (id: string) => projectService.submitProject(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon?.id] })
       setShowSubmitConfirm(false)
       refetchProject()
     },
@@ -154,6 +157,7 @@ export function TeamDetailPage() {
     mutationFn: (id: string) => projectService.unsubmitProject(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon?.id] })
       setShowUnsubmitConfirm(false)
       refetchProject()
     },

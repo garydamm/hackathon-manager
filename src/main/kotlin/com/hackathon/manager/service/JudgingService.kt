@@ -113,9 +113,10 @@ class JudgingService(
             .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
 
         val judges = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.judge)
+        val organizers = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.organizer)
         val totalProjects = projectRepository.findByHackathonIdAndStatus(hackathonId, SubmissionStatus.submitted).size
 
-        return judges.map { hackathonUser ->
+        val judgeResponses = judges.map { hackathonUser ->
             val completedAssignments = judgeAssignmentRepository
                 .findByJudgeIdAndHackathonId(hackathonUser.user.id!!, hackathonId)
                 .count { it.completedAt != null }
@@ -127,9 +128,30 @@ class JudgingService(
                 lastName = hackathonUser.user.lastName,
                 displayName = hackathonUser.user.displayName,
                 projectsScored = completedAssignments,
-                totalProjects = totalProjects
+                totalProjects = totalProjects,
+                isOrganizer = false
             )
         }
+
+        val organizerResponses = organizers.map { hackathonUser ->
+            val completedAssignments = judgeAssignmentRepository
+                .findByJudgeIdAndHackathonId(hackathonUser.user.id!!, hackathonId)
+                .count { it.completedAt != null }
+
+            JudgeInfoResponse(
+                userId = hackathonUser.user.id!!,
+                email = hackathonUser.user.email,
+                firstName = hackathonUser.user.firstName,
+                lastName = hackathonUser.user.lastName,
+                displayName = hackathonUser.user.displayName,
+                projectsScored = completedAssignments,
+                totalProjects = totalProjects,
+                isOrganizer = true
+            )
+        }
+
+        // Return organizers first, then judges
+        return organizerResponses + judgeResponses
     }
 
     @Transactional
@@ -175,7 +197,8 @@ class JudgingService(
             lastName = user.lastName,
             displayName = user.displayName,
             projectsScored = 0,
-            totalProjects = totalProjects
+            totalProjects = totalProjects,
+            isOrganizer = false
         )
     }
 
@@ -202,7 +225,7 @@ class JudgingService(
 
     // Scoring methods
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun getAssignmentsByJudge(hackathonId: UUID, userId: UUID): List<JudgeAssignmentResponse> {
         // Verify hackathon exists
         val hackathon = hackathonRepository.findById(hackathonId)

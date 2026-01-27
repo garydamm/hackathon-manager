@@ -131,8 +131,8 @@ export function JudgeDashboardPage() {
   const isLoading = hackathonLoading || assignmentsLoading || criteriaLoading
   const error = hackathonError || assignmentsError
 
-  // Check if user has judge role
-  const isJudge = hackathon?.userRole === "judge"
+  // Check if user has judge role or is organizer (organizers have judging capabilities)
+  const isJudge = hackathon?.userRole === "judge" || hackathon?.userRole === "organizer"
 
   // Calculate progress
   const totalProjects = assignments?.length ?? 0

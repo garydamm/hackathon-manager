@@ -96,8 +96,8 @@ export function ProjectScoringPage() {
   const isLoading = hackathonLoading || projectLoading || criteriaLoading || assignmentsLoading
   const queryError = hackathonError || projectError
 
-  // Check if user has judge role
-  const isJudge = hackathon?.userRole === "judge"
+  // Check if user has judge role or is organizer (organizers have judging capabilities)
+  const isJudge = hackathon?.userRole === "judge" || hackathon?.userRole === "organizer"
 
   const {
     register,

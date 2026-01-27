@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Loader2, Plus, Trash2, Gavel } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AddJudgeModal } from "@/components/AddJudgeModal"
 import { RemoveJudgeModal } from "@/components/RemoveJudgeModal"
@@ -92,6 +93,9 @@ export function JudgesSection({ hackathonId }: JudgesSectionProps) {
                       <h4 className="font-medium">
                         {judge.displayName || `${judge.firstName} ${judge.lastName}`}
                       </h4>
+                      {judge.isOrganizer && (
+                        <Badge variant="secondary">Organizer</Badge>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground">{judge.email}</p>
                     <p className="text-sm text-muted-foreground">
@@ -104,14 +108,16 @@ export function JudgesSection({ hackathonId }: JudgesSectionProps) {
                         ? `${Math.round((judge.projectsScored / judge.totalProjects) * 100)}%`
                         : "0%"}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveClick(judge)}
-                      title="Remove judge"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {!judge.isOrganizer && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveClick(judge)}
+                        title="Remove judge"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
