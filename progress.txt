@@ -160,3 +160,29 @@
   - Query keys should be descriptive: ["judging-criteria", hackathonId]
   - Card component with CardHeader/CardContent is the standard section container
 ---
+
+## Iteration 8 - US-008: Create judge management UI
+- What was implemented:
+  - Created JudgesSection component displaying list of judges with name, email, and scoring progress
+  - Created AddJudgeModal component with email search functionality
+  - Created RemoveJudgeModal component with confirmation dialog
+  - Added GET /api/users/by-email endpoint to UserController for user lookup by email
+  - Created frontend/src/services/users.ts for user lookup service
+  - Integrated JudgesSection into HackathonDetail page (visible to organizers only)
+  - Shows empty state when no judges assigned
+  - Each judge row shows scoring progress as X of Y projects scored with percentage
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/controller/UserController.kt (added by-email endpoint)
+  - frontend/src/services/users.ts (created)
+  - frontend/src/components/JudgesSection.tsx (created)
+  - frontend/src/components/AddJudgeModal.tsx (created)
+  - frontend/src/components/RemoveJudgeModal.tsx (created)
+  - frontend/src/pages/HackathonDetail.tsx (added JudgesSection import and integration)
+  - PRD.md (marked US-008 complete)
+- Learnings for future iterations:
+  - UserService.getUserByEmail already exists in backend - just needed endpoint
+  - Use encodeURIComponent for query parameters in frontend API calls
+  - Query keys for judges: ["judges", hackathonId]
+  - Modal search pattern: search form + found result display + action button
+  - Gavel icon from lucide-react is good for judge-related UI
+---

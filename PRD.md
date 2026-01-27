@@ -102,18 +102,18 @@ Add a complete judging and scoring system that allows organizers to define judgi
 - [x] Edit opens modal with pre-filled form
 - [x] Delete shows confirmation dialog
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-008: Create judge management UI
 **Description:** As an organizer, I want to add and remove judges from my hackathon.
 
 **Acceptance Criteria:**
-- [ ] Add "Judges" section to HackathonDetail page (visible to organizers)
-- [ ] Display list of judges with name, email, scoring progress (X of Y projects scored)
-- [ ] "Add Judge" button opens modal to search/select user by email
-- [ ] Each judge row has remove button with confirmation
-- [ ] Show empty state when no judges assigned
-- [ ] Typecheck passes
+- [x] Add "Judges" section to HackathonDetail page (visible to organizers)
+- [x] Display list of judges with name, email, scoring progress (X of Y projects scored)
+- [x] "Add Judge" button opens modal to search/select user by email
+- [x] Each judge row has remove button with confirmation
+- [x] Show empty state when no judges assigned
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-009: Create judge dashboard page

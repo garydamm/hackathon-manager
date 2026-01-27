@@ -35,4 +35,10 @@ class UserController(
         val user = userService.getUserById(id)
         return ResponseEntity.ok(user)
     }
+
+    @GetMapping("/by-email")
+    fun getUserByEmail(@RequestParam email: String): ResponseEntity<UserResponse> {
+        val user = userService.getUserByEmail(email)
+        return ResponseEntity.ok(user)
+    }
 }

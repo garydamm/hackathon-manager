@@ -32,6 +32,7 @@ import { UnregisterModal } from "@/components/UnregisterModal"
 import { ProjectCard } from "@/components/ProjectCard"
 import { ProjectDetailModal } from "@/components/ProjectDetailModal"
 import { JudgingCriteriaSection } from "@/components/JudgingCriteriaSection"
+import { JudgesSection } from "@/components/JudgesSection"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { projectService } from "@/services/projects"
@@ -429,6 +430,9 @@ function ViewMode({
 
       {/* Judging Criteria Section - visible to organizers only */}
       {isOrganizer && <JudgingCriteriaSection hackathonId={hackathon.id} />}
+
+      {/* Judges Section - visible to organizers only */}
+      {isOrganizer && <JudgesSection hackathonId={hackathon.id} />}
 
       {/* Teams Section */}
       {showTeamsSection && <TeamsSection hackathon={hackathon} />}
