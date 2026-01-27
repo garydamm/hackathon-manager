@@ -30,7 +30,7 @@ class UserController(
         return ResponseEntity.ok(user)
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9a-fA-F\\-]{36}}")
     fun getUserById(@PathVariable id: UUID): ResponseEntity<UserResponse> {
         val user = userService.getUserById(id)
         return ResponseEntity.ok(user)

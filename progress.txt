@@ -204,3 +204,25 @@
   - Component integration patterns: conditional rendering based on isOrganizer prop
   - Modal state management: separate state for modal open/close and selected item
 ---
+
+## Iteration 10 - US-009: Create judge dashboard page
+- What was implemented:
+  - Created JudgeDashboardPage component at /hackathons/:slug/judge
+  - Shows list of all submitted projects with scoring status (Not Started/In Progress/Completed)
+  - Each project card displays name, criteria scored count, and status badge
+  - Click on project card navigates to scoring page (/hackathons/:slug/judge/:projectId)
+  - Shows overall progress bar with "X of Y projects scored" and percentage
+  - Judge role authorization check - shows access denied if user is not a judge
+  - Added route to App.tsx with ProtectedRoute wrapper
+- Files changed:
+  - frontend/src/pages/JudgeDashboard.tsx (created)
+  - frontend/src/App.tsx (added import and route)
+  - PRD.md (marked US-009 complete)
+- Learnings for future iterations:
+  - Hackathon userRole can be "judge" to identify judges
+  - JudgeAssignment.completedAt indicates scoring is complete
+  - JudgeAssignment.scores?.length gives count of scored criteria
+  - Use judgingService.getMyAssignments(hackathonId) to get judge's project assignments
+  - Use judgingService.getCriteria(hackathonId) to get total criteria count for progress calculation
+  - Status badges pattern: inline-flex with icon + text, colored background
+---
