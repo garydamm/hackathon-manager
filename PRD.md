@@ -181,11 +181,11 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As a developer, I want the project documentation updated to reflect the new judging features.
 
 **Acceptance Criteria:**
-- [ ] Add Judging section to "Implemented Features" in PROJECT_STATUS.md
-- [ ] Add judging API endpoints to the API reference table
-- [ ] Add new routes to Application Routes table
-- [ ] Move "Judging & Scoring" from Future Roadmap to Implemented
-- [ ] Typecheck passes
+- [x] Add Judging section to "Implemented Features" in PROJECT_STATUS.md
+- [x] Add judging API endpoints to the API reference table
+- [x] Add new routes to Application Routes table
+- [x] Move "Judging & Scoring" from Future Roadmap to Implemented
+- [x] Typecheck passes
 
 ## Non-Goals
 

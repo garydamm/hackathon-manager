@@ -244,6 +244,30 @@ draft → submitted → under_review → accepted
 - [x] Loading states
 - [x] Error handling and display
 
+#### Judging & Scoring
+- [x] Judging criteria management (organizers)
+  - Create, update, delete criteria with name, description, max score, weight
+  - Criteria list section on hackathon detail page
+- [x] Judge management (organizers)
+  - Add judges by email lookup
+  - Remove judges with confirmation
+  - View judge list with scoring progress (X of Y projects scored)
+- [x] Judge dashboard
+  - View all assigned projects with scoring status
+  - Overall progress tracking
+- [x] Project scoring form
+  - Score each criteria (0 to max score)
+  - Optional feedback per criteria
+  - Auto-save and completion tracking
+- [x] Leaderboard (organizers)
+  - Ranked table with project scores
+  - Expandable rows showing per-criteria averages
+  - Sortable by rank or score
+- [x] Results view (participants)
+  - View final rankings when hackathon is completed
+  - Highlight own team's placement
+  - Congratulations for top 3 winners
+
 ---
 
 ## Application Routes
@@ -257,6 +281,8 @@ draft → submitted → under_review → accepted
 | `/hackathons/:slug` | HackathonDetailPage | View/edit hackathon details |
 | `/hackathons/:slug/teams` | TeamsListPage | List teams in hackathon |
 | `/hackathons/:slug/teams/:teamId` | TeamDetailPage | Team details with project |
+| `/hackathons/:slug/judge` | JudgeDashboardPage | Judge dashboard with project assignments |
+| `/hackathons/:slug/judge/:projectId` | ProjectScoringPage | Score a project on all criteria |
 
 ---
 
@@ -305,6 +331,26 @@ draft → submitted → under_review → accepted
 | POST | `/api/projects/:id/submit` | Submit project |
 | POST | `/api/projects/:id/unsubmit` | Unsubmit project |
 
+### Judging
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/judging/hackathons/:hackathonId/criteria` | List judging criteria |
+| POST | `/api/judging/hackathons/:hackathonId/criteria` | Create criteria (organizer) |
+| PUT | `/api/judging/criteria/:criteriaId` | Update criteria (organizer) |
+| DELETE | `/api/judging/criteria/:criteriaId` | Delete criteria (organizer) |
+| GET | `/api/judging/hackathons/:hackathonId/judges` | List judges (organizer) |
+| POST | `/api/judging/hackathons/:hackathonId/judges` | Add judge (organizer) |
+| DELETE | `/api/judging/hackathons/:hackathonId/judges/:userId` | Remove judge (organizer) |
+| GET | `/api/judging/hackathons/:hackathonId/assignments` | Get judge's project assignments |
+| GET | `/api/judging/assignments/:assignmentId` | Get single assignment with scores |
+| POST | `/api/judging/assignments/:assignmentId/scores` | Submit scores for assignment |
+| GET | `/api/judging/hackathons/:hackathonId/leaderboard` | Get ranked leaderboard |
+
+### Users
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/users/by-email` | Get user by email (for judge lookup) |
+
 ---
 
 ## Future Features Roadmap
@@ -313,7 +359,7 @@ draft → submitted → under_review → accepted
 |----------|---------|--------|
 | 1 | Schedule & Events | Not started |
 | 2 | Announcements | Not started |
-| 3 | Judging & Scoring | Not started |
+| 3 | Judging & Scoring | ✅ Completed |
 | 4 | Prizes & Winners | Not started |
 | 5 | User Profiles | Not started |
 | 6 | Team Invitations | Not started |
