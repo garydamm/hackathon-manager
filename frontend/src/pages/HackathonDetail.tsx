@@ -19,6 +19,7 @@ import {
   UsersRound,
   CheckCircle,
   FolderKanban,
+  Gavel,
 } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
@@ -267,6 +268,7 @@ function ViewMode({
     hackathon.status === "registration_open" || hackathon.status === "in_progress"
 
   const isRegistered = hackathon.userRole === "participant"
+  const isJudge = hackathon.userRole === "judge"
   const isRegistrationOpen = hackathon.status === "registration_open"
   const isFull =
     hackathon.maxParticipants != null &&
@@ -320,6 +322,14 @@ function ViewMode({
             {isRegistered && (
               <Button variant="outline" onClick={onUnregisterClick} className="mt-2">
                 Unregister
+              </Button>
+            )}
+            {isJudge && (
+              <Button asChild className="mt-2">
+                <Link to={`/hackathons/${hackathon.slug}/judge`}>
+                  <Gavel className="h-4 w-4 mr-2" />
+                  Judge Projects
+                </Link>
               </Button>
             )}
           </div>

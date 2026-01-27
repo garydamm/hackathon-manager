@@ -271,3 +271,41 @@
   - judgingService.getLeaderboard already exists from US-006
   - LeaderboardEntry.criteriaAverages contains per-criteria score breakdown
 ---
+
+## Iteration 13 - US-012: Create results view for participants
+- What was implemented:
+  - Created ResultsSection component for displaying final rankings to participants
+  - Shows "Results not yet available" message when hackathon status is not "completed"
+  - When hackathon is completed, fetches leaderboard data and displays ranked list
+  - Highlights user's own team/project with special styling (ring highlight and "You" badge)
+  - Includes congratulations section with decorated cards for top 3 winners (gold, silver, bronze)
+  - User's team result is prominently displayed if they placed outside top 3
+  - Full rankings table with rank badges matching LeaderboardSection styling
+  - Integrated into HackathonDetail ViewMode for non-organizers (organizers see Leaderboard instead)
+- Files changed:
+  - frontend/src/components/ResultsSection.tsx (created)
+  - frontend/src/pages/HackathonDetail.tsx (added ResultsSection import and integration)
+  - PRD.md (marked US-012 complete)
+- Learnings for future iterations:
+  - teamService.getMyTeam(hackathonId) returns current user's team (or null)
+  - Query enabled option can be used to conditionally fetch: enabled: hackathonStatus === "completed"
+  - Results are shown to non-organizers; organizers see the Leaderboard instead
+  - LeaderboardEntry.teamId can be compared with myTeam.id to find user's placement
+---
+
+## Iteration 14 - US-013: Add judge role navigation
+- What was implemented:
+  - Added "Judge Projects" button to HackathonDetail ViewMode for users with judge role
+  - Button navigates to /hackathons/:slug/judge
+  - Added judge dashboard link/button to HackathonCard for hackathons where user is judge
+  - Added "Judge" badge to HackathonCard status badges for judges (purple styling)
+  - HackathonCard shows "Judge" button instead of "Register" for judges
+- Files changed:
+  - frontend/src/pages/HackathonDetail.tsx (added Gavel icon, isJudge check, Judge Projects button)
+  - frontend/src/components/HackathonCard.tsx (added Gavel icon, isJudge check, Judge badge, Judge button)
+  - PRD.md (marked US-013 complete)
+- Learnings for future iterations:
+  - hackathon.userRole === "judge" identifies judges for a hackathon
+  - Gavel icon from lucide-react is used for judge-related UI
+  - Judge button takes precedence over Register button (don't show both)
+---

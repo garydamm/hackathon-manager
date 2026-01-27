@@ -171,11 +171,11 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As a judge, I want easy access to my judging dashboard from the hackathon page.
 
 **Acceptance Criteria:**
-- [ ] Show "Judge Projects" button on HackathonDetail when user has judge role
-- [ ] Button navigates to `/hackathons/:slug/judge`
-- [ ] Add judge dashboard link to hackathon card on main dashboard (for hackathons where user is judge)
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Show "Judge Projects" button on HackathonDetail when user has judge role
+- [x] Button navigates to `/hackathons/:slug/judge`
+- [x] Add judge dashboard link to hackathon card on main dashboard (for hackathons where user is judge)
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-014: Update PROJECT_STATUS.md with judging features
 **Description:** As a developer, I want the project documentation updated to reflect the new judging features.

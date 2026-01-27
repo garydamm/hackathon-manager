@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Calendar, MapPin, Users, Globe, Clock, CheckCircle } from "lucide-react"
+import { Calendar, MapPin, Users, Globe, Clock, CheckCircle, Gavel } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -66,6 +66,7 @@ export function HackathonCard({ hackathon, index }: HackathonCardProps) {
   const [showRegisterModal, setShowRegisterModal] = useState(false)
 
   const isRegistered = hackathon.userRole === "participant"
+  const isJudge = hackathon.userRole === "judge"
   const isRegistrationOpen = hackathon.status === "registration_open"
   const isFull = hackathon.maxParticipants != null && (hackathon.participantCount ?? 0) >= hackathon.maxParticipants
 
@@ -108,6 +109,12 @@ export function HackathonCard({ hackathon, index }: HackathonCardProps) {
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                 <CheckCircle className="h-3 w-3" />
                 Registered
+              </span>
+            )}
+            {isJudge && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                <Gavel className="h-3 w-3" />
+                Judge
               </span>
             )}
             <span
@@ -170,7 +177,15 @@ export function HackathonCard({ hackathon, index }: HackathonCardProps) {
             <Button className="flex-1" variant="outline" asChild>
               <Link to={`/hackathons/${hackathon.slug}`}>View Details</Link>
             </Button>
-            {isRegistrationOpen && !isRegistered && (
+            {isJudge && (
+              <Button className="flex-1" asChild>
+                <Link to={`/hackathons/${hackathon.slug}/judge`}>
+                  <Gavel className="h-4 w-4 mr-2" />
+                  Judge
+                </Link>
+              </Button>
+            )}
+            {isRegistrationOpen && !isRegistered && !isJudge && (
               <Button
                 className="flex-1"
                 disabled={isFull}
