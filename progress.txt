@@ -34,3 +34,20 @@
   - Use hackathonService.isUserOrganizer() for organizer-only operations
   - @Transactional(readOnly = true) for read-only methods, @Transactional for writes
 ---
+
+## Iteration 2 - US-002: Create JudgingController for criteria endpoints
+- What was implemented:
+  - Created JudgingController with base path `/api/judging`
+  - GET /api/judging/hackathons/{hackathonId}/criteria - list criteria (public)
+  - POST /api/judging/hackathons/{hackathonId}/criteria - create criteria (organizer only)
+  - PUT /api/judging/criteria/{criteriaId} - update criteria (organizer only)
+  - DELETE /api/judging/criteria/{criteriaId} - delete criteria (organizer only)
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/controller/JudgingController.kt (created)
+- Learnings for future iterations:
+  - Controller uses @AuthenticationPrincipal UserPrincipal to get authenticated user
+  - JudgingService methods handle authorization internally (no need to check in controller)
+  - GET endpoint for list criteria is public (no auth required)
+  - Use ResponseEntity.noContent().build() for DELETE returning 204
+  - Use ResponseEntity.status(HttpStatus.CREATED).body() for POST returning 201
+---

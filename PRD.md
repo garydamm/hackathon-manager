@@ -31,14 +31,14 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As an organizer, I want API endpoints to manage judging criteria so I can configure how projects are evaluated.
 
 **Acceptance Criteria:**
-- [ ] Create `JudgingController` with base path `/api/judging`
-- [ ] `GET /api/judging/hackathons/{hackathonId}/criteria` - list criteria (public)
-- [ ] `POST /api/judging/hackathons/{hackathonId}/criteria` - create criteria (organizer only)
-- [ ] `PUT /api/judging/criteria/{criteriaId}` - update criteria (organizer only)
-- [ ] `DELETE /api/judging/criteria/{criteriaId}` - delete criteria (organizer only)
-- [ ] Proper authorization checks using HackathonService.isUserOrganizer
-- [ ] Typecheck passes
-- [ ] Tests pass
+- [x] Create `JudgingController` with base path `/api/judging`
+- [x] `GET /api/judging/hackathons/{hackathonId}/criteria` - list criteria (public)
+- [x] `POST /api/judging/hackathons/{hackathonId}/criteria` - create criteria (organizer only)
+- [x] `PUT /api/judging/criteria/{criteriaId}` - update criteria (organizer only)
+- [x] `DELETE /api/judging/criteria/{criteriaId}` - delete criteria (organizer only)
+- [x] Proper authorization checks using HackathonService.isUserOrganizer
+- [x] Typecheck passes
+- [x] Tests pass
 
 ### US-003: Add judge management endpoints
 **Description:** As an organizer, I want to assign and remove judges from my hackathon so they can score projects.
