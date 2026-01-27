@@ -44,14 +44,14 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As an organizer, I want to assign and remove judges from my hackathon so they can score projects.
 
 **Acceptance Criteria:**
-- [ ] `POST /api/judging/hackathons/{hackathonId}/judges` - add judge by userId (organizer only)
-- [ ] `DELETE /api/judging/hackathons/{hackathonId}/judges/{userId}` - remove judge (organizer only)
-- [ ] `GET /api/judging/hackathons/{hackathonId}/judges` - list judges (organizer only)
-- [ ] Adding a judge creates HackathonUser with role=judge (or updates existing role)
-- [ ] Removing a judge removes the judge role (deletes HackathonUser or reverts to participant)
-- [ ] Return list of judges with their scoring progress (projects scored / total projects)
-- [ ] Typecheck passes
-- [ ] Tests pass
+- [x] `POST /api/judging/hackathons/{hackathonId}/judges` - add judge by userId (organizer only)
+- [x] `DELETE /api/judging/hackathons/{hackathonId}/judges/{userId}` - remove judge (organizer only)
+- [x] `GET /api/judging/hackathons/{hackathonId}/judges` - list judges (organizer only)
+- [x] Adding a judge creates HackathonUser with role=judge (or updates existing role)
+- [x] Removing a judge removes the judge role (deletes HackathonUser or reverts to participant)
+- [x] Return list of judges with their scoring progress (projects scored / total projects)
+- [x] Typecheck passes
+- [x] Tests pass
 
 ### US-004: Add scoring endpoints for judges
 **Description:** As a judge, I want to submit scores for projects so my evaluations are recorded.

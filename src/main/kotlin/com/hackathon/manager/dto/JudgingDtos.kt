@@ -125,3 +125,18 @@ data class UpdateJudgingCriteriaRequest(
     val weight: BigDecimal? = null,
     val displayOrder: Int? = null
 )
+
+data class AddJudgeRequest(
+    @field:NotNull(message = "User ID is required")
+    val userId: UUID
+)
+
+data class JudgeInfoResponse(
+    val userId: UUID,
+    val email: String,
+    val firstName: String,
+    val lastName: String,
+    val displayName: String?,
+    val projectsScored: Int,
+    val totalProjects: Int
+)
