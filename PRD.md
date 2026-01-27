@@ -114,7 +114,7 @@ Add a complete judging and scoring system that allows organizers to define judgi
 - [x] Each judge row has remove button with confirmation
 - [x] Show empty state when no judges assigned
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-009: Create judge dashboard page
 **Description:** As a judge, I want to see all projects I need to score and my progress.
