@@ -250,3 +250,24 @@
   - External links pattern: Button variant="outline" with asChild prop wrapping anchor tag
   - Technologies displayed as colored badges with flex-wrap gap-2
 ---
+
+## Iteration 12 - US-011: Create leaderboard view for organizers
+- What was implemented:
+  - Created LeaderboardSection component for HackathonDetail page
+  - Displays ranked table: Rank, Project Name, Team Name, Total Score
+  - Expandable rows show per-criteria average scores when clicked
+  - Shows "Judging in progress" warning message if any project has zero score
+  - Sortable by rank or score (ascending/descending toggle)
+  - Integrated LeaderboardSection into HackathonDetail page (visible to organizers only)
+  - Top 3 ranks have distinctive badge colors (gold, silver, bronze)
+- Files changed:
+  - frontend/src/components/LeaderboardSection.tsx (created)
+  - frontend/src/pages/HackathonDetail.tsx (added import and LeaderboardSection integration)
+  - PRD.md (marked US-011 complete)
+- Learnings for future iterations:
+  - Use Set<string> for tracking expanded rows in expandable table patterns
+  - Sort toggle pattern: if same field clicked, toggle direction; otherwise reset to default direction
+  - Query key for leaderboard: ["leaderboard", hackathonId]
+  - judgingService.getLeaderboard already exists from US-006
+  - LeaderboardEntry.criteriaAverages contains per-criteria score breakdown
+---

@@ -33,6 +33,7 @@ import { ProjectCard } from "@/components/ProjectCard"
 import { ProjectDetailModal } from "@/components/ProjectDetailModal"
 import { JudgingCriteriaSection } from "@/components/JudgingCriteriaSection"
 import { JudgesSection } from "@/components/JudgesSection"
+import { LeaderboardSection } from "@/components/LeaderboardSection"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { projectService } from "@/services/projects"
@@ -433,6 +434,9 @@ function ViewMode({
 
       {/* Judges Section - visible to organizers only */}
       {isOrganizer && <JudgesSection hackathonId={hackathon.id} />}
+
+      {/* Leaderboard Section - visible to organizers only */}
+      {isOrganizer && <LeaderboardSection hackathonId={hackathon.id} />}
 
       {/* Teams Section */}
       {showTeamsSection && <TeamsSection hackathon={hackathon} />}

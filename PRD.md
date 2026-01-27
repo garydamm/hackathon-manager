@@ -147,13 +147,13 @@ Add a complete judging and scoring system that allows organizers to define judgi
 **Description:** As an organizer, I want to see a leaderboard of all projects with their scores.
 
 **Acceptance Criteria:**
-- [ ] Add "Leaderboard" tab/section to HackathonDetail page (visible to organizers)
-- [ ] Display ranked table: Rank, Project Name, Team Name, Total Score
-- [ ] Expandable rows show per-criteria average scores
-- [ ] Show "Judging in progress" message if not all judges have completed
-- [ ] Sortable by rank or score
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Add "Leaderboard" tab/section to HackathonDetail page (visible to organizers)
+- [x] Display ranked table: Rank, Project Name, Team Name, Total Score
+- [x] Expandable rows show per-criteria average scores
+- [x] Show "Judging in progress" message if not all judges have completed
+- [x] Sortable by rank or score
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-012: Create results view for participants
 **Description:** As a participant, I want to see final rankings after the hackathon is completed.
