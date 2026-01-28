@@ -285,3 +285,81 @@ export interface LeaderboardEntry {
   totalScore: number
   criteriaAverages: CriteriaAverage[]
 }
+
+// Schedule and Events types
+export type EventType =
+  | "workshop"
+  | "presentation"
+  | "meal"
+  | "deadline"
+  | "ceremony"
+  | "networking"
+  | "other"
+
+export type RsvpStatus = "attending" | "maybe" | "not_attending"
+
+export interface ScheduleEvent {
+  id: string
+  hackathonId: string
+  name: string
+  description?: string | null
+  eventType: EventType
+  location?: string | null
+  virtualLink?: string | null
+  startsAt: string
+  endsAt: string
+  isMandatory: boolean
+  attendingCount: number
+  maybeCount: number
+  notAttendingCount: number
+  userRsvpStatus?: string | null
+  userAttended?: boolean | null
+}
+
+export interface EventAttendee {
+  id: string
+  eventId: string
+  userId: string
+  firstName: string
+  lastName: string
+  email: string
+  rsvpStatus?: string | null
+  attended: boolean
+}
+
+export interface CreateScheduleEventRequest {
+  hackathonId: string
+  name: string
+  description?: string
+  eventType: EventType
+  location?: string
+  virtualLink?: string
+  startsAt: string
+  endsAt: string
+  isMandatory?: boolean
+}
+
+export interface UpdateScheduleEventRequest {
+  name?: string
+  description?: string
+  eventType?: EventType
+  location?: string
+  virtualLink?: string
+  startsAt?: string
+  endsAt?: string
+  isMandatory?: boolean
+}
+
+export interface RsvpRequest {
+  rsvpStatus: RsvpStatus
+}
+
+export interface MarkAttendanceRequest {
+  userId: string
+  attended: boolean
+}
+
+export interface BulkMarkAttendanceRequest {
+  userIds: string[]
+  attended: boolean
+}

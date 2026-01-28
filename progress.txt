@@ -113,3 +113,20 @@
   - Service layer returns ScheduleEventResponse with updated RSVP counts for immediate UI feedback
   - DELETE endpoint uses noContent() for 204 status with no body
 ---
+
+## Iteration 23 - Add attendance tracking endpoints
+- Added three endpoints to ScheduleController for organizer attendance tracking
+- Added GET /schedule/{eventId}/attendees that returns List<EventAttendeeResponse>
+- Added POST /schedule/{eventId}/attendance with MarkAttendanceRequest body for single user
+- Added POST /schedule/{eventId}/attendance/bulk with BulkMarkAttendanceRequest body for multiple users
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/controller/ScheduleController.kt
+  - PRD.md (marked US-008 complete)
+- Learnings for future iterations:
+  - Service methods markAttendance and bulkMarkAttendance return Unit (void), not entities
+  - POST endpoints for attendance return ResponseEntity<Void> with 200 OK status using .ok().build()
+  - All three endpoints require authentication and pass principal.id to service layer for organizer check
+  - Service layer handles all authorization validation (throws FORBIDDEN if not organizer)
+  - GET attendees endpoint returns full list with user details, RSVP status, and attendance flag
+  - Import statements needed: BulkMarkAttendanceRequest, EventAttendeeResponse, MarkAttendanceRequest
+---

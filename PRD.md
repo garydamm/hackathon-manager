@@ -109,14 +109,14 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need TypeScript types for schedule entities so the frontend has type safety.
 
 **Acceptance Criteria:**
-- [ ] Add EventType union type in types/index.ts
-- [ ] Add RsvpStatus union type
-- [ ] Add ScheduleEvent interface with all fields including RSVP counts
-- [ ] Add EventAttendee interface with user details
-- [ ] Add CreateScheduleEventRequest interface
-- [ ] Add UpdateScheduleEventRequest interface
-- [ ] Add RsvpRequest, MarkAttendanceRequest, BulkMarkAttendanceRequest interfaces
-- [ ] Typecheck passes
+- [x] Add EventType union type in types/index.ts
+- [x] Add RsvpStatus union type
+- [x] Add ScheduleEvent interface with all fields including RSVP counts
+- [x] Add EventAttendee interface with user details
+- [x] Add CreateScheduleEventRequest interface
+- [x] Add UpdateScheduleEventRequest interface
+- [x] Add RsvpRequest, MarkAttendanceRequest, BulkMarkAttendanceRequest interfaces
+- [x] Typecheck passes
 
 ### US-010: Create schedule API service
 **Description:** As a developer, I need an API service for schedule operations so components can fetch and mutate schedule data.
