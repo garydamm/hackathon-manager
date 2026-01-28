@@ -75,12 +75,12 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need service methods for attendance tracking so organizers can mark who attended events.
 
 **Acceptance Criteria:**
-- [ ] Add `getEventAttendees(eventId, requesterId)` method with organizer authorization check
-- [ ] Add `markAttendance(eventId, userId, attended, requesterId)` method with organizer check
-- [ ] Add `bulkMarkAttendance(eventId, userIds, attended, requesterId)` method with organizer check
-- [ ] All methods verify requester is organizer using hackathonService.isUserOrganizer()
-- [ ] Throw ApiException with FORBIDDEN status if not organizer
-- [ ] Typecheck passes
+- [x] Add `getEventAttendees(eventId, requesterId)` method with organizer authorization check
+- [x] Add `markAttendance(eventId, userId, attended, requesterId)` method with organizer check
+- [x] Add `bulkMarkAttendance(eventId, userIds, attended, requesterId)` method with organizer check
+- [x] All methods verify requester is organizer using hackathonService.isUserOrganizer()
+- [x] Throw ApiException with FORBIDDEN status if not organizer
+- [x] Typecheck passes
 
 ### US-007: Add RSVP endpoints to ScheduleController
 **Description:** As a developer, I need REST endpoints for RSVP operations so the frontend can manage participant responses.

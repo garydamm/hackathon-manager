@@ -1,6 +1,7 @@
 package com.hackathon.manager.service
 
 import com.hackathon.manager.dto.CreateScheduleEventRequest
+import com.hackathon.manager.dto.EventAttendeeResponse
 import com.hackathon.manager.dto.ScheduleEventResponse
 import com.hackathon.manager.dto.UpdateScheduleEventRequest
 import com.hackathon.manager.entity.EventAttendee
@@ -149,5 +150,70 @@ class ScheduleService(
         }
 
         eventAttendeeRepository.deleteByEventIdAndUserId(eventId, userId)
+    }
+
+    @Transactional(readOnly = true)
+    fun getEventAttendees(eventId: UUID, requesterId: UUID): List<EventAttendeeResponse> {
+        // Validate event exists
+        val event = scheduleEventRepository.findById(eventId)
+            .orElseThrow { ApiException("Schedule event not found", HttpStatus.NOT_FOUND) }
+
+        // Verify requester is organizer
+        if (!hackathonService.isUserOrganizer(event.hackathon.id!!, requesterId)) {
+            throw ApiException("Only organizers can view event attendees", HttpStatus.FORBIDDEN)
+        }
+
+        // Return attendee list ordered by last name, first name
+        return eventAttendeeRepository.findByEventIdOrderByUserLastNameAscUserFirstNameAsc(eventId)
+            .map { EventAttendeeResponse.fromEntity(it) }
+    }
+
+    @Transactional
+    fun markAttendance(eventId: UUID, userId: UUID, attended: Boolean, requesterId: UUID) {
+        // Validate event exists
+        val event = scheduleEventRepository.findById(eventId)
+            .orElseThrow { ApiException("Schedule event not found", HttpStatus.NOT_FOUND) }
+
+        // Verify requester is organizer
+        if (!hackathonService.isUserOrganizer(event.hackathon.id!!, requesterId)) {
+            throw ApiException("Only organizers can mark attendance", HttpStatus.FORBIDDEN)
+        }
+
+        // Validate user exists
+        val user = userRepository.findById(userId)
+            .orElseThrow { ApiException("User not found", HttpStatus.NOT_FOUND) }
+
+        // Create or update attendee record
+        val attendee = eventAttendeeRepository.findByEventIdAndUserId(eventId, userId)
+            ?: EventAttendee(event = event, user = user)
+
+        attendee.attended = attended
+        eventAttendeeRepository.save(attendee)
+    }
+
+    @Transactional
+    fun bulkMarkAttendance(eventId: UUID, userIds: List<UUID>, attended: Boolean, requesterId: UUID) {
+        // Validate event exists
+        val event = scheduleEventRepository.findById(eventId)
+            .orElseThrow { ApiException("Schedule event not found", HttpStatus.NOT_FOUND) }
+
+        // Verify requester is organizer
+        if (!hackathonService.isUserOrganizer(event.hackathon.id!!, requesterId)) {
+            throw ApiException("Only organizers can mark attendance", HttpStatus.FORBIDDEN)
+        }
+
+        // Mark attendance for each user
+        userIds.forEach { userId ->
+            // Validate user exists
+            val user = userRepository.findById(userId)
+                .orElseThrow { ApiException("User not found: $userId", HttpStatus.NOT_FOUND) }
+
+            // Create or update attendee record
+            val attendee = eventAttendeeRepository.findByEventIdAndUserId(eventId, userId)
+                ?: EventAttendee(event = event, user = user)
+
+            attendee.attended = attended
+            eventAttendeeRepository.save(attendee)
+        }
     }
 }
