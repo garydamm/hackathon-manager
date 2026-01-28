@@ -117,6 +117,9 @@ class UserService(
         // Mark token as used
         resetToken.usedAt = OffsetDateTime.now()
         passwordResetTokenRepository.save(resetToken)
+
+        // Send password change confirmation email
+        emailService.sendPasswordChangeConfirmation(user.email, user.firstName)
     }
 
     private fun validatePassword(password: String) {

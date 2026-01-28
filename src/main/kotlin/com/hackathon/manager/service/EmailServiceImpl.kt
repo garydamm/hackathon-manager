@@ -32,4 +32,23 @@ class EmailServiceImpl(
             |========================================
         """.trimMargin())
     }
+
+    override fun sendPasswordChangeConfirmation(toEmail: String, userFirstName: String) {
+        // MVP: Log email to console instead of sending via SMTP
+        println("""
+            |========================================
+            |PASSWORD CHANGE CONFIRMATION
+            |========================================
+            |To: $toEmail
+            |Subject: Your Password Has Been Changed
+            |
+            |Hi $userFirstName,
+            |
+            |Your password has been successfully changed.
+            |
+            |If you did not make this change, please contact our support team immediately.
+            |
+            |========================================
+        """.trimMargin())
+    }
 }

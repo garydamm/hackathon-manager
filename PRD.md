@@ -119,11 +119,11 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a user, I want to receive email confirmation after password change so I know my account was modified.
 
 **Acceptance Criteria:**
-- [ ] Add `sendPasswordChangeConfirmation(toEmail: String, userFirstName: String)` method to EmailService interface
-- [ ] Implement method in EmailServiceImpl to log confirmation message
-- [ ] Message should inform user their password was changed and suggest contacting support if not them
-- [ ] Call this method at end of userService.resetPassword() after successful password update
-- [ ] Typecheck passes
+- [x] Add `sendPasswordChangeConfirmation(toEmail: String, userFirstName: String)` method to EmailService interface
+- [x] Implement method in EmailServiceImpl to log confirmation message
+- [x] Message should inform user their password was changed and suggest contacting support if not them
+- [x] Call this method at end of userService.resetPassword() after successful password update
+- [x] Typecheck passes
 
 ### US-010: Add TypeScript types for password reset
 **Description:** As a developer, I need TypeScript types for password reset operations so the frontend has type safety.
