@@ -147,16 +147,16 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a user, I want to request a password reset by entering my email so I can regain access to my account.
 
 **Acceptance Criteria:**
-- [ ] Create pages/ForgotPassword.tsx component
-- [ ] Use React Hook Form with Zod schema validating email format
-- [ ] Show email input field with Mail icon
-- [ ] Show "Send Reset Link" submit button
-- [ ] Display loading state during submission (Loader2 icon with "Sending...")
-- [ ] Show success message after submission: "If an account exists with that email, you will receive a password reset link shortly."
-- [ ] Show error message if API call fails
-- [ ] Include "Back to Login" link
-- [ ] Use AuthLayout for consistent styling with Login/Register pages
-- [ ] Typecheck passes
+- [x] Create pages/ForgotPassword.tsx component
+- [x] Use React Hook Form with Zod schema validating email format
+- [x] Show email input field with Mail icon
+- [x] Show "Send Reset Link" submit button
+- [x] Display loading state during submission (Loader2 icon with "Sending...")
+- [x] Show success message after submission: "If an account exists with that email, you will receive a password reset link shortly."
+- [x] Show error message if API call fails
+- [x] Include "Back to Login" link
+- [x] Use AuthLayout for consistent styling with Login/Register pages
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-013: Create ResetPassword page
