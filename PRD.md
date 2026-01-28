@@ -54,10 +54,10 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need to check if a user is registered for a hackathon so I can validate RSVP eligibility.
 
 **Acceptance Criteria:**
-- [ ] Add `isUserRegistered(hackathonId, userId)` method to HackathonService
-- [ ] Method returns boolean from hackathonUserRepository.existsByHackathonIdAndUserId()
-- [ ] Add @Transactional(readOnly = true) annotation
-- [ ] Typecheck passes
+- [x] Add `isUserRegistered(hackathonId, userId)` method to HackathonService
+- [x] Method returns boolean from hackathonUserRepository.existsByHackathonIdAndUserId()
+- [x] Add @Transactional(readOnly = true) annotation
+- [x] Typecheck passes
 
 ### US-005: Add RSVP service methods to ScheduleService
 **Description:** As a developer, I need service methods for RSVP operations so participants can indicate their attendance plans.

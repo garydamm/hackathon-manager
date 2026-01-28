@@ -188,6 +188,11 @@ class HackathonService(
     }
 
     @Transactional(readOnly = true)
+    fun isUserRegistered(hackathonId: UUID, userId: UUID): Boolean {
+        return hackathonUserRepository.existsByHackathonIdAndUserId(hackathonId, userId)
+    }
+
+    @Transactional(readOnly = true)
     fun getUserDraftHackathons(userId: UUID): List<HackathonResponse> {
         return hackathonRepository.findByOrganizerAndStatus(userId, HackathonStatus.draft)
             .map { HackathonResponse.fromEntity(it) }

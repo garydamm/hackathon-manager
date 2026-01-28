@@ -33,3 +33,18 @@
   - @Pattern annotation validates enum-like string values for rsvpStatus
   - EventAttendeeResponse includes user details (firstName, lastName, email) by accessing attendee.user properties
 ---
+
+## Iteration 18 - Update ScheduleEventResponse with RSVP data
+- Updated ScheduleEventResponse data class to include RSVP and attendance fields
+- Added 5 new fields: attendingCount, maybeCount, notAttendingCount, userRsvpStatus, userAttended
+- Updated fromEntity() companion method signature to accept RSVP counts and optional EventAttendee
+- Added EventAttendee import to ScheduleEventDtos.kt
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/dto/ScheduleEventDtos.kt
+  - PRD.md (marked US-003 complete)
+- Learnings for future iterations:
+  - Response DTOs can be enhanced with additional optional parameters in fromEntity() to support different contexts
+  - Default parameter values (= 0, = null) allow backwards compatibility when updating DTOs
+  - RSVP counts are passed separately from the entity since they require aggregation queries
+  - userAttendee parameter is nullable to support both authenticated and unauthenticated requests
+---
