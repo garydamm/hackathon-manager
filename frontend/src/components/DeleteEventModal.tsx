@@ -1,0 +1,142 @@
+import { useState } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { motion, AnimatePresence } from "framer-motion"
+import { Loader2, X, AlertTriangle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { scheduleService } from "@/services/schedule"
+import { ApiError } from "@/services/api"
+import type { ScheduleEvent } from "@/types"
+
+interface DeleteEventModalProps {
+  isOpen: boolean
+  onClose: () => void
+  event: ScheduleEvent | null
+}
+
+export function DeleteEventModal({
+  isOpen,
+  onClose,
+  event,
+}: DeleteEventModalProps) {
+  const queryClient = useQueryClient()
+  const [error, setError] = useState<string | null>(null)
+
+  const deleteMutation = useMutation({
+    mutationFn: (eventId: string) => scheduleService.deleteEvent(eventId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["schedule"] })
+      setError(null)
+      onClose()
+    },
+    onError: (err) => {
+      if (err instanceof ApiError) {
+        setError(err.message)
+      } else {
+        setError("Failed to delete event. Please try again.")
+      }
+    },
+  })
+
+  const handleDelete = () => {
+    if (event) {
+      setError(null)
+      deleteMutation.mutate(event.id)
+    }
+  }
+
+  const handleClose = () => {
+    setError(null)
+    onClose()
+  }
+
+  if (!event) return null
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleClose}
+            className="fixed inset-0 bg-black/50 z-50"
+          />
+
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            <div
+              className="bg-background rounded-xl shadow-xl w-full max-w-md p-6 space-y-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <h2 className="text-xl font-semibold">Delete Event</h2>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleClose}
+                  className="shrink-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Error message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                >
+                  {error}
+                </motion.div>
+              )}
+
+              {/* Warning message */}
+              <div className="space-y-3">
+                <p className="text-muted-foreground">
+                  Are you sure you want to delete{" "}
+                  <span className="font-semibold text-foreground">{event.name}</span>?
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  This action cannot be undone. All RSVPs and attendance records for this event will also be deleted.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-2">
+                <Button type="button" variant="outline" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={deleteMutation.isPending}
+                >
+                  {deleteMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete Event"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}

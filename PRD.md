@@ -190,15 +190,15 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As an organizer, I want to confirm before deleting events so I don't accidentally remove important schedule items.
 
 **Acceptance Criteria:**
-- [ ] Create components/DeleteEventModal.tsx
-- [ ] Show warning with AlertTriangle icon
-- [ ] Display event name in confirmation message
-- [ ] Warn that RSVPs and attendance will be deleted
-- [ ] Use destructive button variant for delete action
-- [ ] Handle delete mutation with loading state
-- [ ] Invalidate schedule queries on success
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create components/DeleteEventModal.tsx
+- [x] Show warning with AlertTriangle icon
+- [x] Display event name in confirmation message
+- [x] Warn that RSVPs and attendance will be deleted
+- [x] Use destructive button variant for delete action
+- [x] Handle delete mutation with loading state
+- [x] Invalidate schedule queries on success
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-016: Create AttendanceModal component
 **Description:** As an organizer, I want to track attendance for events with checkboxes so I can record who showed up.
