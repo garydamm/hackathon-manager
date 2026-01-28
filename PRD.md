@@ -191,10 +191,10 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a user, I want the forgot password link on login page to work so I can reset my password.
 
 **Acceptance Criteria:**
-- [ ] Verify Login.tsx already has Link to /forgot-password (line 89-94)
-- [ ] No changes needed - route will work once US-014 is complete
-- [ ] Test clicking "Forgot password?" link navigates to forgot password page
-- [ ] Verify changes work in browser
+- [x] Verify Login.tsx already has Link to /forgot-password (line 89-94)
+- [x] No changes needed - route will work once US-014 is complete
+- [x] Test clicking "Forgot password?" link navigates to forgot password page
+- [x] Verify changes work in browser
 
 ### US-016: Add cleanup job for expired tokens
 **Description:** As a developer, I need to periodically clean up expired tokens so the database doesn't grow unbounded.
