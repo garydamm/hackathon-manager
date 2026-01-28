@@ -62,3 +62,20 @@
   - isUserRegistered checks if user has ANY role in the hackathon (organizer, judge, admin, or participant)
   - This is useful for RSVP validation - any registered user can RSVP to events
 ---
+
+## Iteration 20 - Add RSVP service methods to ScheduleService
+- Injected eventAttendeeRepository, userRepository, and hackathonService into ScheduleService constructor
+- Added getScheduleByHackathonWithRsvp(hackathonId, userId?) method that includes RSVP counts per event
+- Added rsvpToEvent(eventId, userId, rsvpStatus) method that creates or updates RSVP with full validation
+- Added removeRsvp(eventId, userId) method that deletes RSVP records
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/ScheduleService.kt
+  - PRD.md (marked US-005 complete)
+- Learnings for future iterations:
+  - countByEventIdAndRsvpStatus returns Long, must convert to Int using .toInt() for ScheduleEventResponse
+  - getScheduleByHackathonWithRsvp queries RSVP counts for each event and includes user's RSVP status if userId provided
+  - rsvpToEvent validates: rsvpStatus enum, event exists, user exists, and user is registered for hackathon
+  - When creating/updating RSVP, use findByEventIdAndUserId() first, create new EventAttendee if null
+  - removeRsvp uses deleteByEventIdAndUserId() which is safe even if record doesn't exist
+  - Service layer handles all business logic and validation before repository operations
+---
