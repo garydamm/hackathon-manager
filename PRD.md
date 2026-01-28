@@ -157,7 +157,7 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 - [x] Include "Back to Login" link
 - [x] Use AuthLayout for consistent styling with Login/Register pages
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-013: Create ResetPassword page
 **Description:** As a user, I want to set a new password using the reset link so I can access my account.
@@ -174,7 +174,7 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 - [x] Show error message if token invalid/expired or API call fails
 - [x] Use AuthLayout for consistent styling
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-014: Add password reset routes to App
 **Description:** As a developer, I need to add routing for password reset pages so users can navigate to them.
@@ -185,7 +185,7 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 - [x] Add public route: /reset-password
 - [x] Both routes should be outside ProtectedRoute (no authentication required)
 - [x] Typecheck passes
-- [ ] Verify routes work in browser
+- [x] Verify routes work in browser
 
 ### US-015: Update existing forgot password link
 **Description:** As a user, I want the forgot password link on login page to work so I can reset my password.
