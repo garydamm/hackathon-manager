@@ -134,16 +134,16 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a participant, I want to RSVP to events with a simple dropdown so I can indicate my attendance plans.
 
 **Acceptance Criteria:**
-- [ ] Create components/RsvpButton.tsx
-- [ ] Show "RSVP" button if user hasn't RSVP'd yet
-- [ ] Show status badge (Attending/Maybe/Not Attending) if user has RSVP'd
-- [ ] Dropdown menu has 4 options: Attending, Maybe, Not Attending, Remove RSVP
-- [ ] Use color-coded badges: green (attending), yellow (maybe), gray (not attending)
-- [ ] Show lucide-react icons: Check, HelpCircle, X
-- [ ] Handle mutations with loading states
-- [ ] Invalidate schedule queries on success
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create components/RsvpButton.tsx
+- [x] Show "RSVP" button if user hasn't RSVP'd yet
+- [x] Show status badge (Attending/Maybe/Not Attending) if user has RSVP'd
+- [x] Dropdown menu has 4 options: Attending, Maybe, Not Attending, Remove RSVP
+- [x] Use color-coded badges: green (attending), yellow (maybe), gray (not attending)
+- [x] Show lucide-react icons: Check, HelpCircle, X
+- [x] Handle mutations with loading states
+- [x] Invalidate schedule queries on success
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-012: Create Schedule page with timeline view
 **Description:** As a participant, I want to see all hackathon events in a timeline view so I can plan my schedule.
