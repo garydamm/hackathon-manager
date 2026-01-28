@@ -193,3 +193,44 @@
   - Loading state disables both trigger button and menu items (isPending check)
   - Remove RSVP option only shown when userRsvpStatus exists (conditional separator and menu item)
 ---
+
+## Iteration 27 - Create Schedule page with timeline view
+- Created frontend/src/pages/Schedule.tsx with complete timeline view functionality
+- Component fetches hackathon by slug, then schedule by hackathonId using dependent queries
+- Implemented groupEventsByDay() helper function to group events by formatted date string
+- Created EventCard component showing name, description, type badge, time, location, virtual link, RSVP counts
+- Added mandatory indicator (red badge with AlertCircle icon and "Required" text)
+- Virtual link shown with Video icon, opens in new tab with noopener noreferrer
+- Integrated RsvpButton component in each event card header
+- Added "Back to Hackathon" link with ArrowLeft icon
+- Implemented empty state with Calendar icon and helpful message
+- Files changed:
+  - frontend/src/pages/Schedule.tsx (created)
+  - PRD.md (marked US-012 complete)
+- Learnings for future iterations:
+  - Page follows AppLayout pattern with max-w-4xl container
+  - Dependent queries pattern: enable second query only when first query has data (enabled: !!hackathon?.id)
+  - groupEventsByDay() uses reduce to create object with date string keys
+  - toLocaleDateString() with full options creates readable date headers: "Monday, January 27, 2026"
+  - toLocaleTimeString() for time formatting: "9:00 AM"
+  - EventCard uses Card with CardHeader and CardContent following existing component patterns
+  - Badge color coding follows pattern: bg-{color}-100 text-{color}-700 border-{color}-200
+  - Event type mapping: workshop (purple), presentation (blue), meal (orange), deadline (red), ceremony (yellow), networking (green), other (gray)
+  - RSVP count display: shows attending always, adds maybe/not attending counts conditionally if > 0
+  - Virtual links should use target="_blank" rel="noopener noreferrer" for security
+---
+
+## Iteration 28 - Add schedule route to app
+- Imported SchedulePage component in App.tsx
+- Added route /hackathons/:slug/schedule as a protected route
+- Route follows existing pattern with ProtectedRoute wrapper
+- Files changed:
+  - frontend/src/App.tsx
+  - PRD.md (marked US-013 complete)
+- Learnings for future iterations:
+  - New routes should be added in logical order (schedule route goes between hackathon detail and teams routes)
+  - All authenticated routes use ProtectedRoute wrapper component
+  - Route path follows pattern: /hackathons/:slug/<feature>
+  - Dev server starts successfully on available port (5176 in this case, as 5173-5175 were in use)
+  - Import statements should be grouped with other page imports at the top
+---

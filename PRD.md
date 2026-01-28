@@ -175,16 +175,16 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As an organizer, I want to create and edit events through a modal form so I can build the hackathon agenda.
 
 **Acceptance Criteria:**
-- [ ] Create components/EventFormModal.tsx
-- [ ] Use React Hook Form with Zod validation
-- [ ] Include fields: name*, description, eventType dropdown, location, virtualLink (URL validation), startsAt*, endsAt* (datetime-local), isMandatory (switch)
-- [ ] Support both create and edit modes (detect via event prop)
-- [ ] Use framer-motion for modal animations
-- [ ] Show validation errors inline
-- [ ] Handle create/update mutations with loading states
-- [ ] Invalidate schedule queries on success
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create components/EventFormModal.tsx
+- [x] Use React Hook Form with Zod validation
+- [x] Include fields: name*, description, eventType dropdown, location, virtualLink (URL validation), startsAt*, endsAt* (datetime-local), isMandatory (switch)
+- [x] Support both create and edit modes (detect via event prop)
+- [x] Use framer-motion for modal animations
+- [x] Show validation errors inline
+- [x] Handle create/update mutations with loading states
+- [x] Invalidate schedule queries on success
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-015: Create DeleteEventModal component
 **Description:** As an organizer, I want to confirm before deleting events so I don't accidentally remove important schedule items.
