@@ -246,11 +246,11 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need a Checkbox component for the attendance tracking UI.
 
 **Acceptance Criteria:**
-- [ ] Check if components/ui/checkbox.tsx exists
-- [ ] If missing, create checkbox component using @radix-ui/react-checkbox
-- [ ] If missing, run: npm install @radix-ui/react-checkbox
-- [ ] Component follows shadcn/ui patterns with proper styling
-- [ ] Typecheck passes
+- [x] Check if components/ui/checkbox.tsx exists
+- [x] If missing, create checkbox component using @radix-ui/react-checkbox
+- [x] If missing, run: npm install @radix-ui/react-checkbox
+- [x] Component follows shadcn/ui patterns with proper styling
+- [x] Typecheck passes
 
 ## Non-Goals
 

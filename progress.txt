@@ -331,3 +331,22 @@
   - Modal components receive different props: EventFormModal needs hackathonId and event, DeleteEventModal needs event, AttendanceModal needs event
   - Loading state shows centered Loader2 spinner during data fetch
 ---
+
+## Iteration 33 - Integrate schedule into HackathonDetail page
+- Imported ScheduleManagementSection component in HackathonDetail.tsx
+- Added ScheduleManagementSection after JudgesSection with isOrganizer check (line 478)
+- Added "View Full Schedule" card in Quick Info section after Participants card
+- Card is visible to all registered users (checks hackathon.userRole) with Calendar icon
+- Card links to /hackathons/{slug}/schedule with hover effects
+- Files changed:
+  - frontend/src/pages/HackathonDetail.tsx
+  - PRD.md (marked US-018 complete)
+- Learnings for future iterations:
+  - Integration pattern: import component, add with conditional rendering (isOrganizer check)
+  - Quick Info cards use Card with CardContent, flex layout, and icon + text layout
+  - "View Full Schedule" card uses bg-primary/5 and border-primary/20 for subtle highlighting
+  - Link component wraps entire card content with group class for hover effects
+  - ArrowLeft icon rotated 180 degrees (rotate-180) to point right, with translate animation on hover
+  - Conditional rendering based on userRole checks if user is registered (any role)
+  - ScheduleManagementSection placed between JudgesSection and LeaderboardSection following component ordering pattern
+---
