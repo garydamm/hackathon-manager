@@ -130,3 +130,22 @@
   - GET attendees endpoint returns full list with user details, RSVP status, and attendance flag
   - Import statements needed: BulkMarkAttendanceRequest, EventAttendeeResponse, MarkAttendanceRequest
 ---
+
+## Iteration 24 - Add TypeScript types for schedule and events
+- Added all required TypeScript types to frontend/src/types/index.ts
+- Added EventType union type with 7 event types: workshop, presentation, meal, deadline, ceremony, networking, other
+- Added RsvpStatus union type with 3 statuses: attending, maybe, not_attending
+- Added ScheduleEvent interface with all fields including RSVP counts and user-specific fields
+- Added EventAttendee interface with user details, RSVP status, and attendance flag
+- Added CreateScheduleEventRequest and UpdateScheduleEventRequest interfaces for event management
+- Added RsvpRequest, MarkAttendanceRequest, and BulkMarkAttendanceRequest interfaces for RSVP and attendance operations
+- Files changed:
+  - frontend/src/types/index.ts
+  - PRD.md (marked US-009 complete)
+- Learnings for future iterations:
+  - Frontend types should match backend DTO structure for consistency
+  - Union types are preferred over enums in TypeScript for string literal types
+  - All optional fields use `| null` for consistency with backend nullable types
+  - Build command (`npm run build`) runs `tsc -b` which performs type checking
+  - Request interfaces use optional fields for partial updates (UpdateScheduleEventRequest)
+---
