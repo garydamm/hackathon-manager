@@ -37,6 +37,9 @@ app:
     allowed-headers: "*"
     allow-credentials: true
 
+  frontend:
+    url: http://localhost:5173
+
 logging:
   level:
     com.hackathon.manager: DEBUG

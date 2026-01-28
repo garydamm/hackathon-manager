@@ -64,14 +64,14 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need an email service so password reset links can be sent to users.
 
 **Acceptance Criteria:**
-- [ ] Create `EmailService.kt` interface with method: `sendPasswordResetEmail(toEmail: String, resetToken: String, userFirstName: String)`
-- [ ] Create `EmailServiceImpl.kt` that implements EmailService
-- [ ] For MVP, implementation logs email to console with formatted message including reset URL
-- [ ] Reset URL format: `${frontendUrl}/reset-password?token=${resetToken}`
-- [ ] Add `@Value("\${app.frontend.url}")` to inject frontend URL from application properties
-- [ ] Add configuration property in application.yml: `app.frontend.url: http://localhost:5173`
-- [ ] Mark class as @Service
-- [ ] Typecheck passes
+- [x] Create `EmailService.kt` interface with method: `sendPasswordResetEmail(toEmail: String, resetToken: String, userFirstName: String)`
+- [x] Create `EmailServiceImpl.kt` that implements EmailService
+- [x] For MVP, implementation logs email to console with formatted message including reset URL
+- [x] Reset URL format: `${frontendUrl}/reset-password?token=${resetToken}`
+- [x] Add `@Value("\${app.frontend.url}")` to inject frontend URL from application properties
+- [x] Add configuration property in application.yml: `app.frontend.url: http://localhost:5173`
+- [x] Mark class as @Service
+- [x] Typecheck passes
 
 ### US-006: Add password reset methods to UserService
 **Description:** As a developer, I need service methods for password reset operations so the controller can handle requests.
