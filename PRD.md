@@ -138,10 +138,10 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need API client methods for password reset so components can call the backend.
 
 **Acceptance Criteria:**
-- [ ] Add `forgotPassword(email: string): Promise<PasswordResetResponse>` to services/auth.ts
-- [ ] Add `resetPassword(token: string, newPassword: string, confirmPassword: string): Promise<PasswordResetResponse>` to services/auth.ts
-- [ ] Both methods use centralized api client with proper error handling
-- [ ] Typecheck passes
+- [x] Add `forgotPassword(email: string): Promise<PasswordResetResponse>` to services/auth.ts
+- [x] Add `resetPassword(token: string, newPassword: string, confirmPassword: string): Promise<PasswordResetResponse>` to services/auth.ts
+- [x] Both methods use centralized api client with proper error handling
+- [x] Typecheck passes
 
 ### US-012: Create ForgotPassword page
 **Description:** As a user, I want to request a password reset by entering my email so I can regain access to my account.

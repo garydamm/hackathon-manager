@@ -1,5 +1,5 @@
 import { api } from "./api"
-import type { AuthResponse, LoginRequest, RegisterRequest, User } from "@/types"
+import type { AuthResponse, LoginRequest, RegisterRequest, User, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse } from "@/types"
 
 const ACCESS_TOKEN_KEY = "accessToken"
 const REFRESH_TOKEN_KEY = "refreshToken"
@@ -38,6 +38,28 @@ export const authService = {
       this.clearSession()
       return null
     }
+  },
+
+  async forgotPassword(email: string): Promise<PasswordResetResponse> {
+    const response = await api.post<PasswordResetResponse>(
+      "/auth/forgot-password",
+      { email } as ForgotPasswordRequest,
+      { skipAuth: true }
+    )
+    return response
+  },
+
+  async resetPassword(
+    token: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Promise<PasswordResetResponse> {
+    const response = await api.post<PasswordResetResponse>(
+      "/auth/reset-password",
+      { token, newPassword, confirmPassword } as ResetPasswordRequest,
+      { skipAuth: true }
+    )
+    return response
   },
 
   logout(): void {

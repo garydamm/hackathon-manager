@@ -546,3 +546,21 @@
   - Security pattern: notify users of password changes so they're aware if account was compromised
   - Confirmation email is fire-and-forget (no error handling) since email service is async/logging only in MVP
 ---
+
+## Iteration 44 - Add TypeScript types for password reset
+- Added three password reset interfaces to frontend/src/types/index.ts
+- Added ForgotPasswordRequest with email field
+- Added ResetPasswordRequest with token, newPassword, confirmPassword fields
+- Added PasswordResetResponse with message field
+- Types added after RegisterRequest for logical grouping of auth-related types
+- Files changed:
+  - frontend/src/types/index.ts
+  - PRD.md (marked US-010 complete)
+- Learnings for future iterations:
+  - TypeScript types should match backend DTOs for consistency (ForgotPasswordRequest matches backend data class)
+  - Password reset types follow same pattern as existing auth types (LoginRequest, RegisterRequest)
+  - ResetPasswordRequest includes both newPassword and confirmPassword for frontend validation
+  - PasswordResetResponse is simple wrapper with message field (matches backend DTO)
+  - Build command (npm run build) runs tsc -b for type checking, verifies all types are valid
+  - Types placed near related auth types (after RegisterRequest) for better organization
+---
