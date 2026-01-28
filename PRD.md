@@ -200,13 +200,13 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need to periodically clean up expired tokens so the database doesn't grow unbounded.
 
 **Acceptance Criteria:**
-- [ ] Create `ScheduledTasks.kt` class with @Component annotation
-- [ ] Add @Scheduled method `cleanupExpiredPasswordResetTokens()` running daily at midnight
-- [ ] Use cron expression: `@Scheduled(cron = "0 0 0 * * ?")`
-- [ ] Method calls passwordResetTokenRepository.deleteByExpiresAtBefore(cutoffTime = 7 days ago)
-- [ ] Log count of deleted tokens at INFO level
-- [ ] Add @EnableScheduling to main application class if not already present
-- [ ] Typecheck passes
+- [x] Create `ScheduledTasks.kt` class with @Component annotation
+- [x] Add @Scheduled method `cleanupExpiredPasswordResetTokens()` running daily at midnight
+- [x] Use cron expression: `@Scheduled(cron = "0 0 0 * * ?")`
+- [x] Method calls passwordResetTokenRepository.deleteByExpiresAtBefore(cutoffTime = 7 days ago)
+- [x] Log count of deleted tokens at INFO level
+- [x] Add @EnableScheduling to main application class if not already present
+- [x] Typecheck passes
 
 ## Non-Goals
 
