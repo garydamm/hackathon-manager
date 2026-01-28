@@ -506,3 +506,24 @@
   - Password requirements match registration flow (defined in Register.tsx) for consistency
   - Regex patterns wrapped in Regex() constructor: Regex("[A-Z]"), Regex("[a-z]"), Regex("[0-9]")
 ---
+
+## Iteration 42 - Add password reset endpoints to AuthController
+- Added POST /api/auth/forgot-password endpoint that accepts ForgotPasswordRequest
+- Added POST /api/auth/reset-password endpoint that accepts ResetPasswordRequest
+- Both endpoints are public (no authentication required)
+- forgot-password always returns success message even if email doesn't exist (security best practice)
+- reset-password validates passwords match before calling service, returns 400 if they don't match
+- Injected UserService into AuthController constructor
+- Updated AuthControllerTest to include UserService as MockBean to fix test failures
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/controller/AuthController.kt
+  - src/test/kotlin/com/hackathon/manager/controller/AuthControllerTest.kt
+  - PRD.md (marked US-008 complete)
+- Learnings for future iterations:
+  - ApiException constructor takes message first, then HttpStatus: ApiException(message, status)
+  - When adding new dependencies to controller, must add corresponding @MockBean in test files
+  - Controller endpoints follow pattern: @PostMapping, @Valid @RequestBody for validation, ResponseEntity for responses
+  - Password validation (match check) happens in controller layer before calling service
+  - Security best practice: always return same success message for forgot-password regardless of email existence
+  - All AuthController endpoints now include: register, login, refresh, forgot-password, reset-password
+---
