@@ -52,13 +52,13 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need DTOs for password reset operations so I can handle requests and responses with validation.
 
 **Acceptance Criteria:**
-- [ ] Create `PasswordResetDtos.kt` file in dto/auth package
-- [ ] Add `ForgotPasswordRequest` data class with email field (validated as email)
-- [ ] Add `ResetPasswordRequest` data class with token, newPassword, confirmPassword fields
-- [ ] Add validation annotations for minimum password length (8 chars)
-- [ ] Add custom validator or service-level check for password requirements (uppercase, lowercase, number)
-- [ ] Add `PasswordResetResponse` data class with message field
-- [ ] Typecheck passes
+- [x] Create `PasswordResetDtos.kt` file in dto/auth package
+- [x] Add `ForgotPasswordRequest` data class with email field (validated as email)
+- [x] Add `ResetPasswordRequest` data class with token, newPassword, confirmPassword fields
+- [x] Add validation annotations for minimum password length (8 chars)
+- [x] Add custom validator or service-level check for password requirements (uppercase, lowercase, number)
+- [x] Add `PasswordResetResponse` data class with message field
+- [x] Typecheck passes
 
 ### US-005: Create EmailService interface and stub implementation
 **Description:** As a developer, I need an email service so password reset links can be sent to users.
