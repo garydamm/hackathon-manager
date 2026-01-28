@@ -604,3 +604,28 @@
   - Success message intentionally vague ("If an account exists...") to prevent email enumeration attacks
   - "Back to Login" link pattern mirrors "Create account" link in Login page for consistency
 ---
+
+## Iteration 47 - Create ResetPassword page
+- Created ResetPassword.tsx page following ForgotPassword and Register patterns
+- Implemented React Hook Form with Zod schema matching Register.tsx password validation (8+ chars, uppercase, lowercase, number)
+- Extracted token from URL query params using useSearchParams() from react-router-dom
+- Shows error layout when token is missing from URL with "Request New Link" button
+- Added newPassword and confirmPassword fields with Lock icons in left position
+- Password requirements displayed as helper text below fields (bulleted list with all 4 requirements)
+- Added "Reset Password" button with loading state (Loader2 icon and "Resetting Password..." text)
+- On success, navigates to /login with success message in location state
+- Error message shown in red box if API call fails (invalid/expired token)
+- Uses AuthLayout with title "Reset your password" and subtitle
+- Files changed:
+  - frontend/src/pages/ResetPassword.tsx (created)
+  - PRD.md (marked US-013 complete - except browser verification)
+- Learnings for future iterations:
+  - useSearchParams() from react-router-dom returns [searchParams, setSearchParams] tuple
+  - searchParams.get("token") extracts query parameter from URL
+  - Early return pattern when token missing shows error layout before main form
+  - Password validation schema uses .refine() to check passwords match, similar to Register page
+  - navigate() can accept state object to pass success messages to next page
+  - Password requirements helper text uses text-xs, list-disc, list-inside, and ml-2 for proper list formatting
+  - ResetPassword follows same structure as ForgotPassword but with password fields instead of email
+  - Both password fields use Lock icon for consistency with Login page
+---

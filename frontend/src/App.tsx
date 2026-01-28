@@ -4,6 +4,8 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { LoginPage } from "@/pages/Login"
 import { RegisterPage } from "@/pages/Register"
+import { ForgotPasswordPage } from "@/pages/ForgotPassword"
+import { ResetPasswordPage } from "@/pages/ResetPassword"
 import { DashboardPage } from "@/pages/Dashboard"
 import { CreateHackathonPage } from "@/pages/CreateHackathon"
 import { HackathonDetailPage } from "@/pages/HackathonDetail"
@@ -31,6 +33,8 @@ function App() {
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* Protected routes */}
             <Route

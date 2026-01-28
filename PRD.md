@@ -180,11 +180,11 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need to add routing for password reset pages so users can navigate to them.
 
 **Acceptance Criteria:**
-- [ ] Import ForgotPasswordPage and ResetPasswordPage in App.tsx
-- [ ] Add public route: /forgot-password
-- [ ] Add public route: /reset-password
-- [ ] Both routes should be outside ProtectedRoute (no authentication required)
-- [ ] Typecheck passes
+- [x] Import ForgotPasswordPage and ResetPasswordPage in App.tsx
+- [x] Add public route: /forgot-password
+- [x] Add public route: /reset-password
+- [x] Both routes should be outside ProtectedRoute (no authentication required)
+- [x] Typecheck passes
 - [ ] Verify routes work in browser
 
 ### US-015: Update existing forgot password link
