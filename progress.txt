@@ -48,3 +48,17 @@
   - RSVP counts are passed separately from the entity since they require aggregation queries
   - userAttendee parameter is nullable to support both authenticated and unauthenticated requests
 ---
+
+## Iteration 19 - Add isUserRegistered helper to HackathonService
+- Added isUserRegistered(hackathonId, userId) method to HackathonService
+- Method uses hackathonUserRepository.existsByHackathonIdAndUserId() to return boolean
+- Added @Transactional(readOnly = true) annotation following service layer pattern
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt
+  - PRD.md (marked US-004 complete)
+- Learnings for future iterations:
+  - HackathonUserRepository already has existsByHackathonIdAndUserId() method
+  - Helper methods in service layer should follow @Transactional(readOnly = true) pattern for read operations
+  - isUserRegistered checks if user has ANY role in the hackathon (organizer, judge, admin, or participant)
+  - This is useful for RSVP validation - any registered user can RSVP to events
+---

@@ -63,13 +63,13 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need service methods for RSVP operations so participants can indicate their attendance plans.
 
 **Acceptance Criteria:**
-- [ ] Inject eventAttendeeRepository, userRepository, hackathonService into ScheduleService
-- [ ] Add `getScheduleByHackathonWithRsvp(hackathonId, userId?)` method that includes RSVP counts
-- [ ] Add `rsvpToEvent(eventId, userId, rsvpStatus)` method that creates or updates RSVP
-- [ ] Add `removeRsvp(eventId, userId)` method that deletes RSVP
-- [ ] Validate user is registered before allowing RSVP
-- [ ] Validate rsvpStatus is one of: attending, maybe, not_attending
-- [ ] Typecheck passes
+- [x] Inject eventAttendeeRepository, userRepository, hackathonService into ScheduleService
+- [x] Add `getScheduleByHackathonWithRsvp(hackathonId, userId?)` method that includes RSVP counts
+- [x] Add `rsvpToEvent(eventId, userId, rsvpStatus)` method that creates or updates RSVP
+- [x] Add `removeRsvp(eventId, userId)` method that deletes RSVP
+- [x] Validate user is registered before allowing RSVP
+- [x] Validate rsvpStatus is one of: attending, maybe, not_attending
+- [x] Typecheck passes
 
 ### US-006: Add attendance tracking service methods
 **Description:** As a developer, I need service methods for attendance tracking so organizers can mark who attended events.
