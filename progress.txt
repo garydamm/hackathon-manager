@@ -258,3 +258,25 @@
   - Event type dropdown uses native <select> with input styling classes for consistency
   - isMandatory uses Switch component with controlled behavior via watch/setValue pattern
 ---
+
+## Iteration 30 - Create DeleteEventModal component
+- Created frontend/src/components/DeleteEventModal.tsx following EventFormModal pattern
+- Shows warning with AlertTriangle icon in header alongside "Delete Event" title
+- Displays event name in bold within confirmation message
+- Warns user that RSVPs and attendance records will also be deleted
+- Uses destructive button variant (variant="destructive") for delete action
+- Handles delete mutation with loading state (Loader2 spinner and "Deleting..." text)
+- Invalidates schedule queries on success for immediate UI feedback
+- Files changed:
+  - frontend/src/components/DeleteEventModal.tsx (created)
+  - PRD.md (marked US-015 complete)
+- Learnings for future iterations:
+  - DeleteEventModal follows same modal pattern as EventFormModal (framer-motion animations, backdrop, error handling)
+  - Modal is simpler than form modal (max-w-md instead of max-w-2xl, no form validation)
+  - AlertTriangle icon shown in header with text-destructive color to emphasize danger
+  - Component receives event prop and returns null early if event is null for safety
+  - Confirmation message uses span with font-semibold and text-foreground to highlight event name
+  - Delete button uses variant="destructive" for red button styling
+  - Warning text explains consequences: "All RSVPs and attendance records for this event will also be deleted"
+  - Mutation pattern same as EventFormModal: useMutation with mutationFn, onSuccess, onError
+---

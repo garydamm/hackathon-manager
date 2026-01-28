@@ -204,17 +204,17 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As an organizer, I want to track attendance for events with checkboxes so I can record who showed up.
 
 **Acceptance Criteria:**
-- [ ] Create components/AttendanceModal.tsx
-- [ ] Fetch attendees when modal opens
-- [ ] Display attendee list with name, email, RSVP status badge
-- [ ] Show checkbox for multi-select with "Select All" option
-- [ ] Show Present/Absent button per attendee (toggles attended status)
-- [ ] Show "Mark Present" and "Mark Absent" bulk action buttons when items selected
-- [ ] Display present count (X / Y present)
-- [ ] Handle individual and bulk mutations
-- [ ] Invalidate queries on success
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create components/AttendanceModal.tsx
+- [x] Fetch attendees when modal opens
+- [x] Display attendee list with name, email, RSVP status badge
+- [x] Show checkbox for multi-select with "Select All" option
+- [x] Show Present/Absent button per attendee (toggles attended status)
+- [x] Show "Mark Present" and "Mark Absent" bulk action buttons when items selected
+- [x] Display present count (X / Y present)
+- [x] Handle individual and bulk mutations
+- [x] Invalidate queries on success
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-017: Create ScheduleManagementSection component
 **Description:** As an organizer, I want to manage events from the hackathon detail page so I have quick access to schedule operations.
