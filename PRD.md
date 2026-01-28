@@ -42,11 +42,11 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need a repository for password reset tokens so I can perform CRUD operations.
 
 **Acceptance Criteria:**
-- [ ] Create `PasswordResetTokenRepository.kt` extending JpaRepository
-- [ ] Add method: `findByToken(token: String): Optional<PasswordResetToken>`
-- [ ] Add method: `findByUserIdAndUsedAtIsNullAndExpiresAtAfter(userId: UUID, currentTime: OffsetDateTime): List<PasswordResetToken>`
-- [ ] Add method: `deleteByExpiresAtBefore(cutoffTime: OffsetDateTime): Int`
-- [ ] Typecheck passes
+- [x] Create `PasswordResetTokenRepository.kt` extending JpaRepository
+- [x] Add method: `findByToken(token: String): Optional<PasswordResetToken>`
+- [x] Add method: `findByUserIdAndUsedAtIsNullAndExpiresAtAfter(userId: UUID, currentTime: OffsetDateTime): List<PasswordResetToken>`
+- [x] Add method: `deleteByExpiresAtBefore(cutoffTime: OffsetDateTime): Int`
+- [x] Typecheck passes
 
 ### US-004: Add password reset DTOs
 **Description:** As a developer, I need DTOs for password reset operations so I can handle requests and responses with validation.
