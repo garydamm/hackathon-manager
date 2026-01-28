@@ -31,12 +31,12 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need DTOs for event attendee operations so I can handle RSVP and attendance requests/responses.
 
 **Acceptance Criteria:**
-- [ ] Create `EventAttendeeDtos.kt` file
-- [ ] Add `EventAttendeeResponse` data class with fromEntity() method
-- [ ] Add `RsvpRequest` data class with validation for rsvpStatus
-- [ ] Add `MarkAttendanceRequest` data class with userId and attended fields
-- [ ] Add `BulkMarkAttendanceRequest` data class with userIds list and attended field
-- [ ] Typecheck passes
+- [x] Create `EventAttendeeDtos.kt` file
+- [x] Add `EventAttendeeResponse` data class with fromEntity() method
+- [x] Add `RsvpRequest` data class with validation for rsvpStatus
+- [x] Add `MarkAttendanceRequest` data class with userId and attended fields
+- [x] Add `BulkMarkAttendanceRequest` data class with userIds list and attended field
+- [x] Typecheck passes
 
 ### US-003: Update ScheduleEventResponse with RSVP data
 **Description:** As a developer, I need to include RSVP counts and user status in event responses so the frontend can display participation information.
