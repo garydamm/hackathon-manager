@@ -1,205 +1,299 @@
-# PRD: Judging and Scoring System
+# PRD: Schedule and Events Feature
 
 ## Introduction
 
-Add a complete judging and scoring system that allows organizers to define judging criteria, assign judges to hackathons, and enable judges to score all submitted projects. Participants can view results after the hackathon is completed.
+Add a comprehensive schedule and events system to help hackathon participants easily view and plan their time during the event. Organizers can create a full agenda including workshops, meals, ceremonies, and deadlines. Participants can view the schedule, RSVP to events, and access virtual meeting links. Organizers can track attendance for in-person events.
 
 ## Goals
 
-- Allow organizers to define weighted judging criteria for each hackathon
-- Enable organizers to assign/remove judges at the hackathon level
-- Provide judges with a clear workflow to score all submitted projects
-- Show organizers an aggregated leaderboard with all scores
-- Display final results to participants after hackathon completion
+- Enable organizers to create a complete hackathon agenda with various event types
+- Provide participants with an easy-to-read timeline view of all events
+- Allow participants to RSVP to events (attending/maybe/not attending)
+- Make virtual event links readily accessible to all registered participants
+- Clearly mark mandatory events with visual indicators
+- Enable organizers to track attendance for in-person events with manual check-in
 
 ## User Stories
 
-### US-001: Create JudgingService for criteria management
-**Description:** As a developer, I need backend service methods to manage judging criteria so the API can support CRUD operations.
+### US-001: Create EventAttendeeRepository
+**Description:** As a developer, I need a repository for event attendees so I can store and query RSVP and attendance data.
 
 **Acceptance Criteria:**
-- [x] Create `JudgingService` class with dependency injection for repositories
-- [x] Implement `getCriteriaByHackathon(hackathonId)` returning list ordered by displayOrder
-- [x] Implement `createCriteria(hackathonId, request)` with validation (organizer only)
-- [x] Implement `updateCriteria(criteriaId, request)` with validation
-- [x] Implement `deleteCriteria(criteriaId)` with validation
-- [x] Add `CreateJudgingCriteriaRequest` and `UpdateJudgingCriteriaRequest` DTOs to JudgingDtos.kt
+- [x] Create `EventAttendeeRepository.kt` extending JpaRepository
+- [x] Add method: `findByEventIdAndUserId(eventId, userId)`
+- [x] Add method: `findByEventIdOrderByUserLastNameAscUserFirstNameAsc(eventId)`
+- [x] Add method: `existsByEventIdAndUserId(eventId, userId)`
+- [x] Add method: `countByEventIdAndRsvpStatus(eventId, rsvpStatus)`
+- [x] Add method: `deleteByEventIdAndUserId(eventId, userId)`
 - [x] Typecheck passes
-- [x] Tests pass
 
-### US-002: Create JudgingController for criteria endpoints
-**Description:** As an organizer, I want API endpoints to manage judging criteria so I can configure how projects are evaluated.
+### US-002: Add EventAttendee DTOs
+**Description:** As a developer, I need DTOs for event attendee operations so I can handle RSVP and attendance requests/responses.
 
 **Acceptance Criteria:**
-- [x] Create `JudgingController` with base path `/api/judging`
-- [x] `GET /api/judging/hackathons/{hackathonId}/criteria` - list criteria (public)
-- [x] `POST /api/judging/hackathons/{hackathonId}/criteria` - create criteria (organizer only)
-- [x] `PUT /api/judging/criteria/{criteriaId}` - update criteria (organizer only)
-- [x] `DELETE /api/judging/criteria/{criteriaId}` - delete criteria (organizer only)
-- [x] Proper authorization checks using HackathonService.isUserOrganizer
-- [x] Typecheck passes
-- [x] Tests pass
+- [ ] Create `EventAttendeeDtos.kt` file
+- [ ] Add `EventAttendeeResponse` data class with fromEntity() method
+- [ ] Add `RsvpRequest` data class with validation for rsvpStatus
+- [ ] Add `MarkAttendanceRequest` data class with userId and attended fields
+- [ ] Add `BulkMarkAttendanceRequest` data class with userIds list and attended field
+- [ ] Typecheck passes
 
-### US-003: Add judge management endpoints
-**Description:** As an organizer, I want to assign and remove judges from my hackathon so they can score projects.
+### US-003: Update ScheduleEventResponse with RSVP data
+**Description:** As a developer, I need to include RSVP counts and user status in event responses so the frontend can display participation information.
 
 **Acceptance Criteria:**
-- [x] `POST /api/judging/hackathons/{hackathonId}/judges` - add judge by userId (organizer only)
-- [x] `DELETE /api/judging/hackathons/{hackathonId}/judges/{userId}` - remove judge (organizer only)
-- [x] `GET /api/judging/hackathons/{hackathonId}/judges` - list judges (organizer only)
-- [x] Adding a judge creates HackathonUser with role=judge (or updates existing role)
-- [x] Removing a judge removes the judge role (deletes HackathonUser or reverts to participant)
-- [x] Return list of judges with their scoring progress (projects scored / total projects)
-- [x] Typecheck passes
-- [x] Tests pass
+- [ ] Add `attendingCount: Int = 0` field to ScheduleEventResponse
+- [ ] Add `maybeCount: Int = 0` field to ScheduleEventResponse
+- [ ] Add `notAttendingCount: Int = 0` field to ScheduleEventResponse
+- [ ] Add `userRsvpStatus: String? = null` field to ScheduleEventResponse
+- [ ] Add `userAttended: Boolean? = null` field to ScheduleEventResponse
+- [ ] Update fromEntity() to accept RSVP counts and user attendee record
+- [ ] Typecheck passes
 
-### US-004: Add scoring endpoints for judges
-**Description:** As a judge, I want to submit scores for projects so my evaluations are recorded.
-
-**Acceptance Criteria:**
-- [x] `GET /api/judging/hackathons/{hackathonId}/assignments` - get judge's assigned projects with scoring status
-- [x] `GET /api/judging/assignments/{assignmentId}` - get single assignment with scores
-- [x] `POST /api/judging/assignments/{assignmentId}/scores` - submit/update scores for a project
-- [x] Auto-create JudgeAssignment when judge first accesses a project (or on judge assignment to hackathon)
-- [x] Mark assignment as completed when all criteria are scored
-- [x] Validate score is within 0 to criteria.maxScore
-- [x] Only judges assigned to hackathon can score
-- [x] Typecheck passes
-- [x] Tests pass
-
-### US-005: Add leaderboard and results endpoints
-**Description:** As an organizer or participant, I want to see aggregated scores and rankings.
+### US-004: Add isUserRegistered helper to HackathonService
+**Description:** As a developer, I need to check if a user is registered for a hackathon so I can validate RSVP eligibility.
 
 **Acceptance Criteria:**
-- [x] `GET /api/judging/hackathons/{hackathonId}/leaderboard` - get ranked projects with scores
-- [x] Calculate weighted average score per project across all judges and criteria
-- [x] Include: rank, project name, team name, total score, individual criteria averages
-- [x] Organizers can view leaderboard anytime
-- [x] Participants can only view when hackathon status is "completed"
-- [x] Typecheck passes
-- [x] Tests pass
+- [ ] Add `isUserRegistered(hackathonId, userId)` method to HackathonService
+- [ ] Method returns boolean from hackathonUserRepository.existsByHackathonIdAndUserId()
+- [ ] Add @Transactional(readOnly = true) annotation
+- [ ] Typecheck passes
 
-### US-006: Create frontend judging types and API service
-**Description:** As a developer, I need TypeScript types and API service for judging features.
+### US-005: Add RSVP service methods to ScheduleService
+**Description:** As a developer, I need service methods for RSVP operations so participants can indicate their attendance plans.
 
 **Acceptance Criteria:**
-- [x] Add judging types to `frontend/src/types/index.ts`: JudgingCriteria, JudgeAssignment, Score, JudgeInfo, LeaderboardEntry
-- [x] Create `frontend/src/services/judging.ts` with all API methods
-- [x] Methods: getCriteria, createCriteria, updateCriteria, deleteCriteria
-- [x] Methods: getJudges, addJudge, removeJudge
-- [x] Methods: getMyAssignments, getAssignment, submitScores
-- [x] Methods: getLeaderboard
-- [x] Typecheck passes
+- [ ] Inject eventAttendeeRepository, userRepository, hackathonService into ScheduleService
+- [ ] Add `getScheduleByHackathonWithRsvp(hackathonId, userId?)` method that includes RSVP counts
+- [ ] Add `rsvpToEvent(eventId, userId, rsvpStatus)` method that creates or updates RSVP
+- [ ] Add `removeRsvp(eventId, userId)` method that deletes RSVP
+- [ ] Validate user is registered before allowing RSVP
+- [ ] Validate rsvpStatus is one of: attending, maybe, not_attending
+- [ ] Typecheck passes
 
-### US-007: Create judging criteria management UI
-**Description:** As an organizer, I want to manage judging criteria from the hackathon detail page.
-
-**Acceptance Criteria:**
-- [x] Add "Judging Criteria" section to HackathonDetail page (visible to organizers)
-- [x] Display list of criteria with name, description, max score, weight
-- [x] "Add Criteria" button opens modal with form (name, description, maxScore, weight)
-- [x] Each criteria row has edit and delete buttons
-- [x] Edit opens modal with pre-filled form
-- [x] Delete shows confirmation dialog
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-008: Create judge management UI
-**Description:** As an organizer, I want to add and remove judges from my hackathon.
+### US-006: Add attendance tracking service methods
+**Description:** As a developer, I need service methods for attendance tracking so organizers can mark who attended events.
 
 **Acceptance Criteria:**
-- [x] Add "Judges" section to HackathonDetail page (visible to organizers)
-- [x] Display list of judges with name, email, scoring progress (X of Y projects scored)
-- [x] "Add Judge" button opens modal to search/select user by email
-- [x] Each judge row has remove button with confirmation
-- [x] Show empty state when no judges assigned
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add `getEventAttendees(eventId, requesterId)` method with organizer authorization check
+- [ ] Add `markAttendance(eventId, userId, attended, requesterId)` method with organizer check
+- [ ] Add `bulkMarkAttendance(eventId, userIds, attended, requesterId)` method with organizer check
+- [ ] All methods verify requester is organizer using hackathonService.isUserOrganizer()
+- [ ] Throw ApiException with FORBIDDEN status if not organizer
+- [ ] Typecheck passes
 
-### US-009: Create judge dashboard page
-**Description:** As a judge, I want to see all projects I need to score and my progress.
-
-**Acceptance Criteria:**
-- [x] Create new route `/hackathons/:slug/judge` for judge dashboard
-- [x] Show list of all submitted projects in the hackathon
-- [x] Each project card shows: name, team name, scoring status (Not Started / In Progress / Completed)
-- [x] Click on project card navigates to scoring page
-- [x] Show overall progress: "X of Y projects scored"
-- [x] Only accessible to users with judge role in this hackathon
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-010: Create project scoring form
-**Description:** As a judge, I want to score a project on all criteria with optional feedback.
+### US-007: Add RSVP endpoints to ScheduleController
+**Description:** As a developer, I need REST endpoints for RSVP operations so the frontend can manage participant responses.
 
 **Acceptance Criteria:**
-- [x] Create scoring page/modal at `/hackathons/:slug/judge/:projectId`
-- [x] Display project details (name, tagline, description, links)
-- [x] Show form with all judging criteria
-- [x] Each criteria: name, description, score input (0 to maxScore), optional feedback textarea
-- [x] Pre-fill existing scores if previously saved
-- [x] "Save Scores" button submits all scores
-- [x] Show success message and return to judge dashboard
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Update existing GET /schedule/hackathon/{id} to use getScheduleByHackathonWithRsvp()
+- [ ] Add POST /schedule/{eventId}/rsvp endpoint with RsvpRequest body
+- [ ] Add PUT /schedule/{eventId}/rsvp endpoint for updating RSVP status
+- [ ] Add DELETE /schedule/{eventId}/rsvp endpoint for removing RSVP
+- [ ] All endpoints use @AuthenticationPrincipal for user context
+- [ ] Return 201 CREATED for POST, 200 OK for PUT, 204 NO CONTENT for DELETE
+- [ ] Typecheck passes
 
-### US-011: Create leaderboard view for organizers
-**Description:** As an organizer, I want to see a leaderboard of all projects with their scores.
+### US-008: Add attendance tracking endpoints
+**Description:** As a developer, I need REST endpoints for attendance tracking so organizers can record who attended events.
 
 **Acceptance Criteria:**
-- [x] Add "Leaderboard" tab/section to HackathonDetail page (visible to organizers)
-- [x] Display ranked table: Rank, Project Name, Team Name, Total Score
-- [x] Expandable rows show per-criteria average scores
-- [x] Show "Judging in progress" message if not all judges have completed
-- [x] Sortable by rank or score
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add GET /schedule/{eventId}/attendees endpoint (returns attendee list)
+- [ ] Add POST /schedule/{eventId}/attendance endpoint with MarkAttendanceRequest body
+- [ ] Add POST /schedule/{eventId}/attendance/bulk endpoint with BulkMarkAttendanceRequest body
+- [ ] All endpoints require authentication and pass principal.id to service layer
+- [ ] Return appropriate HTTP status codes (200 OK, 403 FORBIDDEN, 404 NOT FOUND)
+- [ ] Typecheck passes
 
-### US-012: Create results view for participants
-**Description:** As a participant, I want to see final rankings after the hackathon is completed.
-
-**Acceptance Criteria:**
-- [x] Add "Results" section to HackathonDetail page (visible when status=completed)
-- [x] Display ranked list of projects with scores
-- [x] Highlight user's own team/project
-- [x] Show "Results not yet available" if hackathon not completed
-- [x] Include congratulations message for top 3 projects
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-013: Add judge role navigation
-**Description:** As a judge, I want easy access to my judging dashboard from the hackathon page.
+### US-009: Add TypeScript types for schedule and events
+**Description:** As a developer, I need TypeScript types for schedule entities so the frontend has type safety.
 
 **Acceptance Criteria:**
-- [x] Show "Judge Projects" button on HackathonDetail when user has judge role
-- [x] Button navigates to `/hackathons/:slug/judge`
-- [x] Add judge dashboard link to hackathon card on main dashboard (for hackathons where user is judge)
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add EventType union type in types/index.ts
+- [ ] Add RsvpStatus union type
+- [ ] Add ScheduleEvent interface with all fields including RSVP counts
+- [ ] Add EventAttendee interface with user details
+- [ ] Add CreateScheduleEventRequest interface
+- [ ] Add UpdateScheduleEventRequest interface
+- [ ] Add RsvpRequest, MarkAttendanceRequest, BulkMarkAttendanceRequest interfaces
+- [ ] Typecheck passes
 
-### US-014: Update PROJECT_STATUS.md with judging features
-**Description:** As a developer, I want the project documentation updated to reflect the new judging features.
+### US-010: Create schedule API service
+**Description:** As a developer, I need an API service for schedule operations so components can fetch and mutate schedule data.
 
 **Acceptance Criteria:**
-- [x] Add Judging section to "Implemented Features" in PROJECT_STATUS.md
-- [x] Add judging API endpoints to the API reference table
-- [x] Add new routes to Application Routes table
-- [x] Move "Judging & Scoring" from Future Roadmap to Implemented
-- [x] Typecheck passes
+- [ ] Create services/schedule.ts file
+- [ ] Export scheduleService singleton object
+- [ ] Add methods: getSchedule, getEvent, createEvent, updateEvent, deleteEvent
+- [ ] Add methods: rsvpToEvent, updateRsvp, removeRsvp
+- [ ] Add methods: getEventAttendees, markAttendance, bulkMarkAttendance
+- [ ] All methods use centralized api client with proper types
+- [ ] Typecheck passes
+
+### US-011: Create RsvpButton component
+**Description:** As a participant, I want to RSVP to events with a simple dropdown so I can indicate my attendance plans.
+
+**Acceptance Criteria:**
+- [ ] Create components/RsvpButton.tsx
+- [ ] Show "RSVP" button if user hasn't RSVP'd yet
+- [ ] Show status badge (Attending/Maybe/Not Attending) if user has RSVP'd
+- [ ] Dropdown menu has 4 options: Attending, Maybe, Not Attending, Remove RSVP
+- [ ] Use color-coded badges: green (attending), yellow (maybe), gray (not attending)
+- [ ] Show lucide-react icons: Check, HelpCircle, X
+- [ ] Handle mutations with loading states
+- [ ] Invalidate schedule queries on success
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-012: Create Schedule page with timeline view
+**Description:** As a participant, I want to see all hackathon events in a timeline view so I can plan my schedule.
+
+**Acceptance Criteria:**
+- [ ] Create pages/Schedule.tsx
+- [ ] Fetch hackathon by slug and schedule by hackathonId (dependent queries)
+- [ ] Group events by day using helper function
+- [ ] Display day headers with formatted dates
+- [ ] Render EventCard for each event showing: name, description, type badge, time, location, virtual link, RSVP counts
+- [ ] Show mandatory indicator (red badge with AlertCircle icon and "Required" text)
+- [ ] Show virtual link with Video icon (visible to all registered users)
+- [ ] Include RsvpButton in each event card
+- [ ] Add "Back to Hackathon" link
+- [ ] Show empty state if no events scheduled
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-013: Add schedule route to app
+**Description:** As a developer, I need to add routing for the schedule page so users can navigate to it.
+
+**Acceptance Criteria:**
+- [ ] Import SchedulePage component in App.tsx
+- [ ] Add route: /hackathons/:slug/schedule
+- [ ] Typecheck passes
+- [ ] Verify route works in browser
+
+### US-014: Create EventFormModal component
+**Description:** As an organizer, I want to create and edit events through a modal form so I can build the hackathon agenda.
+
+**Acceptance Criteria:**
+- [ ] Create components/EventFormModal.tsx
+- [ ] Use React Hook Form with Zod validation
+- [ ] Include fields: name*, description, eventType dropdown, location, virtualLink (URL validation), startsAt*, endsAt* (datetime-local), isMandatory (switch)
+- [ ] Support both create and edit modes (detect via event prop)
+- [ ] Use framer-motion for modal animations
+- [ ] Show validation errors inline
+- [ ] Handle create/update mutations with loading states
+- [ ] Invalidate schedule queries on success
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-015: Create DeleteEventModal component
+**Description:** As an organizer, I want to confirm before deleting events so I don't accidentally remove important schedule items.
+
+**Acceptance Criteria:**
+- [ ] Create components/DeleteEventModal.tsx
+- [ ] Show warning with AlertTriangle icon
+- [ ] Display event name in confirmation message
+- [ ] Warn that RSVPs and attendance will be deleted
+- [ ] Use destructive button variant for delete action
+- [ ] Handle delete mutation with loading state
+- [ ] Invalidate schedule queries on success
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-016: Create AttendanceModal component
+**Description:** As an organizer, I want to track attendance for events with checkboxes so I can record who showed up.
+
+**Acceptance Criteria:**
+- [ ] Create components/AttendanceModal.tsx
+- [ ] Fetch attendees when modal opens
+- [ ] Display attendee list with name, email, RSVP status badge
+- [ ] Show checkbox for multi-select with "Select All" option
+- [ ] Show Present/Absent button per attendee (toggles attended status)
+- [ ] Show "Mark Present" and "Mark Absent" bulk action buttons when items selected
+- [ ] Display present count (X / Y present)
+- [ ] Handle individual and bulk mutations
+- [ ] Invalidate queries on success
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-017: Create ScheduleManagementSection component
+**Description:** As an organizer, I want to manage events from the hackathon detail page so I have quick access to schedule operations.
+
+**Acceptance Criteria:**
+- [ ] Create components/ScheduleManagementSection.tsx
+- [ ] Display Card with "Schedule & Events" title and Calendar icon
+- [ ] Show "Add Event" button in header
+- [ ] List all events with: name, type badge, mandatory indicator, time, location, RSVP count
+- [ ] Show 3 action buttons per event: Attendance (Users icon), Edit (Pencil), Delete (Trash2)
+- [ ] Manage state for 3 modals: EventFormModal, DeleteEventModal, AttendanceModal
+- [ ] Show empty state message if no events
+- [ ] Follow JudgingCriteriaSection pattern exactly
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-018: Integrate schedule into HackathonDetail page
+**Description:** As an organizer, I want to see schedule management on the hackathon detail page so I can manage all aspects in one place.
+
+**Acceptance Criteria:**
+- [ ] Import ScheduleManagementSection in HackathonDetail.tsx
+- [ ] Add ScheduleManagementSection after JudgesSection (around line 449) with isOrganizer check
+- [ ] Add "View Full Schedule" card in Quick Info section with Calendar icon and link to /hackathons/{slug}/schedule
+- [ ] Card should be visible to all registered users (not just organizers)
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-019: Add Checkbox UI component if missing
+**Description:** As a developer, I need a Checkbox component for the attendance tracking UI.
+
+**Acceptance Criteria:**
+- [ ] Check if components/ui/checkbox.tsx exists
+- [ ] If missing, create checkbox component using @radix-ui/react-checkbox
+- [ ] If missing, run: npm install @radix-ui/react-checkbox
+- [ ] Component follows shadcn/ui patterns with proper styling
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- No automatic winner selection or prize assignment (separate feature)
-- No judge consensus/calibration tools
-- No blind judging (judges can see project details)
-- No per-project judge assignment (judges score all projects in hackathon)
-- No real-time score updates via WebSocket
-- No export functionality for scores (future enhancement)
+- No recurring events (hackathons are short enough for one-time events)
+- No automatic RSVP enforcement for mandatory events (just visual indicator)
+- No QR code check-in system (manual checkbox only in MVP)
+- No email notifications for schedule changes or reminders
+- No calendar sync (Google Calendar, iCal export)
+- No waitlist or capacity limits per event
+- No event prerequisites or dependencies
+- No automatic scheduling or conflict detection
+- No virtual link access restrictions (visible to all registered participants)
 
 ## Technical Considerations
 
-- Reuse existing entities: JudgingCriteria, JudgeAssignment, Score
-- JudgeAssignments should be auto-created for each judge-project pair when needed
-- Weighted average calculation: sum(score * weight) / sum(weight) for each judge, then average across judges
-- Use HackathonUser.role = "judge" to identify judges for a hackathon
-- Leaderboard should handle edge cases: no scores yet, partial scoring, ties
+### Existing Backend Infrastructure
+- EventAttendee entity already exists in schema.sql (lines 217-246)
+- ScheduleEvent entity and basic CRUD already implemented
+- ScheduleService, ScheduleController, ScheduleEventRepository already exist
+- Need to add RSVP and attendance methods to existing service/controller
+
+### Frontend Patterns
+- Follow judging feature patterns (JudgingCriteriaSection, CriteriaFormModal)
+- Use React Hook Form + Zod for form validation
+- Use React Query for data fetching with 5-minute stale time
+- Use framer-motion for modal animations
+- Use shadcn/ui components (Card, Button, Input, etc.)
+
+### Security Model
+- Virtual links visible to all registered participants (no RSVP required)
+- Only organizers can create/edit/delete events
+- Only organizers can view attendee lists and mark attendance
+- Users must be registered for hackathon to RSVP
+- Backend validates authorization using hackathonService.isUserOrganizer()
+
+### Data Model
+- RSVP status values: "attending", "maybe", "not_attending"
+- Event types: workshop, presentation, meal, deadline, ceremony, networking, other
+- EventAttendee has unique constraint on (event_id, user_id)
+- Attended is boolean (no timestamp tracking in MVP)
+
+### Timeline View
+- Events grouped by day (not calendar grid)
+- Uses toLocaleDateString() for formatting
+- Sorted by startsAt (database query handles ordering)
+- Better for dense 24-48 hour hackathon schedules
