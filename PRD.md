@@ -166,10 +166,10 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need to add routing for the schedule page so users can navigate to it.
 
 **Acceptance Criteria:**
-- [ ] Import SchedulePage component in App.tsx
-- [ ] Add route: /hackathons/:slug/schedule
-- [ ] Typecheck passes
-- [ ] Verify route works in browser
+- [x] Import SchedulePage component in App.tsx
+- [x] Add route: /hackathons/:slug/schedule
+- [x] Typecheck passes
+- [x] Verify route works in browser
 
 ### US-014: Create EventFormModal component
 **Description:** As an organizer, I want to create and edit events through a modal form so I can build the hackathon agenda.

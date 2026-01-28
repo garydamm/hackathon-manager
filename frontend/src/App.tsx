@@ -11,6 +11,7 @@ import { TeamsListPage } from "@/pages/TeamsListPage"
 import { TeamDetailPage } from "@/pages/TeamDetailPage"
 import { JudgeDashboardPage } from "@/pages/JudgeDashboard"
 import { ProjectScoringPage } from "@/pages/ProjectScoring"
+import { SchedulePage } from "@/pages/Schedule"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,6 +54,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <HackathonDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/hackathons/:slug/schedule"
+              element={
+                <ProtectedRoute>
+                  <SchedulePage />
                 </ProtectedRoute>
               }
             />
