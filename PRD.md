@@ -30,13 +30,13 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need a JPA entity for password reset tokens so I can query and persist them.
 
 **Acceptance Criteria:**
-- [ ] Create `PasswordResetToken.kt` entity in entity package
-- [ ] Map all table columns with proper types (UUID, String, OffsetDateTime)
-- [ ] Add `@ManyToOne` relationship to User entity
-- [ ] Include @CreationTimestamp for createdAt
-- [ ] Add helper method `isExpired(): Boolean` that checks current time vs expiresAt
-- [ ] Add helper method `isUsed(): Boolean` that checks if usedAt is not null
-- [ ] Typecheck passes
+- [x] Create `PasswordResetToken.kt` entity in entity package
+- [x] Map all table columns with proper types (UUID, String, OffsetDateTime)
+- [x] Add `@ManyToOne` relationship to User entity
+- [x] Include @CreationTimestamp for createdAt
+- [x] Add helper method `isExpired(): Boolean` that checks current time vs expiresAt
+- [x] Add helper method `isUsed(): Boolean` that checks if usedAt is not null
+- [x] Typecheck passes
 
 ### US-003: Create PasswordResetTokenRepository
 **Description:** As a developer, I need a repository for password reset tokens so I can perform CRUD operations.
