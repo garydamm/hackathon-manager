@@ -92,14 +92,14 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need to validate password requirements so users create secure passwords on reset.
 
 **Acceptance Criteria:**
-- [ ] Add `validatePassword(password: String)` private method in UserService
-- [ ] Check length >= 8 characters
-- [ ] Check contains at least one uppercase letter (regex: `[A-Z]`)
-- [ ] Check contains at least one lowercase letter (regex: `[a-z]`)
-- [ ] Check contains at least one number (regex: `[0-9]`)
-- [ ] Throw ApiException with BAD_REQUEST and descriptive message if validation fails
-- [ ] Call this method in resetPassword() before encoding
-- [ ] Typecheck passes
+- [x] Add `validatePassword(password: String)` private method in UserService
+- [x] Check length >= 8 characters
+- [x] Check contains at least one uppercase letter (regex: `[A-Z]`)
+- [x] Check contains at least one lowercase letter (regex: `[a-z]`)
+- [x] Check contains at least one number (regex: `[0-9]`)
+- [x] Throw ApiException with BAD_REQUEST and descriptive message if validation fails
+- [x] Call this method in resetPassword() before encoding
+- [x] Typecheck passes
 
 ### US-008: Add password reset endpoints to AuthController
 **Description:** As a developer, I need REST endpoints for password reset so the frontend can trigger the flow.

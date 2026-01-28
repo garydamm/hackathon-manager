@@ -465,3 +465,26 @@
   - trimMargin() with pipe character creates clean multi-line string output
   - EmailServiceImpl will be injected into UserService later for sending password reset emails
 ---
+
+## Iteration 40 - Add password reset methods to UserService
+- Injected PasswordResetTokenRepository, EmailService, and PasswordEncoder into UserService constructor
+- Added requestPasswordReset(email) method that creates token with 15-minute expiry and calls email service
+- Silently succeeds if email doesn't exist (security: don't reveal user existence)
+- Invalidates any existing unused tokens for the user by marking them as used
+- Added validateResetToken(token) method that checks token exists, not used, not expired
+- Added resetPassword(token, newPassword) method that validates token, updates user password, marks token as used
+- Uses passwordEncoder.encode() for hashing new password
+- Throws ApiException with BAD_REQUEST if token invalid/expired/used
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/UserService.kt
+  - PRD.md (marked US-006 complete)
+- Learnings for future iterations:
+  - User entity id field is nullable (UUID? = null) because it's auto-generated, use !! operator when accessing for persisted entities
+  - requestPasswordReset() invalidates existing unused tokens by marking usedAt = OffsetDateTime.now() rather than deleting
+  - Token generation uses UUID.randomUUID().toString() for cryptographic randomness
+  - validateResetToken() is separate method with @Transactional(readOnly = true) for reusability
+  - resetPassword() calls validateResetToken() first, then updates user password and marks token as used
+  - Service methods follow pattern: inject dependencies in constructor, use @Transactional annotations
+  - PasswordEncoder is standard Spring Security dependency injected from AppConfig.kt
+  - OffsetDateTime.now().plusMinutes(15) creates 15-minute expiry timestamp
+---

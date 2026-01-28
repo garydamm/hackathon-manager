@@ -106,6 +106,9 @@ class UserService(
     fun resetPassword(token: String, newPassword: String) {
         val resetToken = validateResetToken(token)
 
+        // Validate password requirements
+        validatePassword(newPassword)
+
         // Update user password
         val user = resetToken.user
         user.passwordHash = passwordEncoder.encode(newPassword)
@@ -114,5 +117,23 @@ class UserService(
         // Mark token as used
         resetToken.usedAt = OffsetDateTime.now()
         passwordResetTokenRepository.save(resetToken)
+    }
+
+    private fun validatePassword(password: String) {
+        if (password.length < 8) {
+            throw ApiException("Password must be at least 8 characters long", HttpStatus.BAD_REQUEST)
+        }
+
+        if (!password.contains(Regex("[A-Z]"))) {
+            throw ApiException("Password must contain at least one uppercase letter", HttpStatus.BAD_REQUEST)
+        }
+
+        if (!password.contains(Regex("[a-z]"))) {
+            throw ApiException("Password must contain at least one lowercase letter", HttpStatus.BAD_REQUEST)
+        }
+
+        if (!password.contains(Regex("[0-9]"))) {
+            throw ApiException("Password must contain at least one number", HttpStatus.BAD_REQUEST)
+        }
     }
 }
