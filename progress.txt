@@ -149,3 +149,47 @@
   - Build command (`npm run build`) runs `tsc -b` which performs type checking
   - Request interfaces use optional fields for partial updates (UpdateScheduleEventRequest)
 ---
+
+## Iteration 25 - Create schedule API service
+- Created frontend/src/services/schedule.ts with all required methods
+- Exported scheduleService singleton object with 11 methods
+- Schedule retrieval: getSchedule(hackathonId), getEvent(eventId)
+- Event management: createEvent, updateEvent, deleteEvent
+- RSVP operations: rsvpToEvent, updateRsvp, removeRsvp
+- Attendance tracking: getEventAttendees, markAttendance, bulkMarkAttendance
+- Files changed:
+  - frontend/src/services/schedule.ts (created)
+  - PRD.md (marked US-010 complete)
+- Learnings for future iterations:
+  - Frontend service pattern uses singleton object exported from file
+  - All methods use centralized api client from ./api for consistent error handling and auth
+  - Method signatures follow pattern: async methodName(params): Promise<ResponseType>
+  - DELETE endpoints return Promise<void> since they return 204 NO CONTENT
+  - POST/PUT endpoints for mutations return the updated entity for immediate UI feedback
+  - Import types from @/types for proper type safety
+  - Service endpoints match backend controller paths exactly
+---
+
+## Iteration 26 - Create RsvpButton component
+- Created frontend/src/components/RsvpButton.tsx with dropdown menu for RSVP operations
+- Created frontend/src/components/ui/dropdown-menu.tsx using @radix-ui/react-dropdown-menu
+- Installed @radix-ui/react-dropdown-menu package (53 new packages)
+- RsvpButton shows "RSVP" button when no RSVP exists, or color-coded badge when user has RSVP'd
+- Dropdown menu with 4 options: Attending (green Check icon), Maybe (yellow HelpCircle), Not Attending (gray X), Remove RSVP
+- Uses useMutation for rsvpToEvent, updateRsvp, and removeRsvp operations
+- Handles loading states with Loader2 spinner
+- Invalidates schedule queries on success for immediate UI feedback
+- Files changed:
+  - frontend/src/components/RsvpButton.tsx (created)
+  - frontend/src/components/ui/dropdown-menu.tsx (created)
+  - frontend/package.json, frontend/package-lock.json (added dependency)
+  - PRD.md (marked US-011 complete)
+- Learnings for future iterations:
+  - Dropdown menu pattern uses DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem from shadcn/ui
+  - Button can be used as DropdownMenuTrigger with asChild prop
+  - Badge component supports custom className for color-coding (bg-green-100 text-green-700, etc.)
+  - useMutation pattern: define mutationFn, handle onSuccess with queryClient.invalidateQueries
+  - Component differentiates between create (no userRsvpStatus) and update (has userRsvpStatus) operations
+  - Loading state disables both trigger button and menu items (isPending check)
+  - Remove RSVP option only shown when userRsvpStatus exists (conditional separator and menu item)
+---
