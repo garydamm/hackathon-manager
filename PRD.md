@@ -149,18 +149,18 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a participant, I want to see all hackathon events in a timeline view so I can plan my schedule.
 
 **Acceptance Criteria:**
-- [ ] Create pages/Schedule.tsx
-- [ ] Fetch hackathon by slug and schedule by hackathonId (dependent queries)
-- [ ] Group events by day using helper function
-- [ ] Display day headers with formatted dates
-- [ ] Render EventCard for each event showing: name, description, type badge, time, location, virtual link, RSVP counts
-- [ ] Show mandatory indicator (red badge with AlertCircle icon and "Required" text)
-- [ ] Show virtual link with Video icon (visible to all registered users)
-- [ ] Include RsvpButton in each event card
-- [ ] Add "Back to Hackathon" link
-- [ ] Show empty state if no events scheduled
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create pages/Schedule.tsx
+- [x] Fetch hackathon by slug and schedule by hackathonId (dependent queries)
+- [x] Group events by day using helper function
+- [x] Display day headers with formatted dates
+- [x] Render EventCard for each event showing: name, description, type badge, time, location, virtual link, RSVP counts
+- [x] Show mandatory indicator (red badge with AlertCircle icon and "Required" text)
+- [x] Show virtual link with Video icon (visible to all registered users)
+- [x] Include RsvpButton in each event card
+- [x] Add "Back to Hackathon" link
+- [x] Show empty state if no events scheduled
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-013: Add schedule route to app
 **Description:** As a developer, I need to add routing for the schedule page so users can navigate to it.
