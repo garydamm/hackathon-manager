@@ -234,3 +234,27 @@
   - Dev server starts successfully on available port (5176 in this case, as 5173-5175 were in use)
   - Import statements should be grouped with other page imports at the top
 ---
+
+## Iteration 29 - Create EventFormModal component
+- Created frontend/src/components/EventFormModal.tsx following CriteriaFormModal pattern
+- Implemented React Hook Form with Zod validation for all event fields
+- Added all required fields: name*, description, eventType dropdown, location, virtualLink (URL validation), startsAt*, endsAt* (datetime-local), isMandatory (Switch)
+- Supports both create and edit modes detected via event prop
+- Uses framer-motion for modal animations (backdrop and modal)
+- Shows validation errors inline using react-hook-form errors
+- Handles create/update mutations with loading states (Loader2 spinner)
+- Invalidates schedule queries on success for immediate UI feedback
+- Files changed:
+  - frontend/src/components/EventFormModal.tsx (created)
+  - PRD.md (marked US-014 complete)
+- Learnings for future iterations:
+  - EventFormModal follows exact same pattern as CriteriaFormModal (modal structure, animations, form handling)
+  - Switch component requires watch() and setValue() pattern for controlled behavior with react-hook-form
+  - datetime-local input type requires ISO string conversion: toISOString().slice(0, 16) for editing
+  - Form submission converts datetime-local back to ISO: new Date(data.startsAt).toISOString()
+  - CreateScheduleEventRequest includes hackathonId in the request body, not as separate parameter
+  - Virtual link validation uses z.string().url().optional().or(z.literal("")) to allow empty string
+  - Modal uses max-w-2xl for wider layout due to more fields, and max-h-[90vh] overflow-y-auto for scrolling
+  - Event type dropdown uses native <select> with input styling classes for consistency
+  - isMandatory uses Switch component with controlled behavior via watch/setValue pattern
+---
