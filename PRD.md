@@ -122,13 +122,13 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need an API service for schedule operations so components can fetch and mutate schedule data.
 
 **Acceptance Criteria:**
-- [ ] Create services/schedule.ts file
-- [ ] Export scheduleService singleton object
-- [ ] Add methods: getSchedule, getEvent, createEvent, updateEvent, deleteEvent
-- [ ] Add methods: rsvpToEvent, updateRsvp, removeRsvp
-- [ ] Add methods: getEventAttendees, markAttendance, bulkMarkAttendance
-- [ ] All methods use centralized api client with proper types
-- [ ] Typecheck passes
+- [x] Create services/schedule.ts file
+- [x] Export scheduleService singleton object
+- [x] Add methods: getSchedule, getEvent, createEvent, updateEvent, deleteEvent
+- [x] Add methods: rsvpToEvent, updateRsvp, removeRsvp
+- [x] Add methods: getEventAttendees, markAttendance, bulkMarkAttendance
+- [x] All methods use centralized api client with proper types
+- [x] Typecheck passes
 
 ### US-011: Create RsvpButton component
 **Description:** As a participant, I want to RSVP to events with a simple dropdown so I can indicate my attendance plans.
