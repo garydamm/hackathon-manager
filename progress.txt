@@ -392,3 +392,76 @@
   - Flyway automatically validates and applies new migrations on application startup
   - Application logs show successful migration: "Successfully applied 1 migration to schema 'public', now at version v2"
 ---
+
+## Iteration 36 - Create PasswordResetToken entity
+- Created PasswordResetToken.kt entity following existing entity patterns
+- Mapped all table columns: id (UUID), user (ManyToOne to User), token (String), expiresAt (OffsetDateTime), createdAt (OffsetDateTime with @CreationTimestamp), usedAt (nullable OffsetDateTime)
+- Added @ManyToOne relationship to User entity with LAZY fetch type
+- Added helper method isExpired() that checks if current time is after expiresAt
+- Added helper method isUsed() that checks if usedAt is not null
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/entity/PasswordResetToken.kt (created)
+  - PRD.md (marked US-002 complete)
+- Learnings for future iterations:
+  - Entity pattern follows existing conventions: @Entity, @Table, primary constructor with properties
+  - Use @ManyToOne with fetch = FetchType.LAZY for relationships to avoid eager loading
+  - @CreationTimestamp handles createdAt automatically (updatable = false)
+  - Helper methods can be added to entity classes for business logic convenience
+  - OffsetDateTime.now() used for current time comparison in isExpired()
+  - Token column has unique = true and length = 255 matching migration definition
+---
+
+## Iteration 37 - Create PasswordResetTokenRepository
+- Created PasswordResetTokenRepository.kt extending JpaRepository
+- Added method: findByToken(token: String) for token validation during password reset
+- Added method: findByUserIdAndUsedAtIsNullAndExpiresAtAfter(userId, currentTime) for finding active tokens
+- Added method: deleteByExpiresAtBefore(cutoffTime) for cleanup operations (returns Int count)
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/repository/PasswordResetTokenRepository.kt (created)
+  - PRD.md (marked US-003 complete)
+- Learnings for future iterations:
+  - Repository follows Spring Data JPA query derivation pattern for method names
+  - findByUserIdAndUsedAtIsNullAndExpiresAtAfter queries for unused, non-expired tokens for a user
+  - deleteByExpiresAtBefore returns Int (count of deleted rows) for logging/monitoring purposes
+  - Optional<T> used for single result queries that may not exist (findByToken)
+  - List<T> used for queries that may return multiple results
+  - @Repository annotation marks interface for component scanning
+---
+
+## Iteration 38 - Add password reset DTOs
+- Created PasswordResetDtos.kt in dto/auth package with three data classes
+- Added ForgotPasswordRequest with email field validated with @Email annotation
+- Added ResetPasswordRequest with token, newPassword, confirmPassword fields and @Size(min=8) validation
+- Added PasswordResetResponse with message field for success/error responses
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/dto/auth/PasswordResetDtos.kt (created)
+  - PRD.md (marked US-004 complete)
+- Learnings for future iterations:
+  - DTO pattern follows existing AuthDtos.kt conventions with @field: prefix for validation annotations
+  - Password validation uses @Size(min = 8) annotation to enforce minimum length
+  - Service-level password requirements check (uppercase, lowercase, number) will be implemented in UserService
+  - ForgotPasswordRequest is simple with only email field to prevent user enumeration
+  - ResetPasswordRequest requires confirmPassword field for frontend validation before service call
+  - PasswordResetResponse is simple success/error wrapper with message field
+---
+
+## Iteration 39 - Create EmailService interface and stub implementation
+- Created EmailService.kt interface with sendPasswordResetEmail(toEmail, resetToken, userFirstName) method
+- Created EmailServiceImpl.kt implementing EmailService with @Service annotation
+- For MVP, implementation logs formatted email to console including reset URL
+- Reset URL format: ${frontendUrl}/reset-password?token=${resetToken}
+- Used @Value("\${app.frontend.url}") to inject frontend URL from application properties
+- Added app.frontend.url: http://localhost:5173 configuration to application.yml
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/EmailService.kt (created)
+  - src/main/kotlin/com/hackathon/manager/service/EmailServiceImpl.kt (created)
+  - src/main/resources/application.yml (added frontend URL config)
+  - PRD.md (marked US-005 complete)
+- Learnings for future iterations:
+  - EmailService interface allows swapping implementations later (SMTP, SendGrid, AWS SES) without changing dependent code
+  - @Value annotation injects Spring Boot configuration properties into constructor parameters
+  - application.yml follows hierarchical structure (app.frontend.url under app section)
+  - MVP pattern: log emails to console for development, replace with real email service later
+  - trimMargin() with pipe character creates clean multi-line string output
+  - EmailServiceImpl will be injected into UserService later for sending password reset emails
+---
