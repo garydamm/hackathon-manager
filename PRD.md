@@ -163,17 +163,17 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a user, I want to set a new password using the reset link so I can access my account.
 
 **Acceptance Criteria:**
-- [ ] Create pages/ResetPassword.tsx component
-- [ ] Extract token from URL query params using useSearchParams()
-- [ ] Use React Hook Form with Zod schema validating password requirements and matching passwords
-- [ ] Show newPassword and confirmPassword fields with Lock icons
-- [ ] Display password requirements as helper text below fields (8+ chars, uppercase, lowercase, number)
-- [ ] Show "Reset Password" submit button
-- [ ] Display loading state during submission
-- [ ] Navigate to /login with success message on successful reset
-- [ ] Show error message if token invalid/expired or API call fails
-- [ ] Use AuthLayout for consistent styling
-- [ ] Typecheck passes
+- [x] Create pages/ResetPassword.tsx component
+- [x] Extract token from URL query params using useSearchParams()
+- [x] Use React Hook Form with Zod schema validating password requirements and matching passwords
+- [x] Show newPassword and confirmPassword fields with Lock icons
+- [x] Display password requirements as helper text below fields (8+ chars, uppercase, lowercase, number)
+- [x] Show "Reset Password" submit button
+- [x] Display loading state during submission
+- [x] Navigate to /login with success message on successful reset
+- [x] Show error message if token invalid/expired or API call fails
+- [x] Use AuthLayout for consistent styling
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-014: Add password reset routes to App
