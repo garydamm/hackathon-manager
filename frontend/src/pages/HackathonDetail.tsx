@@ -36,6 +36,7 @@ import { JudgingCriteriaSection } from "@/components/JudgingCriteriaSection"
 import { JudgesSection } from "@/components/JudgesSection"
 import { LeaderboardSection } from "@/components/LeaderboardSection"
 import { ResultsSection } from "@/components/ResultsSection"
+import { ScheduleManagementSection } from "@/components/ScheduleManagementSection"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { projectService } from "@/services/projects"
@@ -395,6 +396,31 @@ function ViewMode({
         </Card>
       </div>
 
+      {/* View Full Schedule Card - visible to all registered users */}
+      {hackathon.userRole && (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <Link
+              to={`/hackathons/${hackathon.slug}/schedule`}
+              className="flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <Calendar className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                    View Full Schedule
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    See all events and RSVP
+                  </p>
+                </div>
+              </div>
+              <ArrowLeft className="h-5 w-5 text-muted-foreground rotate-180 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Description */}
       {hackathon.description && (
         <Card>
@@ -447,6 +473,9 @@ function ViewMode({
 
       {/* Judges Section - visible to organizers only */}
       {isOrganizer && <JudgesSection hackathonId={hackathon.id} />}
+
+      {/* Schedule Management Section - visible to organizers only */}
+      {isOrganizer && <ScheduleManagementSection hackathonId={hackathon.id} />}
 
       {/* Leaderboard Section - visible to organizers only */}
       {isOrganizer && <LeaderboardSection hackathonId={hackathon.id} />}

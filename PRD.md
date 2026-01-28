@@ -235,12 +235,12 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As an organizer, I want to see schedule management on the hackathon detail page so I can manage all aspects in one place.
 
 **Acceptance Criteria:**
-- [ ] Import ScheduleManagementSection in HackathonDetail.tsx
-- [ ] Add ScheduleManagementSection after JudgesSection (around line 449) with isOrganizer check
-- [ ] Add "View Full Schedule" card in Quick Info section with Calendar icon and link to /hackathons/{slug}/schedule
-- [ ] Card should be visible to all registered users (not just organizers)
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Import ScheduleManagementSection in HackathonDetail.tsx
+- [x] Add ScheduleManagementSection after JudgesSection (around line 449) with isOrganizer check
+- [x] Add "View Full Schedule" card in Quick Info section with Calendar icon and link to /hackathons/{slug}/schedule
+- [x] Card should be visible to all registered users (not just organizers)
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-019: Add Checkbox UI component if missing
 **Description:** As a developer, I need a Checkbox component for the attendance tracking UI.
