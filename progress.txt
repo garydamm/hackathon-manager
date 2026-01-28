@@ -629,3 +629,38 @@
   - ResetPassword follows same structure as ForgotPassword but with password fields instead of email
   - Both password fields use Lock icon for consistency with Login page
 ---
+
+## Iteration 48 - Add password reset routes to App
+- Imported ForgotPasswordPage and ResetPasswordPage in App.tsx
+- Added /forgot-password route as public route (no authentication required)
+- Added /reset-password route as public route (no authentication required)
+- Both routes placed after login and register, before protected routes
+- Files changed:
+  - frontend/src/App.tsx
+  - PRD.md (marked US-014 complete except browser verification)
+- Learnings for future iterations:
+  - Password reset routes should be public routes (outside ProtectedRoute wrapper)
+  - Import order follows pattern: auth pages (Login, Register, ForgotPassword, ResetPassword) then protected pages
+  - Public routes placed at top of Routes, before protected routes section
+  - Route definitions follow consistent pattern: <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+  - Both password reset pages already exist and follow proper patterns from previous iterations
+  - Frontend build and typecheck passes successfully
+---
+
+## Iteration 49 - Verify forgot password link functionality
+- Verified Login.tsx already has Link to /forgot-password at lines 89-94
+- No code changes required - task was verification only
+- Tested forgot-password API endpoint returns 200 OK with proper message
+- Tested reset-password API endpoint validates tokens correctly (returns 400 for invalid token)
+- Verified frontend routes /forgot-password and /reset-password are accessible
+- Confirmed frontend typechecks and builds successfully
+- Files changed:
+  - PRD.md (marked US-015 complete)
+- Learnings for future iterations:
+  - US-015 was a verification task, not an implementation task (no code changes needed)
+  - "Forgot password?" link already existed in Login.tsx from initial implementation
+  - Password reset flow fully functional: forgot-password endpoint → reset-password endpoint
+  - Both frontend pages (ForgotPassword, ResetPassword) and backend endpoints working correctly
+  - API testing with curl confirms endpoints handle requests properly (success and error cases)
+  - Verification tasks require testing but not necessarily code changes
+---
