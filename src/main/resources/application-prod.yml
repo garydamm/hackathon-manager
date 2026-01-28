@@ -26,6 +26,16 @@ app:
     allowed-headers: "*"
     allow-credentials: true
 
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:5173}
+
+  email:
+    enabled: ${EMAIL_ENABLED:true}
+    from: ${EMAIL_FROM:noreply@yourdomain.com}
+    from-name: ${EMAIL_FROM_NAME:Hackathon Manager}
+    resend:
+      api-key: ${RESEND_API_KEY}
+
 logging:
   level:
     com.hackathon.manager: INFO

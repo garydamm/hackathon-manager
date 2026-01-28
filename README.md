@@ -59,7 +59,17 @@ Configure environment variables (or use defaults for local development):
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
 JWT_SECRET=your-256-bit-secret-key-here-make-it-long-enough-for-hs256
+
+# Email Configuration (Optional)
+# By default, emails are logged to console
+# To send real emails via Resend:
+EMAIL_ENABLED=true
+RESEND_API_KEY=re_your_api_key_here  # Get from https://resend.com/api-keys
+EMAIL_FROM=onboarding@resend.dev  # Use onboarding@resend.dev for testing
+EMAIL_FROM_NAME=Hackathon Manager
 ```
+
+**Note on Email**: By default, emails (like password reset) are logged to the console. To send real emails, sign up for a free [Resend](https://resend.com) account (100 emails/day free) and configure the environment variables above.
 
 Start the backend server:
 

@@ -40,6 +40,13 @@ app:
   frontend:
     url: http://localhost:5173
 
+  email:
+    enabled: ${EMAIL_ENABLED:false}  # Set to true to enable email sending
+    from: ${EMAIL_FROM:noreply@yourdomain.com}
+    from-name: ${EMAIL_FROM_NAME:Hackathon Manager}
+    resend:
+      api-key: ${RESEND_API_KEY:}  # Get from https://resend.com/api-keys
+
 logging:
   level:
     com.hackathon.manager: DEBUG
