@@ -309,3 +309,25 @@
   - Modal uses max-w-2xl and max-h-[90vh] overflow-y-auto for scrollable list of attendees
   - Display pattern: checkbox, attendee info (name/email), RSVP badge, Present/Absent button in one row
 ---
+
+## Iteration 32 - Create ScheduleManagementSection component
+- Created frontend/src/components/ScheduleManagementSection.tsx following JudgingCriteriaSection pattern exactly
+- Component fetches schedule using useQuery with queryKey: ["schedule", hackathonId]
+- Displays Card with "Schedule & Events" title and Calendar icon in header
+- Shows "Add Event" button in header with Plus icon
+- Lists all events with: name, type badge (color-coded), mandatory indicator (red Required badge with AlertCircle), formatted time, location, RSVP counts
+- Each event has 3 action buttons: Attendance (Users icon), Edit (Pencil), Delete (Trash2)
+- Manages state for 3 modals: EventFormModal, DeleteEventModal, AttendanceModal
+- Shows empty state message when no events scheduled
+- Files changed:
+  - frontend/src/components/ScheduleManagementSection.tsx (created)
+  - PRD.md (marked US-017 complete)
+- Learnings for future iterations:
+  - Component follows exact same pattern as JudgingCriteriaSection with 3 modals and selection state
+  - formatEventTime() helper function creates readable time range: "Jan 27, 9:00 AM - 10:30 AM"
+  - Event type badge colors use Record<string, string> for type safety with fallback to other color
+  - RSVP count display follows same pattern as Schedule page: attending always shown, maybe/not attending conditionally
+  - Three separate state handlers for three modals: handleFormModalClose, handleDeleteModalClose, handleAttendanceModalClose
+  - Modal components receive different props: EventFormModal needs hackathonId and event, DeleteEventModal needs event, AttendanceModal needs event
+  - Loading state shows centered Loader2 spinner during data fetch
+---
