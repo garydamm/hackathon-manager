@@ -42,13 +42,13 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need to include RSVP counts and user status in event responses so the frontend can display participation information.
 
 **Acceptance Criteria:**
-- [ ] Add `attendingCount: Int = 0` field to ScheduleEventResponse
-- [ ] Add `maybeCount: Int = 0` field to ScheduleEventResponse
-- [ ] Add `notAttendingCount: Int = 0` field to ScheduleEventResponse
-- [ ] Add `userRsvpStatus: String? = null` field to ScheduleEventResponse
-- [ ] Add `userAttended: Boolean? = null` field to ScheduleEventResponse
-- [ ] Update fromEntity() to accept RSVP counts and user attendee record
-- [ ] Typecheck passes
+- [x] Add `attendingCount: Int = 0` field to ScheduleEventResponse
+- [x] Add `maybeCount: Int = 0` field to ScheduleEventResponse
+- [x] Add `notAttendingCount: Int = 0` field to ScheduleEventResponse
+- [x] Add `userRsvpStatus: String? = null` field to ScheduleEventResponse
+- [x] Add `userAttended: Boolean? = null` field to ScheduleEventResponse
+- [x] Update fromEntity() to accept RSVP counts and user attendee record
+- [x] Typecheck passes
 
 ### US-004: Add isUserRegistered helper to HackathonService
 **Description:** As a developer, I need to check if a user is registered for a hackathon so I can validate RSVP eligibility.

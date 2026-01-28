@@ -16,3 +16,20 @@
   - EventAttendee entity already existed with proper relationships to ScheduleEvent and User
   - Repositories are simple interfaces - Spring generates implementation automatically
 ---
+
+## Iteration 17 - Add EventAttendee DTOs
+- Created EventAttendeeDtos.kt with all required DTOs
+- Added EventAttendeeResponse with fromEntity() companion method that extracts user details from the EventAttendee entity
+- Added RsvpRequest with @Pattern validation for rsvpStatus (attending|maybe|not_attending)
+- Added MarkAttendanceRequest for single user attendance tracking
+- Added BulkMarkAttendanceRequest for marking multiple users at once
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/dto/EventAttendeeDtos.kt (created)
+  - PRD.md (marked US-002 complete)
+- Learnings for future iterations:
+  - DTO pattern follows existing codebase conventions with data classes and validation annotations
+  - Response DTOs use companion object with fromEntity() factory method
+  - Request DTOs use Jakarta validation annotations (@NotBlank, @NotNull, @Pattern)
+  - @Pattern annotation validates enum-like string values for rsvpStatus
+  - EventAttendeeResponse includes user details (firstName, lastName, email) by accessing attendee.user properties
+---

@@ -1,5 +1,6 @@
 package com.hackathon.manager.dto
 
+import com.hackathon.manager.entity.EventAttendee
 import com.hackathon.manager.entity.ScheduleEvent
 import com.hackathon.manager.entity.enums.EventType
 import jakarta.validation.constraints.NotBlank
@@ -17,10 +18,21 @@ data class ScheduleEventResponse(
     val virtualLink: String?,
     val startsAt: OffsetDateTime,
     val endsAt: OffsetDateTime,
-    val isMandatory: Boolean
+    val isMandatory: Boolean,
+    val attendingCount: Int = 0,
+    val maybeCount: Int = 0,
+    val notAttendingCount: Int = 0,
+    val userRsvpStatus: String? = null,
+    val userAttended: Boolean? = null
 ) {
     companion object {
-        fun fromEntity(event: ScheduleEvent): ScheduleEventResponse {
+        fun fromEntity(
+            event: ScheduleEvent,
+            attendingCount: Int = 0,
+            maybeCount: Int = 0,
+            notAttendingCount: Int = 0,
+            userAttendee: EventAttendee? = null
+        ): ScheduleEventResponse {
             return ScheduleEventResponse(
                 id = event.id!!,
                 hackathonId = event.hackathon.id!!,
@@ -31,7 +43,12 @@ data class ScheduleEventResponse(
                 virtualLink = event.virtualLink,
                 startsAt = event.startsAt,
                 endsAt = event.endsAt,
-                isMandatory = event.isMandatory
+                isMandatory = event.isMandatory,
+                attendingCount = attendingCount,
+                maybeCount = maybeCount,
+                notAttendingCount = notAttendingCount,
+                userRsvpStatus = userAttendee?.rsvpStatus,
+                userAttended = userAttendee?.attended
             )
         }
     }
