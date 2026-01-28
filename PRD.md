@@ -105,15 +105,15 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need REST endpoints for password reset so the frontend can trigger the flow.
 
 **Acceptance Criteria:**
-- [ ] Add POST /api/auth/forgot-password endpoint accepting ForgotPasswordRequest
-- [ ] Endpoint calls userService.requestPasswordReset() and returns 200 OK with success message
-- [ ] Always return success even if email doesn't exist (security best practice)
-- [ ] Add POST /api/auth/reset-password endpoint accepting ResetPasswordRequest
-- [ ] Validate newPassword matches confirmPassword before calling service
-- [ ] Return 200 OK with success message on successful reset
-- [ ] Return 400 BAD_REQUEST with error message if token invalid or passwords don't match
-- [ ] Both endpoints are public (no authentication required)
-- [ ] Typecheck passes
+- [x] Add POST /api/auth/forgot-password endpoint accepting ForgotPasswordRequest
+- [x] Endpoint calls userService.requestPasswordReset() and returns 200 OK with success message
+- [x] Always return success even if email doesn't exist (security best practice)
+- [x] Add POST /api/auth/reset-password endpoint accepting ResetPasswordRequest
+- [x] Validate newPassword matches confirmPassword before calling service
+- [x] Return 200 OK with success message on successful reset
+- [x] Return 400 BAD_REQUEST with error message if token invalid or passwords don't match
+- [x] Both endpoints are public (no authentication required)
+- [x] Typecheck passes
 
 ### US-009: Add password reset confirmation email
 **Description:** As a user, I want to receive email confirmation after password change so I know my account was modified.

@@ -1,19 +1,19 @@
 package com.hackathon.manager.controller
 
-import com.hackathon.manager.dto.auth.AuthResponse
-import com.hackathon.manager.dto.auth.LoginRequest
-import com.hackathon.manager.dto.auth.RefreshTokenRequest
-import com.hackathon.manager.dto.auth.RegisterRequest
+import com.hackathon.manager.dto.auth.*
+import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.service.AuthService
-import jakarta.validation.Valid
+import com.hackathon.manager.service.UserService
 import org.springframework.http.HttpStatus
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val userService: UserService
 ) {
 
     @PostMapping("/register")
@@ -32,5 +32,27 @@ class AuthController(
     fun refreshToken(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<AuthResponse> {
         val response = authService.refreshToken(request)
         return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/forgot-password")
+    fun forgotPassword(@Valid @RequestBody request: ForgotPasswordRequest): ResponseEntity<PasswordResetResponse> {
+        userService.requestPasswordReset(request.email)
+        // Always return success even if email doesn't exist (security best practice)
+        return ResponseEntity.ok(PasswordResetResponse(
+            message = "If an account exists with that email, you will receive a password reset link shortly."
+        ))
+    }
+
+    @PostMapping("/reset-password")
+    fun resetPassword(@Valid @RequestBody request: ResetPasswordRequest): ResponseEntity<PasswordResetResponse> {
+        // Validate passwords match
+        if (request.newPassword != request.confirmPassword) {
+            throw ApiException("Passwords do not match", HttpStatus.BAD_REQUEST)
+        }
+
+        userService.resetPassword(request.token, request.newPassword)
+        return ResponseEntity.ok(PasswordResetResponse(
+            message = "Your password has been successfully reset. You can now log in with your new password."
+        ))
     }
 }

@@ -488,3 +488,21 @@
   - PasswordEncoder is standard Spring Security dependency injected from AppConfig.kt
   - OffsetDateTime.now().plusMinutes(15) creates 15-minute expiry timestamp
 ---
+
+## Iteration 41 - Add password validation helper
+- Added validatePassword(password: String) private method in UserService
+- Method checks four requirements: length >= 8, uppercase letter, lowercase letter, number
+- Uses Regex pattern matching: [A-Z], [a-z], [0-9]
+- Throws ApiException with BAD_REQUEST and descriptive message for each validation failure
+- Integrated validation into resetPassword() method before password encoding
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/UserService.kt
+  - PRD.md (marked US-007 complete)
+- Learnings for future iterations:
+  - Password validation uses String.contains(Regex("pattern")) for checking character requirements
+  - Separate validation checks provide specific error messages for better UX
+  - validatePassword() is private helper method since it's only used within UserService
+  - Validation runs before encoding to avoid wasting CPU cycles on invalid passwords
+  - Password requirements match registration flow (defined in Register.tsx) for consistency
+  - Regex patterns wrapped in Regex() constructor: Regex("[A-Z]"), Regex("[a-z]"), Regex("[0-9]")
+---

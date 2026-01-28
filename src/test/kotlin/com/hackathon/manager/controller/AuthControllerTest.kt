@@ -6,6 +6,7 @@ import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.security.JwtAuthenticationFilter
 import com.hackathon.manager.security.JwtTokenProvider
 import com.hackathon.manager.service.AuthService
+import com.hackathon.manager.service.UserService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
@@ -38,6 +39,9 @@ class AuthControllerTest {
 
     @MockBean
     lateinit var authService: AuthService
+
+    @MockBean
+    lateinit var userService: UserService
 
     @MockBean
     lateinit var jwtTokenProvider: JwtTokenProvider
