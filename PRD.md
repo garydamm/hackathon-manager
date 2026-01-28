@@ -98,12 +98,12 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need REST endpoints for attendance tracking so organizers can record who attended events.
 
 **Acceptance Criteria:**
-- [ ] Add GET /schedule/{eventId}/attendees endpoint (returns attendee list)
-- [ ] Add POST /schedule/{eventId}/attendance endpoint with MarkAttendanceRequest body
-- [ ] Add POST /schedule/{eventId}/attendance/bulk endpoint with BulkMarkAttendanceRequest body
-- [ ] All endpoints require authentication and pass principal.id to service layer
-- [ ] Return appropriate HTTP status codes (200 OK, 403 FORBIDDEN, 404 NOT FOUND)
-- [ ] Typecheck passes
+- [x] Add GET /schedule/{eventId}/attendees endpoint (returns attendee list)
+- [x] Add POST /schedule/{eventId}/attendance endpoint with MarkAttendanceRequest body
+- [x] Add POST /schedule/{eventId}/attendance/bulk endpoint with BulkMarkAttendanceRequest body
+- [x] All endpoints require authentication and pass principal.id to service layer
+- [x] Return appropriate HTTP status codes (200 OK, 403 FORBIDDEN, 404 NOT FOUND)
+- [x] Typecheck passes
 
 ### US-009: Add TypeScript types for schedule and events
 **Description:** As a developer, I need TypeScript types for schedule entities so the frontend has type safety.

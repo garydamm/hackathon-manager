@@ -96,3 +96,20 @@
   - bulkMarkAttendance validates each userId exists before updating to provide specific error messages
   - EventAttendeeResponse.fromEntity() imported to return properly formatted attendee lists
 ---
+
+## Iteration 22 - Add RSVP endpoints to ScheduleController
+- Updated existing GET /schedule/hackathon/{hackathonId} to use getScheduleByHackathonWithRsvp()
+- Added POST /schedule/{eventId}/rsvp endpoint that creates new RSVP and returns 201 CREATED
+- Added PUT /schedule/{eventId}/rsvp endpoint that updates existing RSVP and returns 200 OK
+- Added DELETE /schedule/{eventId}/rsvp endpoint that removes RSVP and returns 204 NO CONTENT
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/controller/ScheduleController.kt
+  - PRD.md (marked US-007 complete)
+- Learnings for future iterations:
+  - GET endpoint accepts nullable @AuthenticationPrincipal to support both authenticated and unauthenticated requests
+  - POST and PUT endpoints both call rsvpToEvent() service method (creates or updates)
+  - All RSVP endpoints require authentication since they use @AuthenticationPrincipal principal (non-nullable)
+  - RsvpRequest DTO includes validation, so @Valid annotation ensures proper validation
+  - Service layer returns ScheduleEventResponse with updated RSVP counts for immediate UI feedback
+  - DELETE endpoint uses noContent() for 204 status with no body
+---

@@ -1,6 +1,9 @@
 package com.hackathon.manager.controller
 
+import com.hackathon.manager.dto.BulkMarkAttendanceRequest
 import com.hackathon.manager.dto.CreateScheduleEventRequest
+import com.hackathon.manager.dto.EventAttendeeResponse
+import com.hackathon.manager.dto.MarkAttendanceRequest
 import com.hackathon.manager.dto.RsvpRequest
 import com.hackathon.manager.dto.ScheduleEventResponse
 import com.hackathon.manager.dto.UpdateScheduleEventRequest
@@ -103,5 +106,34 @@ class ScheduleController(
     ): ResponseEntity<Void> {
         scheduleService.removeRsvp(eventId, principal.id)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/{eventId}/attendees")
+    fun getEventAttendees(
+        @PathVariable eventId: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<List<EventAttendeeResponse>> {
+        val attendees = scheduleService.getEventAttendees(eventId, principal.id)
+        return ResponseEntity.ok(attendees)
+    }
+
+    @PostMapping("/{eventId}/attendance")
+    fun markAttendance(
+        @PathVariable eventId: UUID,
+        @Valid @RequestBody request: MarkAttendanceRequest,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<Void> {
+        scheduleService.markAttendance(eventId, request.userId, request.attended, principal.id)
+        return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/{eventId}/attendance/bulk")
+    fun bulkMarkAttendance(
+        @PathVariable eventId: UUID,
+        @Valid @RequestBody request: BulkMarkAttendanceRequest,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<Void> {
+        scheduleService.bulkMarkAttendance(eventId, request.userIds, request.attended, principal.id)
+        return ResponseEntity.ok().build()
     }
 }
