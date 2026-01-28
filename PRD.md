@@ -1,299 +1,260 @@
-# PRD: Schedule and Events Feature
+# PRD: Password Reset Functionality
 
 ## Introduction
 
-Add a comprehensive schedule and events system to help hackathon participants easily view and plan their time during the event. Organizers can create a full agenda including workshops, meals, ceremonies, and deadlines. Participants can view the schedule, RSVP to events, and access virtual meeting links. Organizers can track attendance for in-person events.
+Add a secure password reset flow to allow users who have forgotten their passwords to regain access to their accounts. Users will request a password reset via email, receive a time-limited reset link, and set a new password. The system will send confirmation emails and invalidate tokens after use.
 
 ## Goals
 
-- Enable organizers to create a complete hackathon agenda with various event types
-- Provide participants with an easy-to-read timeline view of all events
-- Allow participants to RSVP to events (attending/maybe/not attending)
-- Make virtual event links readily accessible to all registered participants
-- Clearly mark mandatory events with visual indicators
-- Enable organizers to track attendance for in-person events with manual check-in
+- Enable users to reset forgotten passwords without admin intervention
+- Send secure, time-limited reset tokens via email
+- Enforce existing password requirements (8+ chars, uppercase, lowercase, number)
+- Prevent token reuse and ensure tokens expire after 15 minutes
+- Notify users when their password is successfully changed
+- Provide clear error messages for expired or invalid tokens
 
 ## User Stories
 
-### US-001: Create EventAttendeeRepository
-**Description:** As a developer, I need a repository for event attendees so I can store and query RSVP and attendance data.
+### US-001: Add password_reset_tokens table
+**Description:** As a developer, I need to store password reset tokens so they can be validated and tracked.
 
 **Acceptance Criteria:**
-- [x] Create `EventAttendeeRepository.kt` extending JpaRepository
-- [x] Add method: `findByEventIdAndUserId(eventId, userId)`
-- [x] Add method: `findByEventIdOrderByUserLastNameAscUserFirstNameAsc(eventId)`
-- [x] Add method: `existsByEventIdAndUserId(eventId, userId)`
-- [x] Add method: `countByEventIdAndRsvpStatus(eventId, rsvpStatus)`
-- [x] Add method: `deleteByEventIdAndUserId(eventId, userId)`
+- [x] Create migration file with `password_reset_tokens` table
+- [x] Columns: id (UUID primary key), user_id (UUID foreign key to users), token (VARCHAR 255 unique not null), expires_at (TIMESTAMP not null), created_at (TIMESTAMP default now()), used_at (TIMESTAMP nullable)
+- [x] Add index on token column for fast lookups
+- [x] Add index on user_id for cleanup queries
+- [x] Run migration successfully
 - [x] Typecheck passes
 
-### US-002: Add EventAttendee DTOs
-**Description:** As a developer, I need DTOs for event attendee operations so I can handle RSVP and attendance requests/responses.
+### US-002: Create PasswordResetToken entity
+**Description:** As a developer, I need a JPA entity for password reset tokens so I can query and persist them.
 
 **Acceptance Criteria:**
-- [x] Create `EventAttendeeDtos.kt` file
-- [x] Add `EventAttendeeResponse` data class with fromEntity() method
-- [x] Add `RsvpRequest` data class with validation for rsvpStatus
-- [x] Add `MarkAttendanceRequest` data class with userId and attended fields
-- [x] Add `BulkMarkAttendanceRequest` data class with userIds list and attended field
-- [x] Typecheck passes
+- [ ] Create `PasswordResetToken.kt` entity in entity package
+- [ ] Map all table columns with proper types (UUID, String, OffsetDateTime)
+- [ ] Add `@ManyToOne` relationship to User entity
+- [ ] Include @CreationTimestamp for createdAt
+- [ ] Add helper method `isExpired(): Boolean` that checks current time vs expiresAt
+- [ ] Add helper method `isUsed(): Boolean` that checks if usedAt is not null
+- [ ] Typecheck passes
 
-### US-003: Update ScheduleEventResponse with RSVP data
-**Description:** As a developer, I need to include RSVP counts and user status in event responses so the frontend can display participation information.
-
-**Acceptance Criteria:**
-- [x] Add `attendingCount: Int = 0` field to ScheduleEventResponse
-- [x] Add `maybeCount: Int = 0` field to ScheduleEventResponse
-- [x] Add `notAttendingCount: Int = 0` field to ScheduleEventResponse
-- [x] Add `userRsvpStatus: String? = null` field to ScheduleEventResponse
-- [x] Add `userAttended: Boolean? = null` field to ScheduleEventResponse
-- [x] Update fromEntity() to accept RSVP counts and user attendee record
-- [x] Typecheck passes
-
-### US-004: Add isUserRegistered helper to HackathonService
-**Description:** As a developer, I need to check if a user is registered for a hackathon so I can validate RSVP eligibility.
+### US-003: Create PasswordResetTokenRepository
+**Description:** As a developer, I need a repository for password reset tokens so I can perform CRUD operations.
 
 **Acceptance Criteria:**
-- [x] Add `isUserRegistered(hackathonId, userId)` method to HackathonService
-- [x] Method returns boolean from hackathonUserRepository.existsByHackathonIdAndUserId()
-- [x] Add @Transactional(readOnly = true) annotation
-- [x] Typecheck passes
+- [ ] Create `PasswordResetTokenRepository.kt` extending JpaRepository
+- [ ] Add method: `findByToken(token: String): Optional<PasswordResetToken>`
+- [ ] Add method: `findByUserIdAndUsedAtIsNullAndExpiresAtAfter(userId: UUID, currentTime: OffsetDateTime): List<PasswordResetToken>`
+- [ ] Add method: `deleteByExpiresAtBefore(cutoffTime: OffsetDateTime): Int`
+- [ ] Typecheck passes
 
-### US-005: Add RSVP service methods to ScheduleService
-**Description:** As a developer, I need service methods for RSVP operations so participants can indicate their attendance plans.
-
-**Acceptance Criteria:**
-- [x] Inject eventAttendeeRepository, userRepository, hackathonService into ScheduleService
-- [x] Add `getScheduleByHackathonWithRsvp(hackathonId, userId?)` method that includes RSVP counts
-- [x] Add `rsvpToEvent(eventId, userId, rsvpStatus)` method that creates or updates RSVP
-- [x] Add `removeRsvp(eventId, userId)` method that deletes RSVP
-- [x] Validate user is registered before allowing RSVP
-- [x] Validate rsvpStatus is one of: attending, maybe, not_attending
-- [x] Typecheck passes
-
-### US-006: Add attendance tracking service methods
-**Description:** As a developer, I need service methods for attendance tracking so organizers can mark who attended events.
+### US-004: Add password reset DTOs
+**Description:** As a developer, I need DTOs for password reset operations so I can handle requests and responses with validation.
 
 **Acceptance Criteria:**
-- [x] Add `getEventAttendees(eventId, requesterId)` method with organizer authorization check
-- [x] Add `markAttendance(eventId, userId, attended, requesterId)` method with organizer check
-- [x] Add `bulkMarkAttendance(eventId, userIds, attended, requesterId)` method with organizer check
-- [x] All methods verify requester is organizer using hackathonService.isUserOrganizer()
-- [x] Throw ApiException with FORBIDDEN status if not organizer
-- [x] Typecheck passes
+- [ ] Create `PasswordResetDtos.kt` file in dto/auth package
+- [ ] Add `ForgotPasswordRequest` data class with email field (validated as email)
+- [ ] Add `ResetPasswordRequest` data class with token, newPassword, confirmPassword fields
+- [ ] Add validation annotations for minimum password length (8 chars)
+- [ ] Add custom validator or service-level check for password requirements (uppercase, lowercase, number)
+- [ ] Add `PasswordResetResponse` data class with message field
+- [ ] Typecheck passes
 
-### US-007: Add RSVP endpoints to ScheduleController
-**Description:** As a developer, I need REST endpoints for RSVP operations so the frontend can manage participant responses.
-
-**Acceptance Criteria:**
-- [x] Update existing GET /schedule/hackathon/{id} to use getScheduleByHackathonWithRsvp()
-- [x] Add POST /schedule/{eventId}/rsvp endpoint with RsvpRequest body
-- [x] Add PUT /schedule/{eventId}/rsvp endpoint for updating RSVP status
-- [x] Add DELETE /schedule/{eventId}/rsvp endpoint for removing RSVP
-- [x] All endpoints use @AuthenticationPrincipal for user context
-- [x] Return 201 CREATED for POST, 200 OK for PUT, 204 NO CONTENT for DELETE
-- [x] Typecheck passes
-
-### US-008: Add attendance tracking endpoints
-**Description:** As a developer, I need REST endpoints for attendance tracking so organizers can record who attended events.
+### US-005: Create EmailService interface and stub implementation
+**Description:** As a developer, I need an email service so password reset links can be sent to users.
 
 **Acceptance Criteria:**
-- [x] Add GET /schedule/{eventId}/attendees endpoint (returns attendee list)
-- [x] Add POST /schedule/{eventId}/attendance endpoint with MarkAttendanceRequest body
-- [x] Add POST /schedule/{eventId}/attendance/bulk endpoint with BulkMarkAttendanceRequest body
-- [x] All endpoints require authentication and pass principal.id to service layer
-- [x] Return appropriate HTTP status codes (200 OK, 403 FORBIDDEN, 404 NOT FOUND)
-- [x] Typecheck passes
+- [ ] Create `EmailService.kt` interface with method: `sendPasswordResetEmail(toEmail: String, resetToken: String, userFirstName: String)`
+- [ ] Create `EmailServiceImpl.kt` that implements EmailService
+- [ ] For MVP, implementation logs email to console with formatted message including reset URL
+- [ ] Reset URL format: `${frontendUrl}/reset-password?token=${resetToken}`
+- [ ] Add `@Value("\${app.frontend.url}")` to inject frontend URL from application properties
+- [ ] Add configuration property in application.yml: `app.frontend.url: http://localhost:5173`
+- [ ] Mark class as @Service
+- [ ] Typecheck passes
 
-### US-009: Add TypeScript types for schedule and events
-**Description:** As a developer, I need TypeScript types for schedule entities so the frontend has type safety.
-
-**Acceptance Criteria:**
-- [x] Add EventType union type in types/index.ts
-- [x] Add RsvpStatus union type
-- [x] Add ScheduleEvent interface with all fields including RSVP counts
-- [x] Add EventAttendee interface with user details
-- [x] Add CreateScheduleEventRequest interface
-- [x] Add UpdateScheduleEventRequest interface
-- [x] Add RsvpRequest, MarkAttendanceRequest, BulkMarkAttendanceRequest interfaces
-- [x] Typecheck passes
-
-### US-010: Create schedule API service
-**Description:** As a developer, I need an API service for schedule operations so components can fetch and mutate schedule data.
+### US-006: Add password reset methods to UserService
+**Description:** As a developer, I need service methods for password reset operations so the controller can handle requests.
 
 **Acceptance Criteria:**
-- [x] Create services/schedule.ts file
-- [x] Export scheduleService singleton object
-- [x] Add methods: getSchedule, getEvent, createEvent, updateEvent, deleteEvent
-- [x] Add methods: rsvpToEvent, updateRsvp, removeRsvp
-- [x] Add methods: getEventAttendees, markAttendance, bulkMarkAttendance
-- [x] All methods use centralized api client with proper types
-- [x] Typecheck passes
+- [ ] Inject PasswordResetTokenRepository and EmailService into UserService
+- [ ] Add `requestPasswordReset(email: String)` method that creates token with 15-minute expiry and calls email service
+- [ ] Generate token using `UUID.randomUUID().toString()` for cryptographic randomness
+- [ ] If email doesn't exist, silently succeed (don't reveal user existence)
+- [ ] Invalidate any existing unused tokens for the user before creating new one
+- [ ] Add `validateResetToken(token: String): PasswordResetToken` method that checks token exists, not used, not expired
+- [ ] Add `resetPassword(token: String, newPassword: String)` method that validates token, updates user password, marks token as used
+- [ ] Use passwordEncoder.encode() for hashing new password
+- [ ] Throw ApiException with BAD_REQUEST if token invalid/expired/used
+- [ ] Typecheck passes
 
-### US-011: Create RsvpButton component
-**Description:** As a participant, I want to RSVP to events with a simple dropdown so I can indicate my attendance plans.
-
-**Acceptance Criteria:**
-- [x] Create components/RsvpButton.tsx
-- [x] Show "RSVP" button if user hasn't RSVP'd yet
-- [x] Show status badge (Attending/Maybe/Not Attending) if user has RSVP'd
-- [x] Dropdown menu has 4 options: Attending, Maybe, Not Attending, Remove RSVP
-- [x] Use color-coded badges: green (attending), yellow (maybe), gray (not attending)
-- [x] Show lucide-react icons: Check, HelpCircle, X
-- [x] Handle mutations with loading states
-- [x] Invalidate schedule queries on success
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-012: Create Schedule page with timeline view
-**Description:** As a participant, I want to see all hackathon events in a timeline view so I can plan my schedule.
+### US-007: Add password validation helper
+**Description:** As a developer, I need to validate password requirements so users create secure passwords on reset.
 
 **Acceptance Criteria:**
-- [x] Create pages/Schedule.tsx
-- [x] Fetch hackathon by slug and schedule by hackathonId (dependent queries)
-- [x] Group events by day using helper function
-- [x] Display day headers with formatted dates
-- [x] Render EventCard for each event showing: name, description, type badge, time, location, virtual link, RSVP counts
-- [x] Show mandatory indicator (red badge with AlertCircle icon and "Required" text)
-- [x] Show virtual link with Video icon (visible to all registered users)
-- [x] Include RsvpButton in each event card
-- [x] Add "Back to Hackathon" link
-- [x] Show empty state if no events scheduled
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add `validatePassword(password: String)` private method in UserService
+- [ ] Check length >= 8 characters
+- [ ] Check contains at least one uppercase letter (regex: `[A-Z]`)
+- [ ] Check contains at least one lowercase letter (regex: `[a-z]`)
+- [ ] Check contains at least one number (regex: `[0-9]`)
+- [ ] Throw ApiException with BAD_REQUEST and descriptive message if validation fails
+- [ ] Call this method in resetPassword() before encoding
+- [ ] Typecheck passes
 
-### US-013: Add schedule route to app
-**Description:** As a developer, I need to add routing for the schedule page so users can navigate to it.
+### US-008: Add password reset endpoints to AuthController
+**Description:** As a developer, I need REST endpoints for password reset so the frontend can trigger the flow.
 
 **Acceptance Criteria:**
-- [x] Import SchedulePage component in App.tsx
-- [x] Add route: /hackathons/:slug/schedule
-- [x] Typecheck passes
-- [x] Verify route works in browser
+- [ ] Add POST /api/auth/forgot-password endpoint accepting ForgotPasswordRequest
+- [ ] Endpoint calls userService.requestPasswordReset() and returns 200 OK with success message
+- [ ] Always return success even if email doesn't exist (security best practice)
+- [ ] Add POST /api/auth/reset-password endpoint accepting ResetPasswordRequest
+- [ ] Validate newPassword matches confirmPassword before calling service
+- [ ] Return 200 OK with success message on successful reset
+- [ ] Return 400 BAD_REQUEST with error message if token invalid or passwords don't match
+- [ ] Both endpoints are public (no authentication required)
+- [ ] Typecheck passes
 
-### US-014: Create EventFormModal component
-**Description:** As an organizer, I want to create and edit events through a modal form so I can build the hackathon agenda.
-
-**Acceptance Criteria:**
-- [x] Create components/EventFormModal.tsx
-- [x] Use React Hook Form with Zod validation
-- [x] Include fields: name*, description, eventType dropdown, location, virtualLink (URL validation), startsAt*, endsAt* (datetime-local), isMandatory (switch)
-- [x] Support both create and edit modes (detect via event prop)
-- [x] Use framer-motion for modal animations
-- [x] Show validation errors inline
-- [x] Handle create/update mutations with loading states
-- [x] Invalidate schedule queries on success
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-015: Create DeleteEventModal component
-**Description:** As an organizer, I want to confirm before deleting events so I don't accidentally remove important schedule items.
+### US-009: Add password reset confirmation email
+**Description:** As a user, I want to receive email confirmation after password change so I know my account was modified.
 
 **Acceptance Criteria:**
-- [x] Create components/DeleteEventModal.tsx
-- [x] Show warning with AlertTriangle icon
-- [x] Display event name in confirmation message
-- [x] Warn that RSVPs and attendance will be deleted
-- [x] Use destructive button variant for delete action
-- [x] Handle delete mutation with loading state
-- [x] Invalidate schedule queries on success
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add `sendPasswordChangeConfirmation(toEmail: String, userFirstName: String)` method to EmailService interface
+- [ ] Implement method in EmailServiceImpl to log confirmation message
+- [ ] Message should inform user their password was changed and suggest contacting support if not them
+- [ ] Call this method at end of userService.resetPassword() after successful password update
+- [ ] Typecheck passes
 
-### US-016: Create AttendanceModal component
-**Description:** As an organizer, I want to track attendance for events with checkboxes so I can record who showed up.
+### US-010: Add TypeScript types for password reset
+**Description:** As a developer, I need TypeScript types for password reset operations so the frontend has type safety.
 
 **Acceptance Criteria:**
-- [x] Create components/AttendanceModal.tsx
-- [x] Fetch attendees when modal opens
-- [x] Display attendee list with name, email, RSVP status badge
-- [x] Show checkbox for multi-select with "Select All" option
-- [x] Show Present/Absent button per attendee (toggles attended status)
-- [x] Show "Mark Present" and "Mark Absent" bulk action buttons when items selected
-- [x] Display present count (X / Y present)
-- [x] Handle individual and bulk mutations
-- [x] Invalidate queries on success
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add `ForgotPasswordRequest` interface in types/index.ts with email field
+- [ ] Add `ResetPasswordRequest` interface with token, newPassword, confirmPassword fields
+- [ ] Add `PasswordResetResponse` interface with message field
+- [ ] Typecheck passes
 
-### US-017: Create ScheduleManagementSection component
-**Description:** As an organizer, I want to manage events from the hackathon detail page so I have quick access to schedule operations.
+### US-011: Add password reset methods to auth service
+**Description:** As a developer, I need API client methods for password reset so components can call the backend.
 
 **Acceptance Criteria:**
-- [x] Create components/ScheduleManagementSection.tsx
-- [x] Display Card with "Schedule & Events" title and Calendar icon
-- [x] Show "Add Event" button in header
-- [x] List all events with: name, type badge, mandatory indicator, time, location, RSVP count
-- [x] Show 3 action buttons per event: Attendance (Users icon), Edit (Pencil), Delete (Trash2)
-- [x] Manage state for 3 modals: EventFormModal, DeleteEventModal, AttendanceModal
-- [x] Show empty state message if no events
-- [x] Follow JudgingCriteriaSection pattern exactly
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Add `forgotPassword(email: string): Promise<PasswordResetResponse>` to services/auth.ts
+- [ ] Add `resetPassword(token: string, newPassword: string, confirmPassword: string): Promise<PasswordResetResponse>` to services/auth.ts
+- [ ] Both methods use centralized api client with proper error handling
+- [ ] Typecheck passes
 
-### US-018: Integrate schedule into HackathonDetail page
-**Description:** As an organizer, I want to see schedule management on the hackathon detail page so I can manage all aspects in one place.
+### US-012: Create ForgotPassword page
+**Description:** As a user, I want to request a password reset by entering my email so I can regain access to my account.
 
 **Acceptance Criteria:**
-- [x] Import ScheduleManagementSection in HackathonDetail.tsx
-- [x] Add ScheduleManagementSection after JudgesSection (around line 449) with isOrganizer check
-- [x] Add "View Full Schedule" card in Quick Info section with Calendar icon and link to /hackathons/{slug}/schedule
-- [x] Card should be visible to all registered users (not just organizers)
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Create pages/ForgotPassword.tsx component
+- [ ] Use React Hook Form with Zod schema validating email format
+- [ ] Show email input field with Mail icon
+- [ ] Show "Send Reset Link" submit button
+- [ ] Display loading state during submission (Loader2 icon with "Sending...")
+- [ ] Show success message after submission: "If an account exists with that email, you will receive a password reset link shortly."
+- [ ] Show error message if API call fails
+- [ ] Include "Back to Login" link
+- [ ] Use AuthLayout for consistent styling with Login/Register pages
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-019: Add Checkbox UI component if missing
-**Description:** As a developer, I need a Checkbox component for the attendance tracking UI.
+### US-013: Create ResetPassword page
+**Description:** As a user, I want to set a new password using the reset link so I can access my account.
 
 **Acceptance Criteria:**
-- [x] Check if components/ui/checkbox.tsx exists
-- [x] If missing, create checkbox component using @radix-ui/react-checkbox
-- [x] If missing, run: npm install @radix-ui/react-checkbox
-- [x] Component follows shadcn/ui patterns with proper styling
-- [x] Typecheck passes
+- [ ] Create pages/ResetPassword.tsx component
+- [ ] Extract token from URL query params using useSearchParams()
+- [ ] Use React Hook Form with Zod schema validating password requirements and matching passwords
+- [ ] Show newPassword and confirmPassword fields with Lock icons
+- [ ] Display password requirements as helper text below fields (8+ chars, uppercase, lowercase, number)
+- [ ] Show "Reset Password" submit button
+- [ ] Display loading state during submission
+- [ ] Navigate to /login with success message on successful reset
+- [ ] Show error message if token invalid/expired or API call fails
+- [ ] Use AuthLayout for consistent styling
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-014: Add password reset routes to App
+**Description:** As a developer, I need to add routing for password reset pages so users can navigate to them.
+
+**Acceptance Criteria:**
+- [ ] Import ForgotPasswordPage and ResetPasswordPage in App.tsx
+- [ ] Add public route: /forgot-password
+- [ ] Add public route: /reset-password
+- [ ] Both routes should be outside ProtectedRoute (no authentication required)
+- [ ] Typecheck passes
+- [ ] Verify routes work in browser
+
+### US-015: Update existing forgot password link
+**Description:** As a user, I want the forgot password link on login page to work so I can reset my password.
+
+**Acceptance Criteria:**
+- [ ] Verify Login.tsx already has Link to /forgot-password (line 89-94)
+- [ ] No changes needed - route will work once US-014 is complete
+- [ ] Test clicking "Forgot password?" link navigates to forgot password page
+- [ ] Verify changes work in browser
+
+### US-016: Add cleanup job for expired tokens
+**Description:** As a developer, I need to periodically clean up expired tokens so the database doesn't grow unbounded.
+
+**Acceptance Criteria:**
+- [ ] Create `ScheduledTasks.kt` class with @Component annotation
+- [ ] Add @Scheduled method `cleanupExpiredPasswordResetTokens()` running daily at midnight
+- [ ] Use cron expression: `@Scheduled(cron = "0 0 0 * * ?")`
+- [ ] Method calls passwordResetTokenRepository.deleteByExpiresAtBefore(cutoffTime = 7 days ago)
+- [ ] Log count of deleted tokens at INFO level
+- [ ] Add @EnableScheduling to main application class if not already present
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- No recurring events (hackathons are short enough for one-time events)
-- No automatic RSVP enforcement for mandatory events (just visual indicator)
-- No QR code check-in system (manual checkbox only in MVP)
-- No email notifications for schedule changes or reminders
-- No calendar sync (Google Calendar, iCal export)
-- No waitlist or capacity limits per event
-- No event prerequisites or dependencies
-- No automatic scheduling or conflict detection
-- No virtual link access restrictions (visible to all registered participants)
+- No SMS-based password reset (email only)
+- No security questions or alternative recovery methods
+- No password history enforcement (preventing reuse of old passwords)
+- No rate limiting on forgot password requests (can be added later)
+- No CAPTCHA on forgot password form (can be added later)
+- No multi-factor authentication during reset flow
+- No actual email delivery via SMTP/SendGrid (console logging only in MVP)
+- No password strength meter UI
+- No "magic link" login (token only allows password reset, not direct login)
 
 ## Technical Considerations
 
-### Existing Backend Infrastructure
-- EventAttendee entity already exists in schema.sql (lines 217-246)
-- ScheduleEvent entity and basic CRUD already implemented
-- ScheduleService, ScheduleController, ScheduleEventRepository already exist
-- Need to add RSVP and attendance methods to existing service/controller
-
-### Frontend Patterns
-- Follow judging feature patterns (JudgingCriteriaSection, CriteriaFormModal)
-- Use React Hook Form + Zod for form validation
-- Use React Query for data fetching with 5-minute stale time
-- Use framer-motion for modal animations
-- Use shadcn/ui components (Card, Button, Input, etc.)
+### Existing Infrastructure
+- UserService, UserRepository, AuthController already exist
+- PasswordEncoder already configured in Spring Security
+- Frontend uses React Hook Form + Zod pattern consistently
+- AuthLayout component exists for consistent auth page styling
+- Frontend uses React Router v7 for routing
 
 ### Security Model
-- Virtual links visible to all registered participants (no RSVP required)
-- Only organizers can create/edit/delete events
-- Only organizers can view attendee lists and mark attendance
-- Users must be registered for hackathon to RSVP
-- Backend validates authorization using hackathonService.isUserOrganizer()
+- Tokens are UUID v4 (cryptographically secure random)
+- Tokens expire after 15 minutes
+- Tokens can only be used once (marked as used after successful reset)
+- Email address enumeration prevented (always return success message)
+- Password validation matches registration requirements for consistency
+- User receives confirmation email after password change
 
-### Data Model
-- RSVP status values: "attending", "maybe", "not_attending"
-- Event types: workshop, presentation, meal, deadline, ceremony, networking, other
-- EventAttendee has unique constraint on (event_id, user_id)
-- Attended is boolean (no timestamp tracking in MVP)
+### Password Requirements (Match Registration)
+- Minimum 8 characters
+- At least one uppercase letter (A-Z)
+- At least one lowercase letter (a-z)
+- At least one number (0-9)
+- Defined in Register.tsx lines 20-25
 
-### Timeline View
-- Events grouped by day (not calendar grid)
-- Uses toLocaleDateString() for formatting
-- Sorted by startsAt (database query handles ordering)
-- Better for dense 24-48 hour hackathon schedules
+### Email Service Evolution
+- MVP: Log emails to console for development/testing
+- Future: Replace EmailServiceImpl with actual SMTP integration (SendGrid, AWS SES, etc.)
+- Interface allows swapping implementations without changing service/controller code
+
+### Frontend Error Handling
+- Use ApiError class pattern from existing auth pages
+- Display inline error messages using framer-motion for smooth animations
+- Provide user-friendly messages for common errors (invalid token, expired token, passwords don't match)
+
+### Database Cleanup
+- Scheduled task runs daily to remove tokens older than 7 days
+- Prevents unbounded table growth
+- Expired tokens immediately invalidated by service logic (don't need instant removal)
