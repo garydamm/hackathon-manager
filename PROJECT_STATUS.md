@@ -1,6 +1,6 @@
 # Project Status
 
-**Last Updated:** 2026-01-26
+**Last Updated:** 2026-01-27
 
 ---
 
@@ -355,16 +355,17 @@ draft → submitted → under_review → accepted
 
 ## Future Features Roadmap
 
-| Priority | Feature | Status |
-|----------|---------|--------|
-| 1 | Schedule & Events | Not started |
-| 2 | Announcements | Not started |
-| 3 | Judging & Scoring | ✅ Completed |
-| 4 | Prizes & Winners | Not started |
-| 5 | User Profiles | Not started |
-| 6 | Team Invitations | Not started |
-| 7 | Project Media/Gallery | Not started |
-| 8 | Email Notifications | Not started |
+| Priority | Feature | Status | Notes |
+|----------|---------|--------|-------|
+| 1 | Schedule & Events | Not started | ScheduleEvent entity exists |
+| 2 | Announcements | Not started | Announcement entity exists |
+| 3 | Judging & Scoring | ✅ Completed | |
+| 4 | Prizes & Winners | Not started | Prize entities exist |
+| 5 | Google OAuth Login | Not started | "Sign in with Google" option for registration/login |
+| 6 | User Profiles | Not started | Profile page and edit functionality |
+| 7 | Team Invitations | Not started | Formal invitation system beyond invite codes |
+| 8 | Project Media/Gallery | Not started | ProjectMedia entity exists |
+| 9 | Email Notifications | Not started | No email integration yet |
 
 ---
 

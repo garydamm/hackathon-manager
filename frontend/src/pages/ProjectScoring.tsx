@@ -145,6 +145,7 @@ export function ProjectScoringPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["judge-assignments", hackathon?.id] })
+      queryClient.invalidateQueries({ queryKey: ["leaderboard", hackathon?.id] })
       setError(null)
       setSuccessMessage("Scores saved successfully!")
       // Navigate back to judge dashboard after a short delay
