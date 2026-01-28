@@ -33,6 +33,20 @@ export interface RegisterRequest {
   displayName?: string
 }
 
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  token: string
+  newPassword: string
+  confirmPassword: string
+}
+
+export interface PasswordResetResponse {
+  message: string
+}
+
 export type HackathonStatus =
   | "draft"
   | "registration_open"

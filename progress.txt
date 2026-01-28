@@ -527,3 +527,22 @@
   - Security best practice: always return same success message for forgot-password regardless of email existence
   - All AuthController endpoints now include: register, login, refresh, forgot-password, reset-password
 ---
+
+## Iteration 43 - Add password reset confirmation email
+- Added sendPasswordChangeConfirmation(toEmail, userFirstName) method to EmailService interface
+- Implemented method in EmailServiceImpl to log confirmation message to console
+- Message informs user their password was changed and suggests contacting support if not them
+- Called method at end of UserService.resetPassword() after successful password update
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/EmailService.kt
+  - src/main/kotlin/com/hackathon/manager/service/EmailServiceImpl.kt
+  - src/main/kotlin/com/hackathon/manager/service/UserService.kt
+  - PRD.md (marked US-009 complete)
+- Learnings for future iterations:
+  - EmailService interface extended with new method, EmailServiceImpl implements it following same console logging pattern
+  - sendPasswordChangeConfirmation follows same MVP pattern as sendPasswordResetEmail (console logging)
+  - Method called at end of resetPassword() after all database operations complete (password updated, token marked as used)
+  - User details (email, firstName) accessed from resetToken.user which was already fetched earlier in the method
+  - Security pattern: notify users of password changes so they're aware if account was compromised
+  - Confirmation email is fire-and-forget (no error handling) since email service is async/logging only in MVP
+---

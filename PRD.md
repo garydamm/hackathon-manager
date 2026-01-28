@@ -129,10 +129,10 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need TypeScript types for password reset operations so the frontend has type safety.
 
 **Acceptance Criteria:**
-- [ ] Add `ForgotPasswordRequest` interface in types/index.ts with email field
-- [ ] Add `ResetPasswordRequest` interface with token, newPassword, confirmPassword fields
-- [ ] Add `PasswordResetResponse` interface with message field
-- [ ] Typecheck passes
+- [x] Add `ForgotPasswordRequest` interface in types/index.ts with email field
+- [x] Add `ResetPasswordRequest` interface with token, newPassword, confirmPassword fields
+- [x] Add `PasswordResetResponse` interface with message field
+- [x] Typecheck passes
 
 ### US-011: Add password reset methods to auth service
 **Description:** As a developer, I need API client methods for password reset so components can call the backend.
