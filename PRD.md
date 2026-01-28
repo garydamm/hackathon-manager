@@ -86,13 +86,13 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As a developer, I need REST endpoints for RSVP operations so the frontend can manage participant responses.
 
 **Acceptance Criteria:**
-- [ ] Update existing GET /schedule/hackathon/{id} to use getScheduleByHackathonWithRsvp()
-- [ ] Add POST /schedule/{eventId}/rsvp endpoint with RsvpRequest body
-- [ ] Add PUT /schedule/{eventId}/rsvp endpoint for updating RSVP status
-- [ ] Add DELETE /schedule/{eventId}/rsvp endpoint for removing RSVP
-- [ ] All endpoints use @AuthenticationPrincipal for user context
-- [ ] Return 201 CREATED for POST, 200 OK for PUT, 204 NO CONTENT for DELETE
-- [ ] Typecheck passes
+- [x] Update existing GET /schedule/hackathon/{id} to use getScheduleByHackathonWithRsvp()
+- [x] Add POST /schedule/{eventId}/rsvp endpoint with RsvpRequest body
+- [x] Add PUT /schedule/{eventId}/rsvp endpoint for updating RSVP status
+- [x] Add DELETE /schedule/{eventId}/rsvp endpoint for removing RSVP
+- [x] All endpoints use @AuthenticationPrincipal for user context
+- [x] Return 201 CREATED for POST, 200 OK for PUT, 204 NO CONTENT for DELETE
+- [x] Typecheck passes
 
 ### US-008: Add attendance tracking endpoints
 **Description:** As a developer, I need REST endpoints for attendance tracking so organizers can record who attended events.

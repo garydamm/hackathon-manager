@@ -1,6 +1,7 @@
 package com.hackathon.manager.controller
 
 import com.hackathon.manager.dto.CreateScheduleEventRequest
+import com.hackathon.manager.dto.RsvpRequest
 import com.hackathon.manager.dto.ScheduleEventResponse
 import com.hackathon.manager.dto.UpdateScheduleEventRequest
 import com.hackathon.manager.exception.ApiException
@@ -22,8 +23,11 @@ class ScheduleController(
 ) {
 
     @GetMapping("/hackathon/{hackathonId}")
-    fun getScheduleByHackathon(@PathVariable hackathonId: UUID): ResponseEntity<List<ScheduleEventResponse>> {
-        val events = scheduleService.getScheduleByHackathon(hackathonId)
+    fun getScheduleByHackathon(
+        @PathVariable hackathonId: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal?
+    ): ResponseEntity<List<ScheduleEventResponse>> {
+        val events = scheduleService.getScheduleByHackathonWithRsvp(hackathonId, principal?.id)
         return ResponseEntity.ok(events)
     }
 
@@ -69,6 +73,35 @@ class ScheduleController(
             throw ApiException("Only organizers can delete schedule events", HttpStatus.FORBIDDEN)
         }
         scheduleService.deleteScheduleEvent(id)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/{eventId}/rsvp")
+    fun rsvpToEvent(
+        @PathVariable eventId: UUID,
+        @Valid @RequestBody request: RsvpRequest,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<ScheduleEventResponse> {
+        val event = scheduleService.rsvpToEvent(eventId, principal.id, request.rsvpStatus)
+        return ResponseEntity.status(HttpStatus.CREATED).body(event)
+    }
+
+    @PutMapping("/{eventId}/rsvp")
+    fun updateRsvp(
+        @PathVariable eventId: UUID,
+        @Valid @RequestBody request: RsvpRequest,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<ScheduleEventResponse> {
+        val event = scheduleService.rsvpToEvent(eventId, principal.id, request.rsvpStatus)
+        return ResponseEntity.ok(event)
+    }
+
+    @DeleteMapping("/{eventId}/rsvp")
+    fun removeRsvp(
+        @PathVariable eventId: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<Void> {
+        scheduleService.removeRsvp(eventId, principal.id)
         return ResponseEntity.noContent().build()
     }
 }

@@ -79,3 +79,20 @@
   - removeRsvp uses deleteByEventIdAndUserId() which is safe even if record doesn't exist
   - Service layer handles all business logic and validation before repository operations
 ---
+
+## Iteration 21 - Add attendance tracking service methods
+- Added three methods to ScheduleService for organizer-only attendance tracking
+- Added getEventAttendees(eventId, requesterId) that returns sorted list of attendees with RSVP/attendance data
+- Added markAttendance(eventId, userId, attended, requesterId) for marking single user attendance
+- Added bulkMarkAttendance(eventId, userIds, attended, requesterId) for marking multiple users at once
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/ScheduleService.kt
+  - PRD.md (marked US-006 complete)
+- Learnings for future iterations:
+  - Authorization pattern: validate entity exists first, then check isUserOrganizer() before any operations
+  - All attendance methods throw ApiException with FORBIDDEN status if requester is not organizer
+  - markAttendance and bulkMarkAttendance create EventAttendee records if they don't exist (similar to RSVP pattern)
+  - getEventAttendees uses findByEventIdOrderByUserLastNameAscUserFirstNameAsc for alphabetical sorting
+  - bulkMarkAttendance validates each userId exists before updating to provide specific error messages
+  - EventAttendeeResponse.fromEntity() imported to return properly formatted attendee lists
+---
