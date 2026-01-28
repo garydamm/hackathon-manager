@@ -220,16 +220,16 @@ Add a comprehensive schedule and events system to help hackathon participants ea
 **Description:** As an organizer, I want to manage events from the hackathon detail page so I have quick access to schedule operations.
 
 **Acceptance Criteria:**
-- [ ] Create components/ScheduleManagementSection.tsx
-- [ ] Display Card with "Schedule & Events" title and Calendar icon
-- [ ] Show "Add Event" button in header
-- [ ] List all events with: name, type badge, mandatory indicator, time, location, RSVP count
-- [ ] Show 3 action buttons per event: Attendance (Users icon), Edit (Pencil), Delete (Trash2)
-- [ ] Manage state for 3 modals: EventFormModal, DeleteEventModal, AttendanceModal
-- [ ] Show empty state message if no events
-- [ ] Follow JudgingCriteriaSection pattern exactly
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create components/ScheduleManagementSection.tsx
+- [x] Display Card with "Schedule & Events" title and Calendar icon
+- [x] Show "Add Event" button in header
+- [x] List all events with: name, type badge, mandatory indicator, time, location, RSVP count
+- [x] Show 3 action buttons per event: Attendance (Users icon), Edit (Pencil), Delete (Trash2)
+- [x] Manage state for 3 modals: EventFormModal, DeleteEventModal, AttendanceModal
+- [x] Show empty state message if no events
+- [x] Follow JudgingCriteriaSection pattern exactly
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-018: Integrate schedule into HackathonDetail page
 **Description:** As an organizer, I want to see schedule management on the hackathon detail page so I can manage all aspects in one place.

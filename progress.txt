@@ -280,3 +280,32 @@
   - Warning text explains consequences: "All RSVPs and attendance records for this event will also be deleted"
   - Mutation pattern same as EventFormModal: useMutation with mutationFn, onSuccess, onError
 ---
+
+## Iteration 31 - Create AttendanceModal component
+- Created frontend/src/components/AttendanceModal.tsx with complete attendance tracking functionality
+- Modal fetches attendees using useQuery when opened with staleTime: 0 for fresh data
+- Displays attendee list with name, email, and color-coded RSVP status badges (green for attending, yellow for maybe, gray for not attending)
+- Implemented checkbox multi-select with "Select All" option at the top
+- Each attendee row shows Present/Absent button that toggles attended status (green highlight when present)
+- Bulk action buttons appear when items selected: "Mark Present" and "Mark Absent"
+- Displays present count: "X / Y present" below event name
+- Handles individual markAttendance mutation for single user toggle
+- Handles bulkMarkAttendance mutation for marking multiple selected users at once
+- Invalidates both eventAttendees and schedule queries on success for immediate UI feedback
+- Shows loading state with Loader2 spinner during mutations
+- Empty state when no attendees have RSVP'd yet
+- Files changed:
+  - frontend/src/components/AttendanceModal.tsx (created)
+  - PRD.md (marked US-016 complete)
+- Learnings for future iterations:
+  - Checkbox component not needed - native HTML checkboxes work well with Tailwind styling
+  - useQuery with enabled: isOpen && !!event prevents unnecessary fetches when modal closed
+  - staleTime: 0 ensures fresh data is fetched every time modal opens (important for attendance tracking)
+  - Set<string> for selectedUserIds provides efficient add/remove operations
+  - Reset selectedUserIds in useEffect when modal closes to clear selection state
+  - Bulk mutations should clear selection on success (setSelectedUserIds(new Set()))
+  - Button styling for Present state: bg-green-50 text-green-700 border-green-200 hover:bg-green-100
+  - Native checkbox styling: h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary
+  - Modal uses max-w-2xl and max-h-[90vh] overflow-y-auto for scrollable list of attendees
+  - Display pattern: checkbox, attendee info (name/email), RSVP badge, Present/Absent button in one row
+---
