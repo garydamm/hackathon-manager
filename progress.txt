@@ -664,3 +664,25 @@
   - API testing with curl confirms endpoints handle requests properly (success and error cases)
   - Verification tasks require testing but not necessarily code changes
 ---
+
+## Iteration 50 - Add cleanup job for expired tokens
+- Created ScheduledTasks.kt class in new scheduler package with @Component annotation
+- Added cleanupExpiredPasswordResetTokens() method with @Scheduled(cron = "0 0 0 * * ?") to run daily at midnight
+- Method calculates cutoffTime as 7 days ago using OffsetDateTime.now().minusDays(7)
+- Calls passwordResetTokenRepository.deleteByExpiresAtBefore(cutoffTime) which returns count of deleted rows
+- Logs deleted count at INFO level: "Cleaned up X expired password reset tokens older than 7 days"
+- Added @EnableScheduling annotation to HackathonManagerApplication.kt main class
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/scheduler/ScheduledTasks.kt (created)
+  - src/main/kotlin/com/hackathon/manager/HackathonManagerApplication.kt (added @EnableScheduling)
+  - PRD.md (marked US-016 complete)
+- Learnings for future iterations:
+  - Scheduled tasks should be placed in scheduler package for organization
+  - @Component annotation makes class a Spring bean for dependency injection
+  - @Scheduled annotation requires @EnableScheduling on main application class to work
+  - Cron expression "0 0 0 * * ?" means: second=0, minute=0, hour=0 (midnight), every day, every month, any day of week
+  - deleteByExpiresAtBefore() repository method returns Int count of deleted rows for logging
+  - Use SLF4J LoggerFactory.getLogger() for logging in Spring Boot components
+  - OffsetDateTime.now().minusDays(7) creates timestamp 7 days in the past
+  - Scheduled cleanup prevents unbounded database growth by removing old expired tokens
+---
