@@ -2,6 +2,7 @@ package com.hackathon.manager.controller
 
 import com.hackathon.manager.dto.CreateHackathonRequest
 import com.hackathon.manager.dto.HackathonResponse
+import com.hackathon.manager.dto.OrganizerInfo
 import com.hackathon.manager.dto.UpdateHackathonRequest
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.security.UserPrincipal
@@ -89,5 +90,13 @@ class HackathonController(
     ): ResponseEntity<HackathonResponse> {
         val hackathon = hackathonService.unregisterForHackathon(id, principal.id)
         return ResponseEntity.ok(hackathon)
+    }
+
+    @GetMapping("/{id}/organizers")
+    fun getHackathonOrganizers(
+        @PathVariable id: UUID
+    ): ResponseEntity<List<OrganizerInfo>> {
+        val organizers = hackathonService.getHackathonOrganizers(id)
+        return ResponseEntity.ok(organizers)
     }
 }

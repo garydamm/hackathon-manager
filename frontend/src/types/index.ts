@@ -363,3 +363,13 @@ export interface BulkMarkAttendanceRequest {
   userIds: string[]
   attended: boolean
 }
+
+// Organizer types
+export interface OrganizerInfo {
+  userId: string
+  email: string
+  firstName: string
+  lastName: string
+  displayName?: string | null
+  avatarUrl?: string | null
+}

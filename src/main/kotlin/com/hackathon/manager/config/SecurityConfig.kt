@@ -41,6 +41,7 @@ class SecurityConfig(
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/hackathons").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/hackathons/{slug}").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/hackathons/*/organizers").permitAll()
                     .requestMatchers("/error").permitAll()
                     // All other endpoints require authentication
                     .anyRequest().authenticated()

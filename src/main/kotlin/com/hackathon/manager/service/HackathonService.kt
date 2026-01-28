@@ -10,6 +10,7 @@ import com.hackathon.manager.entity.enums.UserRole
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.repository.HackathonRepository
 import com.hackathon.manager.repository.HackathonUserRepository
+import com.hackathon.manager.repository.TeamMemberRepository
 import com.hackathon.manager.repository.UserRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -20,7 +21,8 @@ import java.util.*
 class HackathonService(
     private val hackathonRepository: HackathonRepository,
     private val hackathonUserRepository: HackathonUserRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val teamMemberRepository: TeamMemberRepository
 ) {
 
     @Transactional(readOnly = true)
@@ -37,7 +39,7 @@ class HackathonService(
     fun getHackathonById(id: UUID, userId: UUID? = null): HackathonResponse {
         val hackathon = hackathonRepository.findById(id)
             .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
-        val participantCount = hackathonUserRepository.findByHackathonIdAndRole(id, UserRole.participant).size
+        val participantCount = getParticipantCount(id)
         val userRole = userId?.let { hackathonUserRepository.findByHackathonIdAndUserId(id, it)?.role }
         return HackathonResponse.fromEntity(hackathon, participantCount, userRole)
     }
@@ -46,7 +48,7 @@ class HackathonService(
     fun getHackathonBySlug(slug: String, userId: UUID? = null): HackathonResponse {
         val hackathon = hackathonRepository.findBySlug(slug)
             ?: throw ApiException("Hackathon not found", HttpStatus.NOT_FOUND)
-        val participantCount = hackathonUserRepository.findByHackathonIdAndRole(hackathon.id!!, UserRole.participant).size
+        val participantCount = getParticipantCount(hackathon.id!!)
         val userRole = userId?.let { hackathonUserRepository.findByHackathonIdAndUserId(hackathon.id!!, it)?.role }
         return HackathonResponse.fromEntity(hackathon, participantCount, userRole)
     }
@@ -138,13 +140,13 @@ class HackathonService(
         if (existingRole != null) {
             // Organizers, judges, and admins are already part of the hackathon - return their current status
             if (existingRole.role != UserRole.participant) {
-                val participantCount = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.participant).size
+                val participantCount = getParticipantCount(hackathonId)
                 return HackathonResponse.fromEntity(hackathon, participantCount, existingRole.role)
             }
             throw ApiException("Already registered for this hackathon", HttpStatus.CONFLICT)
         }
 
-        val participantCount = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.participant).size
+        val participantCount = getParticipantCount(hackathonId)
         if (hackathon.maxParticipants != null && participantCount >= hackathon.maxParticipants!!) {
             throw ApiException("Hackathon is full", HttpStatus.BAD_REQUEST)
         }
@@ -159,7 +161,7 @@ class HackathonService(
         )
         hackathonUserRepository.save(hackathonUser)
 
-        return HackathonResponse.fromEntity(hackathon, participantCount + 1, UserRole.participant)
+        return HackathonResponse.fromEntity(hackathon, getParticipantCount(hackathonId), UserRole.participant)
     }
 
     @Transactional
@@ -172,7 +174,7 @@ class HackathonService(
 
         hackathonUserRepository.delete(hackathonUser)
 
-        val participantCount = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.participant).size
+        val participantCount = getParticipantCount(hackathonId)
         return HackathonResponse.fromEntity(hackathon, participantCount, null)
     }
 
@@ -196,5 +198,33 @@ class HackathonService(
     fun getUserDraftHackathons(userId: UUID): List<HackathonResponse> {
         return hackathonRepository.findByOrganizerAndStatus(userId, HackathonStatus.draft)
             .map { HackathonResponse.fromEntity(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getHackathonOrganizers(hackathonId: UUID): List<com.hackathon.manager.dto.OrganizerInfo> {
+        // Verify hackathon exists
+        hackathonRepository.findById(hackathonId)
+            .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
+
+        val organizers = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.organizer)
+        return organizers.map { hackathonUser ->
+            com.hackathon.manager.dto.OrganizerInfo(
+                userId = hackathonUser.user.id!!,
+                email = hackathonUser.user.email,
+                firstName = hackathonUser.user.firstName,
+                lastName = hackathonUser.user.lastName,
+                displayName = hackathonUser.user.displayName,
+                avatarUrl = hackathonUser.user.avatarUrl
+            )
+        }
+    }
+
+    /**
+     * Get the participant count for a hackathon.
+     * Counts all distinct users who are members of teams in the hackathon.
+     * This provides a more accurate count of active participants than just counting HackathonUser entries with participant role.
+     */
+    private fun getParticipantCount(hackathonId: UUID): Int {
+        return teamMemberRepository.countDistinctUsersByHackathonId(hackathonId)
     }
 }

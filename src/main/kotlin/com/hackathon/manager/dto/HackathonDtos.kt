@@ -119,3 +119,12 @@ data class UpdateHackathonRequest(
     val minTeamSize: Int? = null,
     val maxParticipants: Int? = null
 )
+
+data class OrganizerInfo(
+    val userId: UUID,
+    val email: String,
+    val firstName: String,
+    val lastName: String,
+    val displayName: String?,
+    val avatarUrl: String?
+)

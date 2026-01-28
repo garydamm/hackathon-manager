@@ -20,6 +20,7 @@ import {
   CheckCircle,
   FolderKanban,
   Gavel,
+  User,
 } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
@@ -37,6 +38,7 @@ import { JudgesSection } from "@/components/JudgesSection"
 import { LeaderboardSection } from "@/components/LeaderboardSection"
 import { ResultsSection } from "@/components/ResultsSection"
 import { ScheduleManagementSection } from "@/components/ScheduleManagementSection"
+import { OrganizersSection } from "@/components/OrganizersSection"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { projectService } from "@/services/projects"
@@ -265,6 +267,11 @@ function ViewMode({
   onUnregisterClick: () => void
   isOrganizer: boolean
 }) {
+  const { data: organizers } = useQuery({
+    queryKey: ["organizers", hackathon.id],
+    queryFn: () => hackathonService.getOrganizers(hackathon.id),
+  })
+
   const showTeamsSection =
     hackathon.status === "registration_open" || hackathon.status === "in_progress"
 
@@ -315,6 +322,30 @@ function ViewMode({
                 </span>
               )}
             </div>
+            {organizers && organizers.length > 0 && (
+              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>Organized by:</span>
+                <div className="flex items-center gap-2">
+                  {organizers.slice(0, 2).map((organizer, index) => (
+                    <a
+                      key={organizer.userId}
+                      href={`mailto:${organizer.email}`}
+                      className="hover:text-primary transition-colors"
+                      title={organizer.email}
+                    >
+                      {organizer.displayName || `${organizer.firstName} ${organizer.lastName}`}
+                      {index < Math.min(organizers.length, 2) - 1 && ","}
+                    </a>
+                  ))}
+                  {organizers.length > 2 && (
+                    <span className="text-muted-foreground">
+                      +{organizers.length - 2} more
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {showRegisterButton && (
                 <Button onClick={onRegisterClick} disabled={isFull}>
@@ -467,6 +498,9 @@ function ViewMode({
           </div>
         </CardContent>
       </Card>
+
+      {/* Organizers Section - visible to all users */}
+      <OrganizersSection hackathonId={hackathon.id} />
 
       {/* Judging Criteria Section - visible to organizers only */}
       {isOrganizer && <JudgingCriteriaSection hackathonId={hackathon.id} />}

@@ -77,16 +77,16 @@ Add a secure password reset flow to allow users who have forgotten their passwor
 **Description:** As a developer, I need service methods for password reset operations so the controller can handle requests.
 
 **Acceptance Criteria:**
-- [ ] Inject PasswordResetTokenRepository and EmailService into UserService
-- [ ] Add `requestPasswordReset(email: String)` method that creates token with 15-minute expiry and calls email service
-- [ ] Generate token using `UUID.randomUUID().toString()` for cryptographic randomness
-- [ ] If email doesn't exist, silently succeed (don't reveal user existence)
-- [ ] Invalidate any existing unused tokens for the user before creating new one
-- [ ] Add `validateResetToken(token: String): PasswordResetToken` method that checks token exists, not used, not expired
-- [ ] Add `resetPassword(token: String, newPassword: String)` method that validates token, updates user password, marks token as used
-- [ ] Use passwordEncoder.encode() for hashing new password
-- [ ] Throw ApiException with BAD_REQUEST if token invalid/expired/used
-- [ ] Typecheck passes
+- [x] Inject PasswordResetTokenRepository and EmailService into UserService
+- [x] Add `requestPasswordReset(email: String)` method that creates token with 15-minute expiry and calls email service
+- [x] Generate token using `UUID.randomUUID().toString()` for cryptographic randomness
+- [x] If email doesn't exist, silently succeed (don't reveal user existence)
+- [x] Invalidate any existing unused tokens for the user before creating new one
+- [x] Add `validateResetToken(token: String): PasswordResetToken` method that checks token exists, not used, not expired
+- [x] Add `resetPassword(token: String, newPassword: String)` method that validates token, updates user password, marks token as used
+- [x] Use passwordEncoder.encode() for hashing new password
+- [x] Throw ApiException with BAD_REQUEST if token invalid/expired/used
+- [x] Typecheck passes
 
 ### US-007: Add password validation helper
 **Description:** As a developer, I need to validate password requirements so users create secure passwords on reset.
