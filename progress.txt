@@ -564,3 +564,43 @@
   - Build command (npm run build) runs tsc -b for type checking, verifies all types are valid
   - Types placed near related auth types (after RegisterRequest) for better organization
 ---
+
+## Iteration 45 - Add password reset methods to auth service
+- Added forgotPassword(email) and resetPassword(token, newPassword, confirmPassword) methods to authService
+- Both methods use centralized api client with skipAuth: true for public endpoints
+- forgotPassword posts to /auth/forgot-password endpoint
+- resetPassword posts to /auth/reset-password endpoint with token and passwords
+- Added imports for ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse types
+- Files changed:
+  - frontend/src/services/auth.ts
+  - PRD.md (marked US-011 complete)
+- Learnings for future iterations:
+  - Password reset methods follow same pattern as login/register (skipAuth: true for public endpoints)
+  - authService object is singleton with methods using api.post<ResponseType>()
+  - Type casting with `as ForgotPasswordRequest` ensures proper type safety when passing objects to api.post
+  - Password reset methods placed between refreshToken and logout for logical grouping
+  - Both methods return Promise<PasswordResetResponse> for consistent response handling
+  - No session management needed for password reset (unlike login/register which call setSession)
+---
+
+## Iteration 46 - Create ForgotPassword page
+- Created ForgotPassword.tsx page following Login.tsx pattern
+- Implemented React Hook Form with Zod schema validating email format
+- Added email input field with Mail icon in left position
+- Added "Send Reset Link" button with loading state (Loader2 icon and "Sending..." text)
+- Success message shown with CheckCircle icon in green box: "If an account exists with that email, you will receive a password reset link shortly."
+- Error message shown in red box if API call fails
+- Added "Back to Login" link at bottom of form
+- Uses AuthLayout with title "Forgot your password?" and descriptive subtitle
+- Files changed:
+  - frontend/src/pages/ForgotPassword.tsx (created)
+  - PRD.md (marked US-012 complete - except browser verification)
+- Learnings for future iterations:
+  - ForgotPassword page follows exact same pattern as Login page (form structure, error handling, layout)
+  - Success state managed with useState<boolean> to show success message after submission
+  - Success message uses bg-green-50 text-green-700 with CheckCircle icon for positive feedback
+  - AuthLayout title and subtitle props provide consistent header styling across auth pages
+  - authService.forgotPassword() returns Promise<PasswordResetResponse> but we only care about success/error
+  - Success message intentionally vague ("If an account exists...") to prevent email enumeration attacks
+  - "Back to Login" link pattern mirrors "Create account" link in Login page for consistency
+---
