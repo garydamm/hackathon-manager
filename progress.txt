@@ -232,3 +232,21 @@
   - All 10 tests passed successfully on first run
   - Typecheck passed successfully
 ---
+
+## Iteration 65 - Add JudgingCriteriaRepository tests
+- Created comprehensive JudgingCriteriaRepositoryTest.kt with 5 test cases covering all repository methods
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/repository/JudgingCriteriaRepositoryTest.kt
+  - Updated: PRD.md (marked US-014 as complete)
+- Learnings for future iterations:
+  - JudgingCriteria entity has a ManyToOne relationship with Hackathon
+  - The repository method is findByHackathonIdOrderByDisplayOrder - sorts by displayOrder field (Int)
+  - JudgingCriteria has several key fields: name, description, maxScore (Int, default 10), weight (BigDecimal, default 1.00), displayOrder (Int, default 0)
+  - Weight field uses BigDecimal with precision=3, scale=2 for accurate decimal calculations (e.g., BigDecimal("1.25"))
+  - Use isEqualByComparingTo() for BigDecimal assertions instead of isEqualTo() to handle decimal precision correctly
+  - Display order is used to control the sequence in which criteria appear in the UI
+  - Test sorting accuracy by creating criteria out of order and verifying they're returned in displayOrder sequence
+  - JudgingCriteria has a OneToMany relationship with Score entities (cascades on delete)
+  - All 5 tests passed successfully on first run
+  - Typecheck passed successfully
+---
