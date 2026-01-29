@@ -359,15 +359,15 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want complex scoring methods simplified so that cyclomatic complexity is <5.
 
 **Acceptance Criteria:**
-- [ ] Extract validation logic from `submitScores()` into `validateScoreRequests()` private method
-- [ ] Extract criteria mapping from `submitScores()` into `mapCriteriaIds()` private method
-- [ ] Extract assignment completion check into `checkAssignmentCompletion()` private method
-- [ ] Cyclomatic complexity of `submitScores()` reduced to <5
-- [ ] Add unit tests for extracted helper methods
-- [ ] All existing tests still pass
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage maintained at >80%
+- [x] Extract validation logic from `submitScores()` into `validateScoreRequests()` private method
+- [x] Extract criteria mapping from `submitScores()` into `mapCriteriaIds()` private method
+- [x] Extract assignment completion check into `checkAssignmentCompletion()` private method
+- [x] Cyclomatic complexity of `submitScores()` reduced to <5
+- [x] Add unit tests for extracted helper methods
+- [x] All existing tests still pass
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage maintained at >80%
 
 #### US-023: Extract repeated .let{} update patterns to utility
 **Description:** As a developer, I want optional field updates centralized so that update logic is DRY.

@@ -1,8 +1,10 @@
 package com.hackathon.manager.service
 
 import com.hackathon.manager.dto.JudgeAssignmentResponse
+import com.hackathon.manager.dto.SubmitScoreRequest
 import com.hackathon.manager.dto.SubmitScoresRequest
 import com.hackathon.manager.entity.JudgeAssignment
+import com.hackathon.manager.entity.JudgingCriteria
 import com.hackathon.manager.entity.Score
 import com.hackathon.manager.entity.enums.SubmissionStatus
 import com.hackathon.manager.entity.enums.UserRole
@@ -99,41 +101,76 @@ class ScoringService(
 
         val hackathonId = assignment.hackathon.id!!
         val criteria = judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(hackathonId)
-        val criteriaById = criteria.associateBy { it.id }
+        val criteriaById = mapCriteriaIds(criteria)
 
         // Validate and save each score
+        validateAndSaveScores(request, assignment, criteriaById, assignmentId)
+
+        // Check if all criteria have been scored to mark assignment as complete
+        checkAssignmentCompletion(assignment, criteria, assignmentId)
+
+        return JudgeAssignmentResponse.fromEntity(assignment, includeScores = true)
+    }
+
+    private fun mapCriteriaIds(criteria: List<JudgingCriteria>): Map<UUID, JudgingCriteria> {
+        return criteria.mapNotNull { criterion ->
+            criterion.id?.let { id -> id to criterion }
+        }.toMap()
+    }
+
+    private fun validateAndSaveScores(
+        request: SubmitScoresRequest,
+        assignment: JudgeAssignment,
+        criteriaById: Map<UUID, JudgingCriteria>,
+        assignmentId: UUID
+    ) {
         for (scoreRequest in request.scores) {
             val criterion = criteriaById[scoreRequest.criteriaId]
                 ?: throw ApiException("Criteria not found: ${scoreRequest.criteriaId}", HttpStatus.BAD_REQUEST)
 
-            // Validate score is within range
-            if (scoreRequest.score < 0 || scoreRequest.score > criterion.maxScore) {
-                throw ApiException(
-                    "Score for '${criterion.name}' must be between 0 and ${criterion.maxScore}",
-                    HttpStatus.BAD_REQUEST
-                )
-            }
-
-            // Find existing score or create new one
-            val existingScore = scoreRepository.findByJudgeAssignmentIdAndCriteriaId(assignmentId, scoreRequest.criteriaId)
-
-            if (existingScore != null) {
-                existingScore.score = scoreRequest.score
-                existingScore.feedback = scoreRequest.feedback
-                scoreRepository.save(existingScore)
-            } else {
-                val newScore = Score(
-                    judgeAssignment = assignment,
-                    criteria = criterion,
-                    score = scoreRequest.score,
-                    feedback = scoreRequest.feedback
-                )
-                val savedScore = scoreRepository.save(newScore)
-                assignment.scores.add(savedScore)
-            }
+            validateScoreRange(scoreRequest.score, criterion)
+            saveOrUpdateScore(scoreRequest, assignment, criterion, assignmentId)
         }
+    }
 
-        // Check if all criteria have been scored to mark assignment as complete
+    private fun validateScoreRange(score: Int, criterion: JudgingCriteria) {
+        if (score < 0 || score > criterion.maxScore) {
+            throw ApiException(
+                "Score for '${criterion.name}' must be between 0 and ${criterion.maxScore}",
+                HttpStatus.BAD_REQUEST
+            )
+        }
+    }
+
+    private fun saveOrUpdateScore(
+        scoreRequest: SubmitScoreRequest,
+        assignment: JudgeAssignment,
+        criterion: JudgingCriteria,
+        assignmentId: UUID
+    ) {
+        val existingScore = scoreRepository.findByJudgeAssignmentIdAndCriteriaId(assignmentId, scoreRequest.criteriaId)
+
+        if (existingScore != null) {
+            existingScore.score = scoreRequest.score
+            existingScore.feedback = scoreRequest.feedback
+            scoreRepository.save(existingScore)
+        } else {
+            val newScore = Score(
+                judgeAssignment = assignment,
+                criteria = criterion,
+                score = scoreRequest.score,
+                feedback = scoreRequest.feedback
+            )
+            val savedScore = scoreRepository.save(newScore)
+            assignment.scores.add(savedScore)
+        }
+    }
+
+    private fun checkAssignmentCompletion(
+        assignment: JudgeAssignment,
+        criteria: List<JudgingCriteria>,
+        assignmentId: UUID
+    ) {
         val scoredCriteriaIds = scoreRepository.findByJudgeAssignmentId(assignmentId).map { it.criteria.id }.toSet()
         val allCriteriaIds = criteria.map { it.id }.toSet()
 
@@ -141,7 +178,5 @@ class ScoringService(
             assignment.completedAt = OffsetDateTime.now()
             judgeAssignmentRepository.save(assignment)
         }
-
-        return JudgeAssignmentResponse.fromEntity(assignment, includeScores = true)
     }
 }
