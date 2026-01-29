@@ -175,3 +175,21 @@
   - The repository interface uses findByUserIdAndUsedAtIsNullAndExpiresAtAfter, not findByUserId - important to test the actual method signature
   - Typecheck passed successfully
 ---
+
+## Iteration 62 - Add ProjectRepository tests
+- Created comprehensive ProjectRepositoryTest.kt with 9 test cases covering all repository methods
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/repository/ProjectRepositoryTest.kt
+  - Updated: PRD.md (marked US-011 as complete)
+- Learnings for future iterations:
+  - Project entity has relationships with both Team (OneToOne) and Hackathon (ManyToOne)
+  - Projects use SubmissionStatus enum with values: draft, submitted, under_review, accepted, rejected (not approved)
+  - Test data setup requires persisting User first, then Hackathon, then Team before creating Projects
+  - Test cascade deletion from both team and hackathon - both should delete the project
+  - Use entityManager.remove() for direct entity deletion or repository.delete() for repository methods
+  - Projects have optional fields like tagline, description, urls, and a technologies array field
+  - findByHackathonIdAndStatus() is useful for filtering projects by submission status
+  - Running all repository tests with --rerun-tasks works better than running individually (avoids TestContainers reuse issues)
+  - All 9 tests passed successfully on first run when all repository tests run together
+  - Typecheck passed successfully
+---

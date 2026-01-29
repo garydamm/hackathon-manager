@@ -215,15 +215,15 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for schedule event repository so that event queries are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `ScheduleEventRepositoryTest.kt` extending AbstractRepositoryTest
-- [ ] Test `findByHackathonIdOrderByStartTime()` returns sorted events
-- [ ] Test event creation with hackathon relationship
-- [ ] Test date/time storage and retrieval accuracy
-- [ ] Test cascade deletion when hackathon is deleted
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Integration tests pass with TestContainers
+- [x] Create `ScheduleEventRepositoryTest.kt` extending AbstractRepositoryTest
+- [x] Test `findByHackathonIdOrderByStartTime()` returns sorted events
+- [x] Test event creation with hackathon relationship
+- [x] Test date/time storage and retrieval accuracy
+- [x] Test cascade deletion when hackathon is deleted
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Integration tests pass with TestContainers
 
 #### US-013: Add EventAttendeeRepository tests
 **Description:** As a developer, I need tests for event attendee repository so that RSVP queries are validated.
