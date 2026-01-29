@@ -244,15 +244,15 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for judging criteria repository so that criteria queries are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `JudgingCriteriaRepositoryTest.kt` extending AbstractRepositoryTest
-- [ ] Test `findByHackathonIdOrderByDisplayOrder()` returns sorted criteria
-- [ ] Test criteria creation with hackathon relationship
-- [ ] Test display order sorting accuracy
-- [ ] Test cascade deletion when hackathon is deleted
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Integration tests pass with TestContainers
+- [x] Create `JudgingCriteriaRepositoryTest.kt` extending AbstractRepositoryTest
+- [x] Test `findByHackathonIdOrderByDisplayOrder()` returns sorted criteria
+- [x] Test criteria creation with hackathon relationship
+- [x] Test display order sorting accuracy
+- [x] Test cascade deletion when hackathon is deleted
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Integration tests pass with TestContainers
 
 #### US-015: Add ScoreRepository tests
 **Description:** As a developer, I need tests for score repository so that scoring queries are validated.
