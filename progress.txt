@@ -158,3 +158,20 @@
   - TestContainers provides isolated, reproducible test database environment without manual setup
   - Typecheck passed successfully
 ---
+
+## Iteration 61 - Add PasswordResetTokenRepository tests
+- Created comprehensive PasswordResetTokenRepositoryTest.kt with 8 test cases covering all repository methods
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/repository/PasswordResetTokenRepositoryTest.kt
+  - Updated: PRD.md (marked US-010 as complete)
+- Learnings for future iterations:
+  - Repository tests must extend AbstractRepositoryTest and use @DataJpaTest with @AutoConfigureTestDatabase(replace = NONE)
+  - Use TestEntityManager to persist test data in setUp() method (e.g., persist testUser before creating tokens)
+  - When testing @CreationTimestamp fields, call entityManager.flush() and entityManager.clear() after save to populate database-generated values
+  - Test method naming follows pattern: `findByToken should return token when exists`
+  - Test complex query methods like findByUserIdAndUsedAtIsNullAndExpiresAtAfter by creating multiple entities with different states (valid, expired, used)
+  - Cascade deletion tests verify that deleting a parent entity (User) also deletes child entities (PasswordResetToken)
+  - All 8 tests passed successfully when run in isolation (TestContainers connection issues occur when running all tests at once)
+  - The repository interface uses findByUserIdAndUsedAtIsNullAndExpiresAtAfter, not findByUserId - important to test the actual method signature
+  - Typecheck passed successfully
+---
