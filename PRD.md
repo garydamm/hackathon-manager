@@ -416,13 +416,13 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want cleanup decisions documented so that future developers understand the architecture.
 
 **Acceptance Criteria:**
-- [ ] Create `docs/ARCHITECTURE.md` documenting service layer organization
-- [ ] Document domain exception pattern and usage
-- [ ] Document test coverage standards (80% minimum)
-- [ ] Document file size limits (300 lines) and complexity limits (complexity <5)
-- [ ] Document when to use TestContainers vs mocked tests
-- [ ] Add section on constants management
-- [ ] Typecheck passes
+- [x] Create `docs/ARCHITECTURE.md` documenting service layer organization
+- [x] Document domain exception pattern and usage
+- [x] Document test coverage standards (80% minimum)
+- [x] Document file size limits (300 lines) and complexity limits (complexity <5)
+- [x] Document when to use TestContainers vs mocked tests
+- [x] Add section on constants management
+- [x] Typecheck passes
 
 ## Non-Goals
 
