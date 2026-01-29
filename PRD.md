@@ -41,23 +41,23 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for the complete password reset workflow so that this critical security feature is properly validated.
 
 **Acceptance Criteria:**
-- [ ] Add tests to `UserServiceTest.kt` for `requestPasswordReset()`
-- [ ] Test valid email generates token with 15-minute expiry
-- [ ] Test non-existent email silently succeeds (security feature)
-- [ ] Test multiple reset requests invalidate previous tokens
-- [ ] Add tests for `validateResetToken()`
-- [ ] Test valid unused token returns successfully
-- [ ] Test expired token throws ApiException
-- [ ] Test used token throws ApiException
-- [ ] Test invalid token throws ApiException
-- [ ] Add tests for `resetPassword()`
-- [ ] Test valid token updates password and marks token as used
-- [ ] Test password validation rules (8 chars minimum)
-- [ ] Test confirmation email is sent after reset
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage for password reset methods 100%
+- [x] Add tests to `UserServiceTest.kt` for `requestPasswordReset()`
+- [x] Test valid email generates token with 15-minute expiry
+- [x] Test non-existent email silently succeeds (security feature)
+- [x] Test multiple reset requests invalidate previous tokens
+- [x] Add tests for `validateResetToken()`
+- [x] Test valid unused token returns successfully
+- [x] Test expired token throws ApiException
+- [x] Test used token throws ApiException
+- [x] Test invalid token throws ApiException
+- [x] Add tests for `resetPassword()`
+- [x] Test valid token updates password and marks token as used
+- [x] Test password validation rules (8 chars minimum)
+- [x] Test confirmation email is sent after reset
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage for password reset methods 100%
 
 #### US-003: Add ScheduledTasks unit tests
 **Description:** As a developer, I need tests for scheduled tasks so that token cleanup job behavior is validated.

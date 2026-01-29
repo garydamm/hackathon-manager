@@ -1,8 +1,10 @@
 package com.hackathon.manager.service
 
 import com.hackathon.manager.dto.auth.UpdateUserRequest
+import com.hackathon.manager.entity.PasswordResetToken
 import com.hackathon.manager.entity.User
 import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.repository.PasswordResetTokenRepository
 import com.hackathon.manager.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -13,6 +15,8 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.*
+import org.springframework.security.crypto.password.PasswordEncoder
+import java.time.OffsetDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
@@ -20,6 +24,15 @@ class UserServiceTest {
 
     @Mock
     lateinit var userRepository: UserRepository
+
+    @Mock
+    lateinit var passwordResetTokenRepository: PasswordResetTokenRepository
+
+    @Mock
+    lateinit var emailService: EmailService
+
+    @Mock
+    lateinit var passwordEncoder: PasswordEncoder
 
     @InjectMocks
     lateinit var userService: UserService
@@ -189,5 +202,267 @@ class UserServiceTest {
         assertThat(result.bio).isEqualTo("New bio")
         assertThat(result.skills).isNull()
         assertThat(result.githubUrl).isNull()
+    }
+
+    // ========== Password Reset Workflow Tests ==========
+
+    @Test
+    fun `requestPasswordReset should generate token with 15-minute expiry for valid email`() {
+        val email = "test@example.com"
+        whenever(userRepository.findByEmail(email)).thenReturn(testUser)
+        whenever(passwordResetTokenRepository.findByUserIdAndUsedAtIsNullAndExpiresAtAfter(any(), any())).thenReturn(emptyList())
+        whenever(passwordResetTokenRepository.save(any<PasswordResetToken>())).thenAnswer { it.arguments[0] }
+
+        userService.requestPasswordReset(email)
+
+        verify(passwordResetTokenRepository).save(argThat { token ->
+            token.user == testUser &&
+            token.token.isNotEmpty() &&
+            token.expiresAt.isAfter(OffsetDateTime.now().plusMinutes(14)) &&
+            token.expiresAt.isBefore(OffsetDateTime.now().plusMinutes(16)) &&
+            token.usedAt == null
+        })
+        verify(emailService).sendPasswordResetEmail(eq(email), any(), eq("Test"))
+    }
+
+    @Test
+    fun `requestPasswordReset should silently succeed for non-existent email`() {
+        val nonExistentEmail = "nonexistent@example.com"
+        whenever(userRepository.findByEmail(nonExistentEmail)).thenReturn(null)
+
+        userService.requestPasswordReset(nonExistentEmail)
+
+        verify(passwordResetTokenRepository, never()).save(any())
+        verify(emailService, never()).sendPasswordResetEmail(any(), any(), any())
+    }
+
+    @Test
+    fun `requestPasswordReset should invalidate previous unused tokens`() {
+        val email = "test@example.com"
+        val oldToken1 = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = "old-token-1",
+            expiresAt = OffsetDateTime.now().plusMinutes(10),
+            usedAt = null
+        )
+        val oldToken2 = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = "old-token-2",
+            expiresAt = OffsetDateTime.now().plusMinutes(5),
+            usedAt = null
+        )
+
+        whenever(userRepository.findByEmail(email)).thenReturn(testUser)
+        whenever(passwordResetTokenRepository.findByUserIdAndUsedAtIsNullAndExpiresAtAfter(any(), any()))
+            .thenReturn(listOf(oldToken1, oldToken2))
+        whenever(passwordResetTokenRepository.save(any<PasswordResetToken>())).thenAnswer { it.arguments[0] }
+
+        userService.requestPasswordReset(email)
+
+        verify(passwordResetTokenRepository, times(3)).save(any<PasswordResetToken>())
+        assertThat(oldToken1.usedAt).isNotNull()
+        assertThat(oldToken2.usedAt).isNotNull()
+    }
+
+    @Test
+    fun `validateResetToken should return token when valid and unused`() {
+        val tokenString = "valid-token"
+        val resetToken = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = tokenString,
+            expiresAt = OffsetDateTime.now().plusMinutes(10),
+            usedAt = null
+        )
+
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(resetToken))
+
+        val result = userService.validateResetToken(tokenString)
+
+        assertThat(result).isEqualTo(resetToken)
+    }
+
+    @Test
+    fun `validateResetToken should throw exception when token does not exist`() {
+        val tokenString = "invalid-token"
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.empty())
+
+        assertThatThrownBy { userService.validateResetToken(tokenString) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Invalid or expired reset token")
+    }
+
+    @Test
+    fun `validateResetToken should throw exception when token is expired`() {
+        val tokenString = "expired-token"
+        val expiredToken = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = tokenString,
+            expiresAt = OffsetDateTime.now().minusMinutes(1),
+            usedAt = null
+        )
+
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(expiredToken))
+
+        assertThatThrownBy { userService.validateResetToken(tokenString) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("This reset token has expired")
+    }
+
+    @Test
+    fun `validateResetToken should throw exception when token is already used`() {
+        val tokenString = "used-token"
+        val usedToken = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = tokenString,
+            expiresAt = OffsetDateTime.now().plusMinutes(10),
+            usedAt = OffsetDateTime.now().minusMinutes(5)
+        )
+
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(usedToken))
+
+        assertThatThrownBy { userService.validateResetToken(tokenString) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("This reset token has already been used")
+    }
+
+    @Test
+    fun `resetPassword should update password and mark token as used with valid token`() {
+        val tokenString = "valid-token"
+        val newPassword = "NewPassword123"
+        val resetToken = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = tokenString,
+            expiresAt = OffsetDateTime.now().plusMinutes(10),
+            usedAt = null
+        )
+
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(resetToken))
+        whenever(passwordEncoder.encode(newPassword)).thenReturn("encoded-password")
+        whenever(userRepository.save(any<User>())).thenAnswer { it.arguments[0] }
+        whenever(passwordResetTokenRepository.save(any<PasswordResetToken>())).thenAnswer { it.arguments[0] }
+
+        userService.resetPassword(tokenString, newPassword)
+
+        assertThat(testUser.passwordHash).isEqualTo("encoded-password")
+        assertThat(resetToken.usedAt).isNotNull()
+        verify(userRepository).save(testUser)
+        verify(passwordResetTokenRepository).save(resetToken)
+        verify(emailService).sendPasswordChangeConfirmation("test@example.com", "Test")
+    }
+
+    @Test
+    fun `resetPassword should throw exception when password is too short`() {
+        val tokenString = "valid-token"
+        val shortPassword = "Short1"
+        val resetToken = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = tokenString,
+            expiresAt = OffsetDateTime.now().plusMinutes(10),
+            usedAt = null
+        )
+
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(resetToken))
+
+        assertThatThrownBy { userService.resetPassword(tokenString, shortPassword) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Password must be at least 8 characters long")
+
+        verify(userRepository, never()).save(any())
+        verify(emailService, never()).sendPasswordChangeConfirmation(any(), any())
+    }
+
+    @Test
+    fun `resetPassword should throw exception when password lacks uppercase letter`() {
+        val tokenString = "valid-token"
+        val noUpperPassword = "password123"
+        val resetToken = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = tokenString,
+            expiresAt = OffsetDateTime.now().plusMinutes(10),
+            usedAt = null
+        )
+
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(resetToken))
+
+        assertThatThrownBy { userService.resetPassword(tokenString, noUpperPassword) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Password must contain at least one uppercase letter")
+
+        verify(userRepository, never()).save(any())
+        verify(emailService, never()).sendPasswordChangeConfirmation(any(), any())
+    }
+
+    @Test
+    fun `resetPassword should throw exception when password lacks lowercase letter`() {
+        val tokenString = "valid-token"
+        val noLowerPassword = "PASSWORD123"
+        val resetToken = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = tokenString,
+            expiresAt = OffsetDateTime.now().plusMinutes(10),
+            usedAt = null
+        )
+
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(resetToken))
+
+        assertThatThrownBy { userService.resetPassword(tokenString, noLowerPassword) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Password must contain at least one lowercase letter")
+
+        verify(userRepository, never()).save(any())
+        verify(emailService, never()).sendPasswordChangeConfirmation(any(), any())
+    }
+
+    @Test
+    fun `resetPassword should throw exception when password lacks number`() {
+        val tokenString = "valid-token"
+        val noNumberPassword = "PasswordABC"
+        val resetToken = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = tokenString,
+            expiresAt = OffsetDateTime.now().plusMinutes(10),
+            usedAt = null
+        )
+
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(resetToken))
+
+        assertThatThrownBy { userService.resetPassword(tokenString, noNumberPassword) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Password must contain at least one number")
+
+        verify(userRepository, never()).save(any())
+        verify(emailService, never()).sendPasswordChangeConfirmation(any(), any())
+    }
+
+    @Test
+    fun `resetPassword should send confirmation email after successful password reset`() {
+        val tokenString = "valid-token"
+        val newPassword = "ValidPassword123"
+        val resetToken = PasswordResetToken(
+            id = UUID.randomUUID(),
+            user = testUser,
+            token = tokenString,
+            expiresAt = OffsetDateTime.now().plusMinutes(10),
+            usedAt = null
+        )
+
+        whenever(passwordResetTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(resetToken))
+        whenever(passwordEncoder.encode(newPassword)).thenReturn("encoded-password")
+        whenever(userRepository.save(any<User>())).thenAnswer { it.arguments[0] }
+        whenever(passwordResetTokenRepository.save(any<PasswordResetToken>())).thenAnswer { it.arguments[0] }
+
+        userService.resetPassword(tokenString, newPassword)
+
+        verify(emailService).sendPasswordChangeConfirmation("test@example.com", "Test")
     }
 }
