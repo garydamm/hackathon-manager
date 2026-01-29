@@ -375,3 +375,27 @@
   - Typecheck passes successfully
   - The "god object" JudgingService has been successfully eliminated
 ---
+## Iteration 72 - Extract domain exceptions from ApiException
+- Created DomainExceptions.kt with sealed class hierarchy (NotFoundException, UnauthorizedException, ValidationException, ConflictException)
+- Files changed:
+  - Created: src/main/kotlin/com/hackathon/manager/exception/DomainExceptions.kt
+  - Modified: src/main/kotlin/com/hackathon/manager/exception/GlobalExceptionHandler.kt (added exception handlers)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/HackathonService.kt (replaced ApiException with domain exceptions)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/TeamService.kt (replaced ApiException with domain exceptions)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/ProjectService.kt (replaced ApiException with domain exceptions)
+  - Modified: src/test/kotlin/com/hackathon/manager/service/HackathonServiceTest.kt (updated to expect domain exceptions)
+  - Modified: src/test/kotlin/com/hackathon/manager/service/TeamServiceTest.kt (updated to expect domain exceptions)
+  - Modified: src/test/kotlin/com/hackathon/manager/service/ProjectServiceTest.kt (updated to expect domain exceptions)
+  - Updated: PRD.md (marked US-021 as complete)
+- Learnings for future iterations:
+  - Domain exceptions decouple business logic from HTTP concerns - services now throw domain exceptions, GlobalExceptionHandler maps them to HTTP responses
+  - NotFoundException: resource not found (404)
+  - UnauthorizedException: user not authorized to perform action (403)
+  - ValidationException: input validation or business rule violation (400)
+  - ConflictException: operation creates conflict like duplicate resource (409)
+  - When updating test expectations, match exception types to the semantics: "not found" -> NotFoundException, "not authorized/forbidden" -> UnauthorizedException, "already exists/duplicate" -> ConflictException, "invalid state/full" -> ValidationException
+  - Pre-existing test failures in HackathonServiceTest (6 tests) due to UnnecessaryStubbingException - these were already failing before this change (noted in iteration 55)
+  - TeamServiceTest and ProjectServiceTest pass completely after updating exception types
+  - Typecheck passes successfully - all code compiles correctly
+  - ApiException is still used in some other services (AuthService, AnnouncementService, ScheduleService, etc.) but the three core services specified in US-021 now use domain exceptions
+---
