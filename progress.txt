@@ -193,3 +193,23 @@
   - All 9 tests passed successfully on first run when all repository tests run together
   - Typecheck passed successfully
 ---
+
+## Iteration 63 - Add ScheduleEventRepository tests
+- Created comprehensive ScheduleEventRepositoryTest.kt with 5 test cases covering all repository methods
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/repository/ScheduleEventRepositoryTest.kt
+  - Updated: PRD.md (marked US-012 as complete)
+- Learnings for future iterations:
+  - ScheduleEvent entity has a ManyToOne relationship with Hackathon
+  - Events have EventType enum with values: workshop, presentation, meal, deadline, ceremony, networking, other
+  - The repository method is findByHackathonIdOrderByStartsAt (not StartTime) - it orders by the startsAt field
+  - ScheduleEvent has both startsAt and endsAt fields (OffsetDateTime) for event scheduling
+  - When testing OffsetDateTime storage/retrieval, avoid checking individual hour/minute components due to timezone conversions
+  - Instead, verify that OffsetDateTime.isEqualTo() works correctly (it accounts for timezone differences)
+  - Use OffsetDateTime.parse() with explicit timezone for predictable test data (e.g., "2026-02-15T09:30:00-08:00")
+  - Test cascade deletion from hackathon - deleting a hackathon should delete all its events
+  - ScheduleEvent has optional fields: description, location, virtualLink, and a boolean isMandatory flag
+  - All 5 tests passed successfully after fixing timezone handling in date/time accuracy test
+  - All repository tests (42 tests) pass when run together with --tests '*RepositoryTest'
+  - Typecheck passed successfully
+---
