@@ -229,16 +229,16 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for event attendee repository so that RSVP queries are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `EventAttendeeRepositoryTest.kt` extending AbstractRepositoryTest
-- [ ] Test `findByEventId()` returns all attendees for event
-- [ ] Test `findByEventIdAndUserId()` returns specific RSVP
-- [ ] Test `countByEventIdAndRsvpStatus()` counts RSVPs by status correctly
-- [ ] Test RSVP creation with event and user relationships
-- [ ] Test attendance marking updates hasAttended flag
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Integration tests pass with TestContainers
+- [x] Create `EventAttendeeRepositoryTest.kt` extending AbstractRepositoryTest
+- [x] Test `findByEventId()` returns all attendees for event
+- [x] Test `findByEventIdAndUserId()` returns specific RSVP
+- [x] Test `countByEventIdAndRsvpStatus()` counts RSVPs by status correctly
+- [x] Test RSVP creation with event and user relationships
+- [x] Test attendance marking updates hasAttended flag
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Integration tests pass with TestContainers
 
 #### US-014: Add JudgingCriteriaRepository tests
 **Description:** As a developer, I need tests for judging criteria repository so that criteria queries are validated.
