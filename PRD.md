@@ -135,22 +135,22 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for judging endpoints so that scoring workflow and authorization are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `JudgingControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
-- [ ] Test `GET /api/judging/hackathons/{id}/criteria` returns criteria
-- [ ] Test `POST /api/judging/hackathons/{id}/criteria` creates criteria (organizer only)
-- [ ] Test `POST` returns 403 for non-organizer
-- [ ] Test `PUT /api/judging/criteria/{id}` updates criteria (organizer only)
-- [ ] Test `DELETE /api/judging/criteria/{id}` deletes criteria (organizer only)
-- [ ] Test `GET /api/judging/hackathons/{id}/judges` returns judges list
-- [ ] Test `POST /api/judging/hackathons/{id}/judges` adds judge (organizer only)
-- [ ] Test `DELETE /api/judging/judges/{id}` removes judge (organizer only)
-- [ ] Test `GET /api/judging/hackathons/{id}/assignments` returns judge's assignments
-- [ ] Test `POST /api/judging/assignments/{id}/scores` submits scores (judge only)
-- [ ] Test `GET /api/judging/hackathons/{id}/leaderboard` returns rankings
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage for JudgingController >80%
+- [x] Create `JudgingControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
+- [x] Test `GET /api/judging/hackathons/{id}/criteria` returns criteria
+- [x] Test `POST /api/judging/hackathons/{id}/criteria` creates criteria (organizer only)
+- [x] Test `POST` returns 403 for non-organizer
+- [x] Test `PUT /api/judging/criteria/{id}` updates criteria (organizer only)
+- [x] Test `DELETE /api/judging/criteria/{id}` deletes criteria (organizer only)
+- [x] Test `GET /api/judging/hackathons/{id}/judges` returns judges list
+- [x] Test `POST /api/judging/hackathons/{id}/judges` adds judge (organizer only)
+- [x] Test `DELETE /api/judging/judges/{id}` removes judge (organizer only)
+- [x] Test `GET /api/judging/hackathons/{id}/assignments` returns judge's assignments
+- [x] Test `POST /api/judging/assignments/{id}/scores` submits scores (judge only)
+- [x] Test `GET /api/judging/hackathons/{id}/leaderboard` returns rankings
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage for JudgingController >80%
 
 #### US-008: Add HealthController tests
 **Description:** As a developer, I need a smoke test for the health endpoint so that deployment readiness is validated.
