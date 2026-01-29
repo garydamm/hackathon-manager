@@ -213,3 +213,22 @@
   - All repository tests (42 tests) pass when run together with --tests '*RepositoryTest'
   - Typecheck passed successfully
 ---
+
+## Iteration 64 - Add EventAttendeeRepository tests
+- Created comprehensive EventAttendeeRepositoryTest.kt with 10 test cases covering all repository methods
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/repository/EventAttendeeRepositoryTest.kt
+  - Updated: PRD.md (marked US-013 as complete)
+- Learnings for future iterations:
+  - EventAttendee entity has ManyToOne relationships with both ScheduleEvent and User
+  - EventAttendee has a unique constraint on (event_id, user_id) preventing duplicate RSVPs
+  - The entity has three main fields: rsvpStatus (String), attended (Boolean), and createdAt (OffsetDateTime)
+  - The repository method findByEventIdOrderByUserLastNameAscUserFirstNameAsc sorts attendees alphabetically by last name then first name
+  - Test RSVP status filtering with countByEventIdAndRsvpStatus - useful for counting "attending", "maybe", "not_attending"
+  - Test both existsByEventIdAndUserId (boolean check) and findByEventIdAndUserId (returns entity or null)
+  - The deleteByEventIdAndUserId method is useful for removing a specific user's RSVP without affecting others
+  - Test attendance marking by updating the attended flag from false to true
+  - EventAttendee cascade deletes when the parent ScheduleEvent is deleted (verified with cascade deletion test)
+  - All 10 tests passed successfully on first run
+  - Typecheck passed successfully
+---
