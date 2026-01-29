@@ -333,3 +333,23 @@
   - Typecheck passes successfully
   - JudgingService reduced from ~340 lines to ~244 lines (judge methods removed)
 ---
+## Iteration 70 - Extract ScoringService from JudgingService
+- Created new ScoringService with scoring operations (getAssignmentsByJudge, getAssignment, submitScores)
+- Files changed:
+  - Created: src/main/kotlin/com/hackathon/manager/service/ScoringService.kt
+  - Created: src/test/kotlin/com/hackathon/manager/service/ScoringServiceTest.kt
+  - Modified: src/main/kotlin/com/hackathon/manager/controller/JudgingController.kt (injected ScoringService)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/JudgingService.kt (removed scoring methods)
+  - Modified: src/test/kotlin/com/hackathon/manager/service/JudgingServiceTest.kt (removed scoring tests)
+  - Modified: src/test/kotlin/com/hackathon/manager/controller/JudgingControllerTest.kt (added ScoringService mock)
+  - Updated: PRD.md (marked US-019 as complete)
+- Learnings for future iterations:
+  - Following the established pattern from iterations 68-69: Create service, create tests, update controller, remove from original service, update tests
+  - Extracted 13 test methods from JudgingServiceTest to ScoringServiceTest (scoring-related tests)
+  - Updated JudgingController to use scoringService instead of judgingService for assignment and scoring endpoints
+  - Updated JudgingControllerTest to mock scoringService and updated 3 test methods that call scoring endpoints
+  - Removed unused imports from JudgingService (JudgeAssignmentResponse, SubmitScoresRequest, JudgeAssignment, Score, UserRole, HackathonUserRepository, UserRepository, OffsetDateTime)
+  - All tests pass (ScoringServiceTest, JudgingServiceTest, JudgingControllerTest)
+  - Typecheck passes successfully
+  - JudgingService reduced from ~244 lines to 117 lines (scoring methods removed)
+---
