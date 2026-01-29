@@ -200,16 +200,16 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for project repository so that project queries are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `ProjectRepositoryTest.kt` extending AbstractRepositoryTest
-- [ ] Test `findByTeamId()` returns project for team
-- [ ] Test `findByHackathonId()` returns all projects for hackathon
-- [ ] Test `findByHackathonIdAndStatus()` filters by status correctly
-- [ ] Test project creation with team and hackathon relationships
-- [ ] Test cascade deletion behavior
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Integration tests pass with TestContainers
+- [x] Create `ProjectRepositoryTest.kt` extending AbstractRepositoryTest
+- [x] Test `findByTeamId()` returns project for team
+- [x] Test `findByHackathonId()` returns all projects for hackathon
+- [x] Test `findByHackathonIdAndStatus()` filters by status correctly
+- [x] Test project creation with team and hackathon relationships
+- [x] Test cascade deletion behavior
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Integration tests pass with TestContainers
 
 #### US-012: Add ScheduleEventRepository tests
 **Description:** As a developer, I need tests for schedule event repository so that event queries are validated.
