@@ -272,15 +272,15 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for judge assignment repository so that assignment queries are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `JudgeAssignmentRepositoryTest.kt` extending AbstractRepositoryTest
-- [ ] Test `findByHackathonIdAndJudgeId()` returns judge's assignments
-- [ ] Test `findByProjectId()` returns all judges for project
-- [ ] Test assignment creation with hackathon, judge, and project relationships
-- [ ] Test `isCompleted` flag updates correctly
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Integration tests pass with TestContainers
+- [x] Create `JudgeAssignmentRepositoryTest.kt` extending AbstractRepositoryTest
+- [x] Test `findByHackathonIdAndJudgeId()` returns judge's assignments
+- [x] Test `findByProjectId()` returns all judges for project
+- [x] Test assignment creation with hackathon, judge, and project relationships
+- [x] Test `isCompleted` flag updates correctly
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Integration tests pass with TestContainers
 
 ### Phase 4: Refactoring with Test Coverage
 
