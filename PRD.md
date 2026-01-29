@@ -302,15 +302,15 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want judge management extracted to a focused service so that judge operations are isolated.
 
 **Acceptance Criteria:**
-- [ ] Create `JudgeManagementService.kt` with judge operations
-- [ ] Move `addJudge()`, `removeJudge()`, `getJudges()` from JudgingService
-- [ ] Update JudgingController to inject JudgeManagementService
-- [ ] Create `JudgeManagementServiceTest.kt` by extracting relevant tests
-- [ ] Update JudgingService to use JudgeManagementService for judge checks
-- [ ] All existing tests still pass
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage maintained at >80%
+- [x] Create `JudgeManagementService.kt` with judge operations
+- [x] Move `addJudge()`, `removeJudge()`, `getJudges()` from JudgingService
+- [x] Update JudgingController to inject JudgeManagementService
+- [x] Create `JudgeManagementServiceTest.kt` by extracting relevant tests
+- [x] Update JudgingService to use JudgeManagementService for judge checks
+- [x] All existing tests still pass
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage maintained at >80%
 
 #### US-019: Extract ScoringService from JudgingService
 **Description:** As a developer, I want score submission extracted to a focused service so that scoring logic is isolated.

@@ -288,3 +288,27 @@
   - All repository tests (73 tests across 9 test classes) pass together
   - Typecheck passed successfully
 ---
+## Iteration 68 - Extract JudgingCriteriaService from JudgingService
+- Created new JudgingCriteriaService with criteria CRUD methods (getCriteriaByHackathon, createCriteria, updateCriteria, deleteCriteria)
+- Files changed:
+  - Created: src/main/kotlin/com/hackathon/manager/service/JudgingCriteriaService.kt
+  - Created: src/test/kotlin/com/hackathon/manager/service/JudgingCriteriaServiceTest.kt
+  - Modified: src/main/kotlin/com/hackathon/manager/controller/JudgingController.kt (injected JudgingCriteriaService)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/JudgingService.kt (removed criteria methods)
+  - Modified: src/test/kotlin/com/hackathon/manager/controller/JudgingControllerTest.kt (added JudgingCriteriaService mock)
+  - Modified: src/test/kotlin/com/hackathon/manager/service/JudgingServiceTest.kt (removed criteria tests)
+  - Fixed: src/test/kotlin/com/hackathon/manager/service/HackathonServiceTest.kt (added missing teamMemberRepository mock)
+  - Fixed: src/test/kotlin/com/hackathon/manager/service/ScheduleServiceTest.kt (added missing mocks)
+  - Updated: PRD.md (marked US-017 as complete)
+- Learnings for future iterations:
+  - When extracting service methods, remember to update controller to inject the new service
+  - Move test methods to the new service test file - extract relevant tests, don't duplicate
+  - Update controller tests to mock both services when controller uses multiple services
+  - When fixing test injection issues, check the service constructor for all dependencies
+  - Some service tests (HackathonServiceTest, ScheduleServiceTest) had missing @Mock dependencies causing NullPointerException
+  - The pattern for service extraction: 1) Create new service, 2) Create new service test, 3) Update controller, 4) Update original service, 5) Update tests
+  - Pre-existing test failures (6 tests in HackathonServiceTest) are not related to this refactoring - noted in iteration 55
+  - All judging-related tests pass (JudgingServiceTest, JudgingCriteriaServiceTest, JudgingControllerTest)
+  - Typecheck passes successfully
+  - JudgingService reduced from 431 lines to ~340 lines (criteria methods removed)
+---

@@ -9,6 +9,7 @@ import com.hackathon.manager.dto.LeaderboardEntryResponse
 import com.hackathon.manager.dto.SubmitScoresRequest
 import com.hackathon.manager.dto.UpdateJudgingCriteriaRequest
 import com.hackathon.manager.security.UserPrincipal
+import com.hackathon.manager.service.JudgeManagementService
 import com.hackathon.manager.service.JudgingCriteriaService
 import com.hackathon.manager.service.JudgingService
 import jakarta.validation.Valid
@@ -22,7 +23,8 @@ import java.util.*
 @RequestMapping("/api/judging")
 class JudgingController(
     private val judgingService: JudgingService,
-    private val judgingCriteriaService: JudgingCriteriaService
+    private val judgingCriteriaService: JudgingCriteriaService,
+    private val judgeManagementService: JudgeManagementService
 ) {
 
     @GetMapping("/hackathons/{hackathonId}/criteria")
@@ -69,7 +71,7 @@ class JudgingController(
         @PathVariable hackathonId: UUID,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<List<JudgeInfoResponse>> {
-        val judges = judgingService.getJudgesByHackathon(hackathonId, principal.id)
+        val judges = judgeManagementService.getJudgesByHackathon(hackathonId, principal.id)
         return ResponseEntity.ok(judges)
     }
 
@@ -79,7 +81,7 @@ class JudgingController(
         @Valid @RequestBody request: AddJudgeRequest,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<JudgeInfoResponse> {
-        val judge = judgingService.addJudge(hackathonId, request.userId, principal.id)
+        val judge = judgeManagementService.addJudge(hackathonId, request.userId, principal.id)
         return ResponseEntity.status(HttpStatus.CREATED).body(judge)
     }
 
@@ -89,7 +91,7 @@ class JudgingController(
         @PathVariable userId: UUID,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<Void> {
-        judgingService.removeJudge(hackathonId, userId, principal.id)
+        judgeManagementService.removeJudge(hackathonId, userId, principal.id)
         return ResponseEntity.noContent().build()
     }
 

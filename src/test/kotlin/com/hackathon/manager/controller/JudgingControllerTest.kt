@@ -6,6 +6,7 @@ import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.security.JwtAuthenticationFilter
 import com.hackathon.manager.security.JwtTokenProvider
 import com.hackathon.manager.security.UserPrincipal
+import com.hackathon.manager.service.JudgeManagementService
 import com.hackathon.manager.service.JudgingCriteriaService
 import com.hackathon.manager.service.JudgingService
 import org.junit.jupiter.api.Test
@@ -45,6 +46,9 @@ class JudgingControllerTest {
 
     @MockBean
     lateinit var judgingCriteriaService: JudgingCriteriaService
+
+    @MockBean
+    lateinit var judgeManagementService: JudgeManagementService
 
     @MockBean
     lateinit var jwtTokenProvider: JwtTokenProvider
@@ -266,7 +270,7 @@ class JudgingControllerTest {
             createJudgeInfoResponse(userId = UUID.randomUUID())
         )
 
-        whenever(judgingService.getJudgesByHackathon(testHackathonId, testUserId))
+        whenever(judgeManagementService.getJudgesByHackathon(testHackathonId, testUserId))
             .thenReturn(judges)
 
         mockMvc.perform(
@@ -285,7 +289,7 @@ class JudgingControllerTest {
         val request = AddJudgeRequest(userId = judgeUserId)
         val response = createJudgeInfoResponse(userId = judgeUserId)
 
-        whenever(judgingService.addJudge(testHackathonId, judgeUserId, testUserId))
+        whenever(judgeManagementService.addJudge(testHackathonId, judgeUserId, testUserId))
             .thenReturn(response)
 
         mockMvc.perform(
@@ -304,7 +308,7 @@ class JudgingControllerTest {
         val judgeUserId = UUID.randomUUID()
         val request = AddJudgeRequest(userId = judgeUserId)
 
-        whenever(judgingService.addJudge(testHackathonId, judgeUserId, testUserId))
+        whenever(judgeManagementService.addJudge(testHackathonId, judgeUserId, testUserId))
             .thenThrow(ApiException("Only organizers can add judges", HttpStatus.FORBIDDEN))
 
         mockMvc.perform(
@@ -333,7 +337,7 @@ class JudgingControllerTest {
     fun `removeJudge should return 403 when non-organizer attempts to remove judge`() {
         val judgeUserId = UUID.randomUUID()
 
-        whenever(judgingService.removeJudge(testHackathonId, judgeUserId, testUserId))
+        whenever(judgeManagementService.removeJudge(testHackathonId, judgeUserId, testUserId))
             .thenThrow(ApiException("Only organizers can remove judges", HttpStatus.FORBIDDEN))
 
         mockMvc.perform(
