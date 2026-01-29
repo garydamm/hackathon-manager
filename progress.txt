@@ -18,3 +18,19 @@
   - Console fallback mode should be tested separately from API mode
   - Coverage achieved: 100% for EmailServiceImpl (exceeds 80% requirement)
 ---
+
+## Iteration 53 - Add UserService password reset workflow tests
+- Added 13 comprehensive tests for password reset functionality to UserServiceTest.kt
+- Files changed:
+  - Updated: src/test/kotlin/com/hackathon/manager/service/UserServiceTest.kt (added password reset tests)
+  - Updated: PRD.md (marked US-002 as complete)
+- Learnings for future iterations:
+  - When testing time-based expiry, use OffsetDateTime assertions with buffers (e.g., isAfter/isBefore with +/-1 minute) to handle test execution time
+  - Use argThat {} matchers for complex object assertions in Mockito verify() calls
+  - Test security features like "silent success for non-existent email" explicitly to document intent
+  - When testing token invalidation, create multiple token instances and verify usedAt field changes
+  - Password validation tests should cover all validation rules: length, uppercase, lowercase, numbers
+  - Mock PasswordEncoder.encode() to return predictable values for assertion
+  - All password reset workflow tests passed (22 total tests in UserServiceTest)
+  - Coverage achieved: 100% for all password reset methods (requestPasswordReset, validateResetToken, resetPassword, validatePassword)
+---
