@@ -63,16 +63,16 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for scheduled tasks so that token cleanup job behavior is validated.
 
 **Acceptance Criteria:**
-- [ ] Create `ScheduledTasksTest.kt` in `src/test/kotlin/com/hackathon/manager/scheduler/`
-- [ ] Mock PasswordResetTokenRepository
-- [ ] Test `cleanupExpiredPasswordResetTokens()` deletes expired tokens
-- [ ] Test no deletion when no expired tokens exist
-- [ ] Test batch deletion with multiple expired tokens
-- [ ] Verify correct count is logged
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage for ScheduledTasks 100%
+- [x] Create `ScheduledTasksTest.kt` in `src/test/kotlin/com/hackathon/manager/scheduler/`
+- [x] Mock PasswordResetTokenRepository
+- [x] Test `cleanupExpiredPasswordResetTokens()` deletes expired tokens
+- [x] Test no deletion when no expired tokens exist
+- [x] Test batch deletion with multiple expired tokens
+- [x] Verify correct count is logged
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage for ScheduledTasks 100%
 
 #### US-004: Extract magic numbers to constants file
 **Description:** As a developer, I want all magic numbers in constants so that security and configuration values are centralized and maintainable.
