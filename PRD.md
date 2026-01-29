@@ -1,260 +1,479 @@
-# PRD: Password Reset Functionality
+# PRD: Backend Code Cleanup and Test Coverage Enhancement
 
 ## Introduction
 
-Add a secure password reset flow to allow users who have forgotten their passwords to regain access to their accounts. Users will request a password reset via email, receive a time-limited reset link, and set a new password. The system will send confirmation emails and invalidate tokens after use.
+This PRD addresses critical technical debt in the hackathon-manager backend by systematically adding missing test coverage and refactoring code quality issues. The approach prioritizes establishing a comprehensive test safety net before performing any structural refactoring, ensuring all changes can be validated and preventing regression.
+
+The work focuses exclusively on backend (Kotlin/Spring Boot) components, with frontend cleanup deferred to a separate initiative.
 
 ## Goals
 
-- Enable users to reset forgotten passwords without admin intervention
-- Send secure, time-limited reset tokens via email
-- Enforce existing password requirements (8+ chars, uppercase, lowercase, number)
-- Prevent token reuse and ensure tokens expire after 15 minutes
-- Notify users when their password is successfully changed
-- Provide clear error messages for expired or invalid tokens
+- **Achieve 80% backend test coverage** across services, controllers, and repositories
+- **Test all critical business logic** including password reset workflow, email service, and scheduled tasks
+- **Enable repository integration tests** with TestContainers
+- **Eliminate magic numbers** by extracting to constants
+- **Refactor god objects** (JudgingService) into focused, single-responsibility services
+- **Reduce file complexity** to max 300 lines per file and cyclomatic complexity <5 per method
+- **Introduce domain exceptions** to decouple business logic from HTTP layer
+- **Improve code maintainability** through better naming and extracted utilities
 
 ## User Stories
 
-### US-001: Add password_reset_tokens table
-**Description:** As a developer, I need to store password reset tokens so they can be validated and tracked.
+### Phase 1: Critical Test Coverage
+
+#### US-001: Add EmailServiceImpl unit tests
+**Description:** As a developer, I need comprehensive tests for email functionality so that password reset emails are validated and regressions are prevented.
 
 **Acceptance Criteria:**
-- [x] Create migration file with `password_reset_tokens` table
-- [x] Columns: id (UUID primary key), user_id (UUID foreign key to users), token (VARCHAR 255 unique not null), expires_at (TIMESTAMP not null), created_at (TIMESTAMP default now()), used_at (TIMESTAMP nullable)
-- [x] Add index on token column for fast lookups
-- [x] Add index on user_id for cleanup queries
-- [x] Run migration successfully
+- [x] Create `EmailServiceImplTest.kt` in `src/test/kotlin/com/hackathon/manager/service/`
+- [x] Mock Resend API client using Mockito
+- [x] Test `sendPasswordResetEmail()` with valid data
+- [x] Test `sendPasswordChangeConfirmation()` with valid data
+- [x] Test fallback to console mode when Resend is unavailable
+- [x] Test error handling when email sending fails
+- [x] Verify email content contains correct reset URL and user details
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
 - [x] Typecheck passes
+- [x] JaCoCo coverage for EmailServiceImpl >80%
 
-### US-002: Create PasswordResetToken entity
-**Description:** As a developer, I need a JPA entity for password reset tokens so I can query and persist them.
-
-**Acceptance Criteria:**
-- [x] Create `PasswordResetToken.kt` entity in entity package
-- [x] Map all table columns with proper types (UUID, String, OffsetDateTime)
-- [x] Add `@ManyToOne` relationship to User entity
-- [x] Include @CreationTimestamp for createdAt
-- [x] Add helper method `isExpired(): Boolean` that checks current time vs expiresAt
-- [x] Add helper method `isUsed(): Boolean` that checks if usedAt is not null
-- [x] Typecheck passes
-
-### US-003: Create PasswordResetTokenRepository
-**Description:** As a developer, I need a repository for password reset tokens so I can perform CRUD operations.
+#### US-002: Add UserService password reset workflow tests
+**Description:** As a developer, I need tests for the complete password reset workflow so that this critical security feature is properly validated.
 
 **Acceptance Criteria:**
-- [x] Create `PasswordResetTokenRepository.kt` extending JpaRepository
-- [x] Add method: `findByToken(token: String): Optional<PasswordResetToken>`
-- [x] Add method: `findByUserIdAndUsedAtIsNullAndExpiresAtAfter(userId: UUID, currentTime: OffsetDateTime): List<PasswordResetToken>`
-- [x] Add method: `deleteByExpiresAtBefore(cutoffTime: OffsetDateTime): Int`
-- [x] Typecheck passes
+- [ ] Add tests to `UserServiceTest.kt` for `requestPasswordReset()`
+- [ ] Test valid email generates token with 15-minute expiry
+- [ ] Test non-existent email silently succeeds (security feature)
+- [ ] Test multiple reset requests invalidate previous tokens
+- [ ] Add tests for `validateResetToken()`
+- [ ] Test valid unused token returns successfully
+- [ ] Test expired token throws ApiException
+- [ ] Test used token throws ApiException
+- [ ] Test invalid token throws ApiException
+- [ ] Add tests for `resetPassword()`
+- [ ] Test valid token updates password and marks token as used
+- [ ] Test password validation rules (8 chars minimum)
+- [ ] Test confirmation email is sent after reset
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage for password reset methods 100%
 
-### US-004: Add password reset DTOs
-**Description:** As a developer, I need DTOs for password reset operations so I can handle requests and responses with validation.
-
-**Acceptance Criteria:**
-- [x] Create `PasswordResetDtos.kt` file in dto/auth package
-- [x] Add `ForgotPasswordRequest` data class with email field (validated as email)
-- [x] Add `ResetPasswordRequest` data class with token, newPassword, confirmPassword fields
-- [x] Add validation annotations for minimum password length (8 chars)
-- [x] Add custom validator or service-level check for password requirements (uppercase, lowercase, number)
-- [x] Add `PasswordResetResponse` data class with message field
-- [x] Typecheck passes
-
-### US-005: Create EmailService interface and stub implementation
-**Description:** As a developer, I need an email service so password reset links can be sent to users.
-
-**Acceptance Criteria:**
-- [x] Create `EmailService.kt` interface with method: `sendPasswordResetEmail(toEmail: String, resetToken: String, userFirstName: String)`
-- [x] Create `EmailServiceImpl.kt` that implements EmailService
-- [x] For MVP, implementation logs email to console with formatted message including reset URL
-- [x] Reset URL format: `${frontendUrl}/reset-password?token=${resetToken}`
-- [x] Add `@Value("\${app.frontend.url}")` to inject frontend URL from application properties
-- [x] Add configuration property in application.yml: `app.frontend.url: http://localhost:5173`
-- [x] Mark class as @Service
-- [x] Typecheck passes
-
-### US-006: Add password reset methods to UserService
-**Description:** As a developer, I need service methods for password reset operations so the controller can handle requests.
+#### US-003: Add ScheduledTasks unit tests
+**Description:** As a developer, I need tests for scheduled tasks so that token cleanup job behavior is validated.
 
 **Acceptance Criteria:**
-- [x] Inject PasswordResetTokenRepository and EmailService into UserService
-- [x] Add `requestPasswordReset(email: String)` method that creates token with 15-minute expiry and calls email service
-- [x] Generate token using `UUID.randomUUID().toString()` for cryptographic randomness
-- [x] If email doesn't exist, silently succeed (don't reveal user existence)
-- [x] Invalidate any existing unused tokens for the user before creating new one
-- [x] Add `validateResetToken(token: String): PasswordResetToken` method that checks token exists, not used, not expired
-- [x] Add `resetPassword(token: String, newPassword: String)` method that validates token, updates user password, marks token as used
-- [x] Use passwordEncoder.encode() for hashing new password
-- [x] Throw ApiException with BAD_REQUEST if token invalid/expired/used
-- [x] Typecheck passes
+- [ ] Create `ScheduledTasksTest.kt` in `src/test/kotlin/com/hackathon/manager/scheduler/`
+- [ ] Mock PasswordResetTokenRepository
+- [ ] Test `cleanupExpiredPasswordResetTokens()` deletes expired tokens
+- [ ] Test no deletion when no expired tokens exist
+- [ ] Test batch deletion with multiple expired tokens
+- [ ] Verify correct count is logged
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage for ScheduledTasks 100%
 
-### US-007: Add password validation helper
-**Description:** As a developer, I need to validate password requirements so users create secure passwords on reset.
-
-**Acceptance Criteria:**
-- [x] Add `validatePassword(password: String)` private method in UserService
-- [x] Check length >= 8 characters
-- [x] Check contains at least one uppercase letter (regex: `[A-Z]`)
-- [x] Check contains at least one lowercase letter (regex: `[a-z]`)
-- [x] Check contains at least one number (regex: `[0-9]`)
-- [x] Throw ApiException with BAD_REQUEST and descriptive message if validation fails
-- [x] Call this method in resetPassword() before encoding
-- [x] Typecheck passes
-
-### US-008: Add password reset endpoints to AuthController
-**Description:** As a developer, I need REST endpoints for password reset so the frontend can trigger the flow.
+#### US-004: Extract magic numbers to constants file
+**Description:** As a developer, I want all magic numbers in constants so that security and configuration values are centralized and maintainable.
 
 **Acceptance Criteria:**
-- [x] Add POST /api/auth/forgot-password endpoint accepting ForgotPasswordRequest
-- [x] Endpoint calls userService.requestPasswordReset() and returns 200 OK with success message
-- [x] Always return success even if email doesn't exist (security best practice)
-- [x] Add POST /api/auth/reset-password endpoint accepting ResetPasswordRequest
-- [x] Validate newPassword matches confirmPassword before calling service
-- [x] Return 200 OK with success message on successful reset
-- [x] Return 400 BAD_REQUEST with error message if token invalid or passwords don't match
-- [x] Both endpoints are public (no authentication required)
-- [x] Typecheck passes
+- [ ] Create `src/main/kotlin/com/hackathon/manager/config/AppConstants.kt`
+- [ ] Define `SecurityConstants.MIN_PASSWORD_LENGTH = 8`
+- [ ] Define `SecurityConstants.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES = 15L`
+- [ ] Define `SecurityConstants.JWT_KEY_SIZE = 32`
+- [ ] Replace hardcoded `8` in UserService.kt:126 with constant
+- [ ] Replace hardcoded `15` in UserService.kt:73 with constant
+- [ ] Replace hardcoded `32` in JwtTokenProvider.kt:24 with constant
+- [ ] Update UserServiceTest to reference new constants
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify application starts successfully
 
-### US-009: Add password reset confirmation email
-**Description:** As a user, I want to receive email confirmation after password change so I know my account was modified.
+### Phase 2: Controller Test Coverage
 
-**Acceptance Criteria:**
-- [x] Add `sendPasswordChangeConfirmation(toEmail: String, userFirstName: String)` method to EmailService interface
-- [x] Implement method in EmailServiceImpl to log confirmation message
-- [x] Message should inform user their password was changed and suggest contacting support if not them
-- [x] Call this method at end of userService.resetPassword() after successful password update
-- [x] Typecheck passes
-
-### US-010: Add TypeScript types for password reset
-**Description:** As a developer, I need TypeScript types for password reset operations so the frontend has type safety.
+#### US-005: Add AnnouncementController tests
+**Description:** As a developer, I need tests for announcement endpoints so that CRUD operations and authorization are validated.
 
 **Acceptance Criteria:**
-- [x] Add `ForgotPasswordRequest` interface in types/index.ts with email field
-- [x] Add `ResetPasswordRequest` interface with token, newPassword, confirmPassword fields
-- [x] Add `PasswordResetResponse` interface with message field
-- [x] Typecheck passes
+- [ ] Create `AnnouncementControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
+- [ ] Test `GET /api/announcements/hackathon/{id}` returns announcements
+- [ ] Test `GET /api/announcements/{id}` returns single announcement
+- [ ] Test `POST /api/announcements` creates announcement (organizer only)
+- [ ] Test `POST` returns 403 when non-organizer attempts creation
+- [ ] Test `PUT /api/announcements/{id}` updates announcement (organizer only)
+- [ ] Test `PUT` returns 403 when non-organizer attempts update
+- [ ] Test `DELETE /api/announcements/{id}` deletes announcement (organizer only)
+- [ ] Test `DELETE` returns 403 when non-organizer attempts deletion
+- [ ] Test 404 responses for non-existent announcements
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage for AnnouncementController >80%
 
-### US-011: Add password reset methods to auth service
-**Description:** As a developer, I need API client methods for password reset so components can call the backend.
-
-**Acceptance Criteria:**
-- [x] Add `forgotPassword(email: string): Promise<PasswordResetResponse>` to services/auth.ts
-- [x] Add `resetPassword(token: string, newPassword: string, confirmPassword: string): Promise<PasswordResetResponse>` to services/auth.ts
-- [x] Both methods use centralized api client with proper error handling
-- [x] Typecheck passes
-
-### US-012: Create ForgotPassword page
-**Description:** As a user, I want to request a password reset by entering my email so I can regain access to my account.
-
-**Acceptance Criteria:**
-- [x] Create pages/ForgotPassword.tsx component
-- [x] Use React Hook Form with Zod schema validating email format
-- [x] Show email input field with Mail icon
-- [x] Show "Send Reset Link" submit button
-- [x] Display loading state during submission (Loader2 icon with "Sending...")
-- [x] Show success message after submission: "If an account exists with that email, you will receive a password reset link shortly."
-- [x] Show error message if API call fails
-- [x] Include "Back to Login" link
-- [x] Use AuthLayout for consistent styling with Login/Register pages
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-013: Create ResetPassword page
-**Description:** As a user, I want to set a new password using the reset link so I can access my account.
+#### US-006: Add ScheduleController tests
+**Description:** As a developer, I need tests for schedule endpoints so that RSVP and attendance tracking are validated.
 
 **Acceptance Criteria:**
-- [x] Create pages/ResetPassword.tsx component
-- [x] Extract token from URL query params using useSearchParams()
-- [x] Use React Hook Form with Zod schema validating password requirements and matching passwords
-- [x] Show newPassword and confirmPassword fields with Lock icons
-- [x] Display password requirements as helper text below fields (8+ chars, uppercase, lowercase, number)
-- [x] Show "Reset Password" submit button
-- [x] Display loading state during submission
-- [x] Navigate to /login with success message on successful reset
-- [x] Show error message if token invalid/expired or API call fails
-- [x] Use AuthLayout for consistent styling
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Create `ScheduleControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
+- [ ] Test `GET /api/schedule/hackathons/{id}` returns events with RSVP counts
+- [ ] Test `POST /api/schedule/hackathons/{id}/events` creates event (organizer only)
+- [ ] Test `POST` returns 403 for non-organizer
+- [ ] Test `PUT /api/schedule/events/{id}` updates event (organizer only)
+- [ ] Test `DELETE /api/schedule/events/{id}` deletes event (organizer only)
+- [ ] Test `POST /api/schedule/events/{id}/rsvp` creates RSVP
+- [ ] Test `PUT /api/schedule/events/{id}/rsvp` updates RSVP status
+- [ ] Test `DELETE /api/schedule/events/{id}/rsvp` removes RSVP
+- [ ] Test `POST /api/schedule/events/{id}/attendance` marks attendance (organizer only)
+- [ ] Test bulk attendance marking endpoint
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage for ScheduleController >80%
 
-### US-014: Add password reset routes to App
-**Description:** As a developer, I need to add routing for password reset pages so users can navigate to them.
-
-**Acceptance Criteria:**
-- [x] Import ForgotPasswordPage and ResetPasswordPage in App.tsx
-- [x] Add public route: /forgot-password
-- [x] Add public route: /reset-password
-- [x] Both routes should be outside ProtectedRoute (no authentication required)
-- [x] Typecheck passes
-- [x] Verify routes work in browser
-
-### US-015: Update existing forgot password link
-**Description:** As a user, I want the forgot password link on login page to work so I can reset my password.
+#### US-007: Add JudgingController tests
+**Description:** As a developer, I need tests for judging endpoints so that scoring workflow and authorization are validated.
 
 **Acceptance Criteria:**
-- [x] Verify Login.tsx already has Link to /forgot-password (line 89-94)
-- [x] No changes needed - route will work once US-014 is complete
-- [x] Test clicking "Forgot password?" link navigates to forgot password page
-- [x] Verify changes work in browser
+- [ ] Create `JudgingControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
+- [ ] Test `GET /api/judging/hackathons/{id}/criteria` returns criteria
+- [ ] Test `POST /api/judging/hackathons/{id}/criteria` creates criteria (organizer only)
+- [ ] Test `POST` returns 403 for non-organizer
+- [ ] Test `PUT /api/judging/criteria/{id}` updates criteria (organizer only)
+- [ ] Test `DELETE /api/judging/criteria/{id}` deletes criteria (organizer only)
+- [ ] Test `GET /api/judging/hackathons/{id}/judges` returns judges list
+- [ ] Test `POST /api/judging/hackathons/{id}/judges` adds judge (organizer only)
+- [ ] Test `DELETE /api/judging/judges/{id}` removes judge (organizer only)
+- [ ] Test `GET /api/judging/hackathons/{id}/assignments` returns judge's assignments
+- [ ] Test `POST /api/judging/assignments/{id}/scores` submits scores (judge only)
+- [ ] Test `GET /api/judging/hackathons/{id}/leaderboard` returns rankings
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage for JudgingController >80%
 
-### US-016: Add cleanup job for expired tokens
-**Description:** As a developer, I need to periodically clean up expired tokens so the database doesn't grow unbounded.
+#### US-008: Add HealthController tests
+**Description:** As a developer, I need a smoke test for the health endpoint so that deployment readiness is validated.
 
 **Acceptance Criteria:**
-- [x] Create `ScheduledTasks.kt` class with @Component annotation
-- [x] Add @Scheduled method `cleanupExpiredPasswordResetTokens()` running daily at midnight
-- [x] Use cron expression: `@Scheduled(cron = "0 0 0 * * ?")`
-- [x] Method calls passwordResetTokenRepository.deleteByExpiresAtBefore(cutoffTime = 7 days ago)
-- [x] Log count of deleted tokens at INFO level
-- [x] Add @EnableScheduling to main application class if not already present
-- [x] Typecheck passes
+- [ ] Create `HealthControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
+- [ ] Test `GET /api/health` returns 200 OK
+- [ ] Test response contains expected health status JSON
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage for HealthController 100%
+
+### Phase 3: Repository Test Coverage
+
+#### US-009: Enable TestContainers in repository tests
+**Description:** As a developer, I need TestContainers configuration enabled so that repository integration tests can run.
+
+**Acceptance Criteria:**
+- [ ] Remove `@Disabled` annotations from HackathonRepositoryTest.kt
+- [ ] Remove `@Disabled` annotations from TeamRepositoryTest.kt
+- [ ] Remove `@Disabled` annotations from UserRepositoryTest.kt
+- [ ] Verify TestContainers PostgreSQL starts correctly
+- [ ] Run all three existing repository tests successfully
+- [ ] Document TestContainers setup in README if not already present
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Integration tests pass with TestContainers
+
+#### US-010: Add PasswordResetTokenRepository tests
+**Description:** As a developer, I need tests for password reset token repository so that token queries and deletions are validated.
+
+**Acceptance Criteria:**
+- [ ] Create `PasswordResetTokenRepositoryTest.kt` extending AbstractRepositoryTest
+- [ ] Test `findByToken()` returns token when exists
+- [ ] Test `findByToken()` returns empty when token doesn't exist
+- [ ] Test `findByUserId()` returns all tokens for user
+- [ ] Test `deleteByExpiresAtBefore()` deletes only expired tokens
+- [ ] Test token creation and persistence
+- [ ] Test cascade deletion when user is deleted
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Integration tests pass with TestContainers
+
+#### US-011: Add ProjectRepository tests
+**Description:** As a developer, I need tests for project repository so that project queries are validated.
+
+**Acceptance Criteria:**
+- [ ] Create `ProjectRepositoryTest.kt` extending AbstractRepositoryTest
+- [ ] Test `findByTeamId()` returns project for team
+- [ ] Test `findByHackathonId()` returns all projects for hackathon
+- [ ] Test `findByHackathonIdAndStatus()` filters by status correctly
+- [ ] Test project creation with team and hackathon relationships
+- [ ] Test cascade deletion behavior
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Integration tests pass with TestContainers
+
+#### US-012: Add ScheduleEventRepository tests
+**Description:** As a developer, I need tests for schedule event repository so that event queries are validated.
+
+**Acceptance Criteria:**
+- [ ] Create `ScheduleEventRepositoryTest.kt` extending AbstractRepositoryTest
+- [ ] Test `findByHackathonIdOrderByStartTime()` returns sorted events
+- [ ] Test event creation with hackathon relationship
+- [ ] Test date/time storage and retrieval accuracy
+- [ ] Test cascade deletion when hackathon is deleted
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Integration tests pass with TestContainers
+
+#### US-013: Add EventAttendeeRepository tests
+**Description:** As a developer, I need tests for event attendee repository so that RSVP queries are validated.
+
+**Acceptance Criteria:**
+- [ ] Create `EventAttendeeRepositoryTest.kt` extending AbstractRepositoryTest
+- [ ] Test `findByEventId()` returns all attendees for event
+- [ ] Test `findByEventIdAndUserId()` returns specific RSVP
+- [ ] Test `countByEventIdAndRsvpStatus()` counts RSVPs by status correctly
+- [ ] Test RSVP creation with event and user relationships
+- [ ] Test attendance marking updates hasAttended flag
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Integration tests pass with TestContainers
+
+#### US-014: Add JudgingCriteriaRepository tests
+**Description:** As a developer, I need tests for judging criteria repository so that criteria queries are validated.
+
+**Acceptance Criteria:**
+- [ ] Create `JudgingCriteriaRepositoryTest.kt` extending AbstractRepositoryTest
+- [ ] Test `findByHackathonIdOrderByDisplayOrder()` returns sorted criteria
+- [ ] Test criteria creation with hackathon relationship
+- [ ] Test display order sorting accuracy
+- [ ] Test cascade deletion when hackathon is deleted
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Integration tests pass with TestContainers
+
+#### US-015: Add ScoreRepository tests
+**Description:** As a developer, I need tests for score repository so that scoring queries are validated.
+
+**Acceptance Criteria:**
+- [ ] Create `ScoreRepositoryTest.kt` extending AbstractRepositoryTest
+- [ ] Test `findByJudgeAssignmentId()` returns scores for assignment
+- [ ] Test `findByJudgeAssignmentIdAndCriteriaId()` returns specific score
+- [ ] Test score creation with assignment and criteria relationships
+- [ ] Test score value constraints (min/max)
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Integration tests pass with TestContainers
+
+#### US-016: Add JudgeAssignmentRepository tests
+**Description:** As a developer, I need tests for judge assignment repository so that assignment queries are validated.
+
+**Acceptance Criteria:**
+- [ ] Create `JudgeAssignmentRepositoryTest.kt` extending AbstractRepositoryTest
+- [ ] Test `findByHackathonIdAndJudgeId()` returns judge's assignments
+- [ ] Test `findByProjectId()` returns all judges for project
+- [ ] Test assignment creation with hackathon, judge, and project relationships
+- [ ] Test `isCompleted` flag updates correctly
+- [ ] Unit tests added for new functionality
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Integration tests pass with TestContainers
+
+### Phase 4: Refactoring with Test Coverage
+
+#### US-017: Extract JudgingCriteriaService from JudgingService
+**Description:** As a developer, I want criteria management extracted to a focused service so that JudgingService has a single responsibility.
+
+**Acceptance Criteria:**
+- [ ] Create `JudgingCriteriaService.kt` with criteria CRUD methods
+- [ ] Move `createCriteria()`, `updateCriteria()`, `deleteCriteria()`, `getCriteria()` from JudgingService
+- [ ] Update JudgingController to inject JudgingCriteriaService
+- [ ] Create `JudgingCriteriaServiceTest.kt` by extracting relevant tests from JudgingServiceTest
+- [ ] Update JudgingService to use JudgingCriteriaService for criteria access
+- [ ] All existing tests still pass
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage maintained at >80%
+
+#### US-018: Extract JudgeManagementService from JudgingService
+**Description:** As a developer, I want judge management extracted to a focused service so that judge operations are isolated.
+
+**Acceptance Criteria:**
+- [ ] Create `JudgeManagementService.kt` with judge operations
+- [ ] Move `addJudge()`, `removeJudge()`, `getJudges()` from JudgingService
+- [ ] Update JudgingController to inject JudgeManagementService
+- [ ] Create `JudgeManagementServiceTest.kt` by extracting relevant tests
+- [ ] Update JudgingService to use JudgeManagementService for judge checks
+- [ ] All existing tests still pass
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage maintained at >80%
+
+#### US-019: Extract ScoringService from JudgingService
+**Description:** As a developer, I want score submission extracted to a focused service so that scoring logic is isolated.
+
+**Acceptance Criteria:**
+- [ ] Create `ScoringService.kt` with scoring operations
+- [ ] Move `submitScores()`, `getAssignmentsByJudge()`, `getAssignmentById()` from JudgingService
+- [ ] Update JudgingController to inject ScoringService
+- [ ] Create `ScoringServiceTest.kt` by extracting relevant tests
+- [ ] All existing tests still pass
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage maintained at >80%
+
+#### US-020: Extract LeaderboardService from JudgingService
+**Description:** As a developer, I want leaderboard calculation extracted to a focused service so that ranking logic is isolated.
+
+**Acceptance Criteria:**
+- [ ] Create `LeaderboardService.kt` with leaderboard calculation
+- [ ] Move `getLeaderboard()` from JudgingService
+- [ ] Extract complex calculation logic (lines 371-408) into private helper methods
+- [ ] Update JudgingController to inject LeaderboardService
+- [ ] Create `LeaderboardServiceTest.kt` by extracting relevant tests
+- [ ] All existing tests still pass
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage maintained at >80%
+- [ ] JudgingService.kt now <150 lines (reduced from 431)
+
+#### US-021: Extract domain exceptions from ApiException
+**Description:** As a developer, I want domain exceptions decoupled from HTTP layer so that business logic doesn't depend on web concerns.
+
+**Acceptance Criteria:**
+- [ ] Create `src/main/kotlin/com/hackathon/manager/exception/DomainExceptions.kt`
+- [ ] Define sealed class `DomainException` with subtypes: NotFound, Unauthorized, ValidationError, Conflict
+- [ ] Update GlobalExceptionHandler to map domain exceptions to HTTP responses
+- [ ] Replace ApiException in HackathonService with domain exceptions
+- [ ] Replace ApiException in TeamService with domain exceptions
+- [ ] Replace ApiException in ProjectService with domain exceptions
+- [ ] Update all service tests to expect domain exceptions
+- [ ] All existing tests still pass
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+
+#### US-022: Refactor complex methods in ScoringService
+**Description:** As a developer, I want complex scoring methods simplified so that cyclomatic complexity is <5.
+
+**Acceptance Criteria:**
+- [ ] Extract validation logic from `submitScores()` into `validateScoreRequests()` private method
+- [ ] Extract criteria mapping from `submitScores()` into `mapCriteriaIds()` private method
+- [ ] Extract assignment completion check into `checkAssignmentCompletion()` private method
+- [ ] Cyclomatic complexity of `submitScores()` reduced to <5
+- [ ] Add unit tests for extracted helper methods
+- [ ] All existing tests still pass
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] JaCoCo coverage maintained at >80%
+
+#### US-023: Extract repeated .let{} update patterns to utility
+**Description:** As a developer, I want optional field updates centralized so that update logic is DRY.
+
+**Acceptance Criteria:**
+- [ ] Create `src/main/kotlin/com/hackathon/manager/util/EntityUpdateUtil.kt`
+- [ ] Define `applyIfNotNull<T, R>` extension function
+- [ ] Replace `.let` patterns in HackathonService with utility (lines 106-123)
+- [ ] Replace `.let` patterns in ProjectService with utility (lines 92-100)
+- [ ] Replace `.let` patterns in JudgingCriteriaService with utility
+- [ ] Replace `.let` patterns in UserService with utility (lines 43-50)
+- [ ] Create `EntityUpdateUtilTest.kt` to test utility
+- [ ] All existing tests still pass
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+
+### Phase 5: Code Quality Improvements
+
+#### US-024: Improve naming conventions in service layer
+**Description:** As a developer, I want consistent naming so that code is more readable.
+
+**Acceptance Criteria:**
+- [ ] Rename `ex` to `exception` in GlobalExceptionHandler.kt
+- [ ] Replace ambiguous `it` with named variables in HackathonService
+- [ ] Replace ambiguous `it` with named variables in TeamService
+- [ ] Replace ambiguous `it` with named variables in ProjectService
+- [ ] Rename `criteria` to `judgingCriteria` in JudgingCriteriaService for clarity
+- [ ] All existing tests still pass
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+
+#### US-025: Add error handling to EmailServiceImpl
+**Description:** As a developer, I want robust error handling in email service so that failures are logged and don't crash the system.
+
+**Acceptance Criteria:**
+- [ ] Wrap Resend API calls in try-catch blocks
+- [ ] Log email sending failures with error details
+- [ ] Return success/failure status from `sendEmail()` method
+- [ ] Update callers to check email send status
+- [ ] Test error handling in EmailServiceImplTest with API failures
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify error handling works in browser during password reset
+
+#### US-026: Document architectural decisions and patterns
+**Description:** As a developer, I want cleanup decisions documented so that future developers understand the architecture.
+
+**Acceptance Criteria:**
+- [ ] Create `docs/ARCHITECTURE.md` documenting service layer organization
+- [ ] Document domain exception pattern and usage
+- [ ] Document test coverage standards (80% minimum)
+- [ ] Document file size limits (300 lines) and complexity limits (complexity <5)
+- [ ] Document when to use TestContainers vs mocked tests
+- [ ] Add section on constants management
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- No SMS-based password reset (email only)
-- No security questions or alternative recovery methods
-- No password history enforcement (preventing reuse of old passwords)
-- No rate limiting on forgot password requests (can be added later)
-- No CAPTCHA on forgot password form (can be added later)
-- No multi-factor authentication during reset flow
-- No actual email delivery via SMTP/SendGrid (console logging only in MVP)
-- No password strength meter UI
-- No "magic link" login (token only allows password reset, not direct login)
+- **Frontend cleanup** - Deferred to separate PRD (React components, TypeScript, E2E tests)
+- **Frontend test coverage** - No changes to Playwright tests or addition of Vitest
+- **Database schema changes** - No migrations or entity modifications
+- **New features** - This PRD only addresses existing code quality
+- **Performance optimization** - Not in scope unless impacting tests
+- **API changes** - No modifications to endpoint signatures or behavior
+- **Security improvements** - Beyond what's needed for password reset testing
+- **Documentation beyond architecture** - No user-facing docs, API docs, or deployment guides
 
 ## Technical Considerations
 
-### Existing Infrastructure
-- UserService, UserRepository, AuthController already exist
-- PasswordEncoder already configured in Spring Security
-- Frontend uses React Hook Form + Zod pattern consistently
-- AuthLayout component exists for consistent auth page styling
-- Frontend uses React Router v7 for routing
+### Test Infrastructure
+- **TestContainers** already configured in `AbstractRepositoryTest.kt`
+- Repository tests currently disabled but functional
+- JaCoCo configured with 70% target (will increase to 80%)
 
-### Security Model
-- Tokens are UUID v4 (cryptographically secure random)
-- Tokens expire after 15 minutes
-- Tokens can only be used once (marked as used after successful reset)
-- Email address enumeration prevented (always return success message)
-- Password validation matches registration requirements for consistency
-- User receives confirmation email after password change
+### Existing Patterns to Follow
+- Service tests use Mockito for mocking dependencies
+- Controller tests use MockMvc for HTTP layer validation
+- Repository tests extend AbstractRepositoryTest for TestContainers setup
 
-### Password Requirements (Match Registration)
-- Minimum 8 characters
-- At least one uppercase letter (A-Z)
-- At least one lowercase letter (a-z)
-- At least one number (0-9)
-- Defined in Register.tsx lines 20-25
+### Dependencies
+- All refactoring depends on having tests in place first
+- Phase 4 cannot begin until Phase 1-3 complete (conservative approach)
+- Service extraction must maintain existing controller contracts
 
-### Email Service Evolution
-- MVP: Log emails to console for development/testing
-- Future: Replace EmailServiceImpl with actual SMTP integration (SendGrid, AWS SES, etc.)
-- Interface allows swapping implementations without changing service/controller code
+### Constraints
+- Cannot modify public API contracts (breaking changes)
+- Must maintain backward compatibility with existing data
+- All changes must pass existing CI/CD pipeline
+- Spring Boot version and dependencies remain unchanged
 
-### Frontend Error Handling
-- Use ApiError class pattern from existing auth pages
-- Display inline error messages using framer-motion for smooth animations
-- Provide user-friendly messages for common errors (invalid token, expired token, passwords don't match)
+## Success Metrics
 
-### Database Cleanup
-- Scheduled task runs daily to remove tokens older than 7 days
-- Prevents unbounded table growth
-- Expired tokens immediately invalidated by service logic (don't need instant removal)
+1. **Test Coverage:** Backend coverage reaches 80% (measured by JaCoCo)
+2. **Critical Component Coverage:** All services, controllers, repositories, and schedulers have test coverage
+3. **File Complexity:** No files exceed 300 lines
+4. **Method Complexity:** No methods exceed cyclomatic complexity of 5
+5. **God Objects Eliminated:** JudgingService split into 4 focused services
+6. **Magic Numbers Removed:** All configuration values in constants
+7. **CI/CD Green:** All tests pass, typecheck passes, build succeeds
+
+## Completion Checklist
+
+- [ ] All 26 user stories completed
+- [ ] JaCoCo report shows ≥80% backend coverage
+- [ ] Zero files exceed 300 lines
+- [ ] Zero methods exceed complexity 5
+- [ ] All tests passing in CI/CD
+- [ ] Architecture documentation in place
+- [ ] Code review completed for all refactoring
