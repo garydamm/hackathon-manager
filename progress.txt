@@ -104,3 +104,39 @@
   - Typecheck passed successfully
   - Pattern is well-established: controller tests are straightforward when following the existing template
 ---
+
+## Iteration 58 - Add JudgingController tests
+- Created comprehensive JudgingControllerTest.kt with 20 test cases covering all judging endpoints
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/controller/JudgingControllerTest.kt
+  - Updated: PRD.md (marked US-007 as complete)
+- Learnings for future iterations:
+  - JudgingController has four main sections: criteria management, judge management, scoring/assignments, and leaderboard
+  - Criteria CRUD operations (POST/PUT/DELETE) require organizer role and throw 403 for non-organizers
+  - Judge management (add/remove judges) is organizer-only functionality
+  - Assignment endpoints are for judges to view their assigned projects and submit scores
+  - Leaderboard endpoint calculates rankings based on weighted scores across criteria
+  - Helper methods for test data (createJudgingCriteriaResponse, createJudgeInfoResponse, createJudgeAssignmentResponse, createLeaderboardEntryResponse) improve readability
+  - Use BigDecimal for weight values in judging criteria (e.g., BigDecimal("1.5"))
+  - ScoreResponse includes criteriaAverages in LeaderboardEntryResponse for detailed breakdown
+  - All 20 tests passed on first run
+  - Typecheck passed successfully
+  - Following established pattern made test creation straightforward and reliable
+---
+
+## Iteration 59 - Add HealthController tests
+- Created HealthControllerTest.kt with 3 test cases covering the health endpoint
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/controller/HealthControllerTest.kt
+  - Updated: PRD.md (marked US-008 as complete)
+- Learnings for future iterations:
+  - HealthController tests require @SpringBootTest + @AutoConfigureMockMvc instead of @WebMvcTest
+  - This is because the health endpoint uses permitAll() security configuration which needs full Spring context
+  - @WebMvcTest with excludeFilters for JwtAuthenticationFilter still enforces Spring Security's default behavior (401 Unauthorized)
+  - @SpringBootTest loads the actual SecurityConfig bean, which allows permitAll() endpoints to work correctly
+  - The health endpoint is configured as permitAll() in SecurityConfig.kt:40, so no authentication is needed
+  - Test cases validate: 200 OK status, JSON response structure, and accessibility without authentication
+  - All 3 tests passed successfully after switching to @SpringBootTest approach
+  - Typecheck passed successfully
+  - Pattern learned: Use @SpringBootTest for endpoints with special security configuration (permitAll, custom filters)
+---

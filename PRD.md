@@ -156,13 +156,13 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need a smoke test for the health endpoint so that deployment readiness is validated.
 
 **Acceptance Criteria:**
-- [ ] Create `HealthControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
-- [ ] Test `GET /api/health` returns 200 OK
-- [ ] Test response contains expected health status JSON
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage for HealthController 100%
+- [x] Create `HealthControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
+- [x] Test `GET /api/health` returns 200 OK
+- [x] Test response contains expected health status JSON
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage for HealthController 100%
 
 ### Phase 3: Repository Test Coverage
 
