@@ -27,12 +27,12 @@ class HackathonService(
 
     @Transactional(readOnly = true)
     fun getAllHackathons(): List<HackathonResponse> {
-        return hackathonRepository.findAll().map { HackathonResponse.fromEntity(it) }
+        return hackathonRepository.findAll().map { hackathon -> HackathonResponse.fromEntity(hackathon) }
     }
 
     @Transactional(readOnly = true)
     fun getActiveHackathons(): List<HackathonResponse> {
-        return hackathonRepository.findActiveHackathons().map { HackathonResponse.fromEntity(it) }
+        return hackathonRepository.findActiveHackathons().map { hackathon -> HackathonResponse.fromEntity(hackathon) }
     }
 
     @Transactional(readOnly = true)
@@ -40,7 +40,7 @@ class HackathonService(
         val hackathon = hackathonRepository.findById(id)
             .orElseThrow { NotFoundException("Hackathon not found") }
         val participantCount = getParticipantCount(id)
-        val userRole = userId?.let { hackathonUserRepository.findByHackathonIdAndUserId(id, it)?.role }
+        val userRole = userId?.let { uid -> hackathonUserRepository.findByHackathonIdAndUserId(id, uid)?.role }
         return HackathonResponse.fromEntity(hackathon, participantCount, userRole)
     }
 
@@ -49,7 +49,7 @@ class HackathonService(
         val hackathon = hackathonRepository.findBySlug(slug)
             ?: throw NotFoundException("Hackathon not found")
         val participantCount = getParticipantCount(hackathon.id!!)
-        val userRole = userId?.let { hackathonUserRepository.findByHackathonIdAndUserId(hackathon.id!!, it)?.role }
+        val userRole = userId?.let { uid -> hackathonUserRepository.findByHackathonIdAndUserId(hackathon.id!!, uid)?.role }
         return HackathonResponse.fromEntity(hackathon, participantCount, userRole)
     }
 
@@ -197,7 +197,7 @@ class HackathonService(
     @Transactional(readOnly = true)
     fun getUserDraftHackathons(userId: UUID): List<HackathonResponse> {
         return hackathonRepository.findByOrganizerAndStatus(userId, HackathonStatus.draft)
-            .map { HackathonResponse.fromEntity(it) }
+            .map { hackathon -> HackathonResponse.fromEntity(hackathon) }
     }
 
     @Transactional(readOnly = true)

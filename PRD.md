@@ -390,14 +390,14 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want consistent naming so that code is more readable.
 
 **Acceptance Criteria:**
-- [ ] Rename `ex` to `exception` in GlobalExceptionHandler.kt
-- [ ] Replace ambiguous `it` with named variables in HackathonService
-- [ ] Replace ambiguous `it` with named variables in TeamService
-- [ ] Replace ambiguous `it` with named variables in ProjectService
-- [ ] Rename `criteria` to `judgingCriteria` in JudgingCriteriaService for clarity
-- [ ] All existing tests still pass
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Rename `ex` to `exception` in GlobalExceptionHandler.kt
+- [x] Replace ambiguous `it` with named variables in HackathonService
+- [x] Replace ambiguous `it` with named variables in TeamService
+- [x] Replace ambiguous `it` with named variables in ProjectService
+- [x] Rename `criteria` to `judgingCriteria` in JudgingCriteriaService for clarity
+- [x] All existing tests still pass
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 #### US-025: Add error handling to EmailServiceImpl
 **Description:** As a developer, I want robust error handling in email service so that failures are logged and don't crash the system.

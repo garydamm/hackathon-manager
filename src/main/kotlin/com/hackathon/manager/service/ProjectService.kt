@@ -24,13 +24,13 @@ class ProjectService(
     @Transactional(readOnly = true)
     fun getProjectsByHackathon(hackathonId: UUID): List<ProjectResponse> {
         return projectRepository.findByHackathonId(hackathonId)
-            .map { ProjectResponse.fromEntity(it) }
+            .map { project -> ProjectResponse.fromEntity(project) }
     }
 
     @Transactional(readOnly = true)
     fun getSubmittedProjectsByHackathon(hackathonId: UUID): List<ProjectResponse> {
         return projectRepository.findByHackathonIdAndStatus(hackathonId, SubmissionStatus.submitted)
-            .map { ProjectResponse.fromEntity(it) }
+            .map { project -> ProjectResponse.fromEntity(project) }
     }
 
     @Transactional(readOnly = true)
@@ -43,7 +43,7 @@ class ProjectService(
     @Transactional(readOnly = true)
     fun getProjectByTeam(teamId: UUID): ProjectResponse? {
         val project = projectRepository.findByTeamId(teamId)
-        return project?.let { ProjectResponse.fromEntity(it) }
+        return project?.let { foundProject -> ProjectResponse.fromEntity(foundProject) }
     }
 
     @Transactional

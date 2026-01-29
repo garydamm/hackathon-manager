@@ -416,3 +416,24 @@
   - Typecheck passes successfully
   - This pattern of extracting validation, mapping, and state-checking logic into focused helper methods can be applied to other complex methods
 ---
+
+## Iteration 74 - Extract repeated .let{} update patterns to utility
+- Created EntityUpdateUtil.kt with applyIfNotNull extension function to eliminate repetitive .let { entity.field = it } patterns
+- Files changed:
+  - Created: src/main/kotlin/com/hackathon/manager/util/EntityUpdateUtil.kt
+  - Created: src/test/kotlin/com/hackathon/manager/util/EntityUpdateUtilTest.kt
+  - Modified: src/main/kotlin/com/hackathon/manager/service/HackathonService.kt (replaced 18 .let patterns)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/ProjectService.kt (replaced 9 .let patterns)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/JudgingCriteriaService.kt (replaced 5 .let patterns)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/UserService.kt (replaced 8 .let patterns)
+  - Updated: PRD.md (marked US-023 as complete)
+- Learnings for future iterations:
+  - The applyIfNotNull extension function provides a cleaner, more readable alternative to .let { entity.field = it }
+  - Extension functions on nullable types (T?) enable elegant null-safe operations without boilerplate
+  - Inline functions with lambda parameters have zero runtime overhead due to inlining at compile time
+  - Test coverage: EntityUpdateUtilTest has 11 test cases covering null/non-null values, primitive types, nullable properties, sequential updates, and block execution verification
+  - All service tests pass: UserServiceTest (22 tests), ProjectServiceTest (13 tests), JudgingCriteriaServiceTest (13 tests), EntityUpdateUtilTest (11 tests)
+  - Typecheck passes successfully
+  - Pre-existing test failures (HackathonServiceTest with 6 UnnecessaryStubbingException, repository tests with Docker connection issues) are unrelated to this change
+  - This utility makes entity update code more DRY and maintainable by centralizing the null-checking pattern
+---

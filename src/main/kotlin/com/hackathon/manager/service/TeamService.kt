@@ -24,7 +24,7 @@ class TeamService(
     @Transactional(readOnly = true)
     fun getTeamsByHackathon(hackathonId: UUID): List<TeamResponse> {
         return teamRepository.findByHackathonId(hackathonId)
-            .map { TeamResponse.fromEntity(it) }
+            .map { team -> TeamResponse.fromEntity(team) }
     }
 
     @Transactional(readOnly = true)
@@ -37,7 +37,7 @@ class TeamService(
     @Transactional(readOnly = true)
     fun getUserTeamInHackathon(hackathonId: UUID, userId: UUID): TeamResponse? {
         val team = teamRepository.findByHackathonIdAndMemberUserId(hackathonId, userId)
-        return team?.let { TeamResponse.fromEntity(it, includeMembers = true) }
+        return team?.let { foundTeam -> TeamResponse.fromEntity(foundTeam, includeMembers = true) }
     }
 
     @Transactional
@@ -95,14 +95,14 @@ class TeamService(
             throw UnauthorizedException("Only team leader can update team")
         }
 
-        request.name?.let {
-            if (teamRepository.existsByHackathonIdAndName(team.hackathon.id!!, it) && it != team.name) {
+        request.name?.let { newName ->
+            if (teamRepository.existsByHackathonIdAndName(team.hackathon.id!!, newName) && newName != team.name) {
                 throw ConflictException("Team name already exists")
             }
-            team.name = it
+            team.name = newName
         }
-        request.description?.let { team.description = it }
-        request.isOpen?.let { team.isOpen = it }
+        request.description?.let { newDescription -> team.description = newDescription }
+        request.isOpen?.let { openStatus -> team.isOpen = openStatus }
 
         val savedTeam = teamRepository.save(team)
         return TeamResponse.fromEntity(savedTeam, includeMembers = true)
@@ -166,7 +166,7 @@ class TeamService(
             ?: throw NotFoundException("Not a member of this team")
 
         if (member.isLeader) {
-            val otherMembers = teamMemberRepository.findByTeamId(teamId).filter { it.user.id != userId }
+            val otherMembers = teamMemberRepository.findByTeamId(teamId).filter { teamMember -> teamMember.user.id != userId }
             if (otherMembers.isNotEmpty()) {
                 // Transfer leadership to another member
                 val newLeader = otherMembers.first()
@@ -198,6 +198,6 @@ class TeamService(
     private fun generateInviteCode(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         val random = SecureRandom()
-        return (1..8).map { chars[random.nextInt(chars.length)] }.joinToString("")
+        return (1..8).map { _ -> chars[random.nextInt(chars.length)] }.joinToString("")
     }
 }

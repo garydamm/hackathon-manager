@@ -23,7 +23,7 @@ class JudgingCriteriaService(
     @Transactional(readOnly = true)
     fun getCriteriaByHackathon(hackathonId: UUID): List<JudgingCriteriaResponse> {
         return judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(hackathonId)
-            .map { JudgingCriteriaResponse.fromEntity(it) }
+            .map { judgingCriteria -> JudgingCriteriaResponse.fromEntity(judgingCriteria) }
     }
 
     @Transactional
@@ -35,7 +35,7 @@ class JudgingCriteriaService(
         val hackathon = hackathonRepository.findById(hackathonId)
             .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
 
-        val criteria = JudgingCriteria(
+        val judgingCriteria = JudgingCriteria(
             hackathon = hackathon,
             name = request.name,
             description = request.description,
@@ -44,38 +44,38 @@ class JudgingCriteriaService(
             displayOrder = request.displayOrder
         )
 
-        val savedCriteria = judgingCriteriaRepository.save(criteria)
+        val savedCriteria = judgingCriteriaRepository.save(judgingCriteria)
         return JudgingCriteriaResponse.fromEntity(savedCriteria)
     }
 
     @Transactional
     fun updateCriteria(criteriaId: UUID, request: UpdateJudgingCriteriaRequest, userId: UUID): JudgingCriteriaResponse {
-        val criteria = judgingCriteriaRepository.findById(criteriaId)
+        val judgingCriteria = judgingCriteriaRepository.findById(criteriaId)
             .orElseThrow { ApiException("Judging criteria not found", HttpStatus.NOT_FOUND) }
 
-        if (!hackathonService.isUserOrganizer(criteria.hackathon.id!!, userId)) {
+        if (!hackathonService.isUserOrganizer(judgingCriteria.hackathon.id!!, userId)) {
             throw ApiException("Only organizers can update judging criteria", HttpStatus.FORBIDDEN)
         }
 
-        request.name.applyIfNotNull { criteria.name = it }
-        request.description.applyIfNotNull { criteria.description = it }
-        request.maxScore.applyIfNotNull { criteria.maxScore = it }
-        request.weight.applyIfNotNull { criteria.weight = it }
-        request.displayOrder.applyIfNotNull { criteria.displayOrder = it }
+        request.name.applyIfNotNull { judgingCriteria.name = it }
+        request.description.applyIfNotNull { judgingCriteria.description = it }
+        request.maxScore.applyIfNotNull { judgingCriteria.maxScore = it }
+        request.weight.applyIfNotNull { judgingCriteria.weight = it }
+        request.displayOrder.applyIfNotNull { judgingCriteria.displayOrder = it }
 
-        val savedCriteria = judgingCriteriaRepository.save(criteria)
+        val savedCriteria = judgingCriteriaRepository.save(judgingCriteria)
         return JudgingCriteriaResponse.fromEntity(savedCriteria)
     }
 
     @Transactional
     fun deleteCriteria(criteriaId: UUID, userId: UUID) {
-        val criteria = judgingCriteriaRepository.findById(criteriaId)
+        val judgingCriteria = judgingCriteriaRepository.findById(criteriaId)
             .orElseThrow { ApiException("Judging criteria not found", HttpStatus.NOT_FOUND) }
 
-        if (!hackathonService.isUserOrganizer(criteria.hackathon.id!!, userId)) {
+        if (!hackathonService.isUserOrganizer(judgingCriteria.hackathon.id!!, userId)) {
             throw ApiException("Only organizers can delete judging criteria", HttpStatus.FORBIDDEN)
         }
 
-        judgingCriteriaRepository.delete(criteria)
+        judgingCriteriaRepository.delete(judgingCriteria)
     }
 }
