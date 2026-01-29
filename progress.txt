@@ -51,3 +51,21 @@
   - All 6 tests passed successfully
   - Coverage achieved: 100% for ScheduledTasks (exceeds 80% requirement)
 ---
+
+## Iteration 55 - Extract magic numbers to constants file
+- Created AppConstants.kt with SecurityConstants object containing all security-related magic numbers
+- Files changed:
+  - Created: src/main/kotlin/com/hackathon/manager/config/AppConstants.kt
+  - Updated: src/main/kotlin/com/hackathon/manager/service/UserService.kt (replaced magic numbers with constants)
+  - Updated: src/main/kotlin/com/hackathon/manager/security/JwtTokenProvider.kt (replaced magic number with constant)
+  - Updated: src/test/kotlin/com/hackathon/manager/service/UserServiceTest.kt (updated to use constants in assertions)
+  - Updated: PRD.md (marked US-004 as complete)
+- Learnings for future iterations:
+  - Centralizing constants in a single file makes configuration values easier to maintain and understand
+  - Use object declarations for constant grouping (SecurityConstants within AppConstants) for better organization
+  - When updating error messages that include magic numbers, use string interpolation: "at least ${MIN_PASSWORD_LENGTH} characters"
+  - Test assertions that check for time windows should also use the constants for consistency
+  - Some tests (HackathonServiceTest, ScheduleServiceTest) were already failing before this change due to missing mock dependencies - not related to constants extraction
+  - All relevant tests (UserServiceTest, EmailServiceImplTest, ScheduledTasksTest) pass with constants
+  - Typecheck passes and application builds successfully (bootJar completed)
+---
