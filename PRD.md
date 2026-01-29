@@ -344,16 +344,16 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want domain exceptions decoupled from HTTP layer so that business logic doesn't depend on web concerns.
 
 **Acceptance Criteria:**
-- [ ] Create `src/main/kotlin/com/hackathon/manager/exception/DomainExceptions.kt`
-- [ ] Define sealed class `DomainException` with subtypes: NotFound, Unauthorized, ValidationError, Conflict
-- [ ] Update GlobalExceptionHandler to map domain exceptions to HTTP responses
-- [ ] Replace ApiException in HackathonService with domain exceptions
-- [ ] Replace ApiException in TeamService with domain exceptions
-- [ ] Replace ApiException in ProjectService with domain exceptions
-- [ ] Update all service tests to expect domain exceptions
-- [ ] All existing tests still pass
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `src/main/kotlin/com/hackathon/manager/exception/DomainExceptions.kt`
+- [x] Define sealed class `DomainException` with subtypes: NotFound, Unauthorized, ValidationError, Conflict
+- [x] Update GlobalExceptionHandler to map domain exceptions to HTTP responses
+- [x] Replace ApiException in HackathonService with domain exceptions
+- [x] Replace ApiException in TeamService with domain exceptions
+- [x] Replace ApiException in ProjectService with domain exceptions
+- [x] Update all service tests to expect domain exceptions
+- [x] All existing tests still pass
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 #### US-022: Refactor complex methods in ScoringService
 **Description:** As a developer, I want complex scoring methods simplified so that cyclomatic complexity is <5.

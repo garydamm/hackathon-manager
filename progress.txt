@@ -353,3 +353,25 @@
   - Typecheck passes successfully
   - JudgingService reduced from ~244 lines to 117 lines (scoring methods removed)
 ---
+## Iteration 71 - Extract LeaderboardService from JudgingService
+- Created new LeaderboardService with leaderboard calculation methods (getLeaderboard)
+- Files changed:
+  - Created: src/main/kotlin/com/hackathon/manager/service/LeaderboardService.kt
+  - Created: src/test/kotlin/com/hackathon/manager/service/LeaderboardServiceTest.kt
+  - Modified: src/main/kotlin/com/hackathon/manager/controller/JudgingController.kt (injected LeaderboardService)
+  - Modified: src/test/kotlin/com/hackathon/manager/controller/JudgingControllerTest.kt (added LeaderboardService mock)
+  - Deleted: src/main/kotlin/com/hackathon/manager/service/JudgingService.kt (fully decomposed)
+  - Deleted: src/test/kotlin/com/hackathon/manager/service/JudgingServiceTest.kt (all tests extracted)
+  - Updated: PRD.md (marked US-020 as complete)
+- Learnings for future iterations:
+  - Following the established pattern from iterations 68-70: Create service, create tests, update controller, remove from original service, update tests
+  - Extracted complex calculation logic into private helper methods: validateLeaderboardAccess, calculateProjectScores, calculateCriteriaAverages, calculateTotalWeightedScore, buildLeaderboardEntries
+  - This decomposition reduces cyclomatic complexity and makes the code easier to understand and test
+  - Extracted 8 test methods from JudgingServiceTest to LeaderboardServiceTest (all leaderboard-related tests)
+  - Updated JudgingController to remove JudgingService dependency entirely - now uses 4 focused services instead
+  - Removed judgingService MockBean from JudgingControllerTest and added leaderboardService MockBean
+  - JudgingService has been fully decomposed from 431 lines into 4 focused services: JudgingCriteriaService, JudgeManagementService, ScoringService, and LeaderboardService
+  - All tests pass (LeaderboardServiceTest, JudgingControllerTest)
+  - Typecheck passes successfully
+  - The "god object" JudgingService has been successfully eliminated
+---

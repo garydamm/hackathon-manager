@@ -7,12 +7,11 @@ import com.hackathon.manager.entity.Hackathon
 import com.hackathon.manager.entity.HackathonUser
 import com.hackathon.manager.entity.enums.HackathonStatus
 import com.hackathon.manager.entity.enums.UserRole
-import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.exception.*
 import com.hackathon.manager.repository.HackathonRepository
 import com.hackathon.manager.repository.HackathonUserRepository
 import com.hackathon.manager.repository.TeamMemberRepository
 import com.hackathon.manager.repository.UserRepository
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -38,7 +37,7 @@ class HackathonService(
     @Transactional(readOnly = true)
     fun getHackathonById(id: UUID, userId: UUID? = null): HackathonResponse {
         val hackathon = hackathonRepository.findById(id)
-            .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Hackathon not found") }
         val participantCount = getParticipantCount(id)
         val userRole = userId?.let { hackathonUserRepository.findByHackathonIdAndUserId(id, it)?.role }
         return HackathonResponse.fromEntity(hackathon, participantCount, userRole)
@@ -47,7 +46,7 @@ class HackathonService(
     @Transactional(readOnly = true)
     fun getHackathonBySlug(slug: String, userId: UUID? = null): HackathonResponse {
         val hackathon = hackathonRepository.findBySlug(slug)
-            ?: throw ApiException("Hackathon not found", HttpStatus.NOT_FOUND)
+            ?: throw NotFoundException("Hackathon not found")
         val participantCount = getParticipantCount(hackathon.id!!)
         val userRole = userId?.let { hackathonUserRepository.findByHackathonIdAndUserId(hackathon.id!!, it)?.role }
         return HackathonResponse.fromEntity(hackathon, participantCount, userRole)
@@ -56,11 +55,11 @@ class HackathonService(
     @Transactional
     fun createHackathon(request: CreateHackathonRequest, creatorId: UUID): HackathonResponse {
         if (hackathonRepository.existsBySlug(request.slug)) {
-            throw ApiException("Slug already exists", HttpStatus.CONFLICT)
+            throw ConflictException("Slug already exists")
         }
 
         val creator = userRepository.findById(creatorId)
-            .orElseThrow { ApiException("User not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("User not found") }
 
         val hackathon = Hackathon(
             name = request.name,
@@ -101,7 +100,7 @@ class HackathonService(
     @Transactional
     fun updateHackathon(id: UUID, request: UpdateHackathonRequest): HackathonResponse {
         val hackathon = hackathonRepository.findById(id)
-            .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Hackathon not found") }
 
         request.name?.let { hackathon.name = it }
         request.description?.let { hackathon.description = it }
@@ -129,10 +128,10 @@ class HackathonService(
     @Transactional
     fun registerForHackathon(hackathonId: UUID, userId: UUID): HackathonResponse {
         val hackathon = hackathonRepository.findById(hackathonId)
-            .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Hackathon not found") }
 
         if (hackathon.status != HackathonStatus.registration_open) {
-            throw ApiException("Registration is not open", HttpStatus.BAD_REQUEST)
+            throw ValidationException("Registration is not open")
         }
 
         // Check if user already has a role in this hackathon
@@ -143,16 +142,16 @@ class HackathonService(
                 val participantCount = getParticipantCount(hackathonId)
                 return HackathonResponse.fromEntity(hackathon, participantCount, existingRole.role)
             }
-            throw ApiException("Already registered for this hackathon", HttpStatus.CONFLICT)
+            throw ConflictException("Already registered for this hackathon")
         }
 
         val participantCount = getParticipantCount(hackathonId)
         if (hackathon.maxParticipants != null && participantCount >= hackathon.maxParticipants!!) {
-            throw ApiException("Hackathon is full", HttpStatus.BAD_REQUEST)
+            throw ValidationException("Hackathon is full")
         }
 
         val user = userRepository.findById(userId)
-            .orElseThrow { ApiException("User not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("User not found") }
 
         val hackathonUser = HackathonUser(
             hackathon = hackathon,
@@ -167,10 +166,10 @@ class HackathonService(
     @Transactional
     fun unregisterForHackathon(hackathonId: UUID, userId: UUID): HackathonResponse {
         val hackathon = hackathonRepository.findById(hackathonId)
-            .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Hackathon not found") }
 
         val hackathonUser = hackathonUserRepository.findByHackathonIdAndUserId(hackathonId, userId)
-            ?: throw ApiException("Not registered for this hackathon", HttpStatus.NOT_FOUND)
+            ?: throw NotFoundException("Not registered for this hackathon")
 
         hackathonUserRepository.delete(hackathonUser)
 
@@ -204,7 +203,7 @@ class HackathonService(
     fun getHackathonOrganizers(hackathonId: UUID): List<com.hackathon.manager.dto.OrganizerInfo> {
         // Verify hackathon exists
         hackathonRepository.findById(hackathonId)
-            .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Hackathon not found") }
 
         val organizers = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.organizer)
         return organizers.map { hackathonUser ->

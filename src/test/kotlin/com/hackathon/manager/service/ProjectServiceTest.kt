@@ -5,7 +5,7 @@ import com.hackathon.manager.dto.UpdateProjectRequest
 import com.hackathon.manager.entity.*
 import com.hackathon.manager.entity.enums.HackathonStatus
 import com.hackathon.manager.entity.enums.SubmissionStatus
-import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.exception.*
 import com.hackathon.manager.repository.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -131,7 +131,7 @@ class ProjectServiceTest {
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { projectService.getProjectById(testProjectId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Project not found")
     }
 
@@ -200,7 +200,7 @@ class ProjectServiceTest {
         whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { projectService.createProject(request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Team not found")
     }
 
@@ -215,7 +215,7 @@ class ProjectServiceTest {
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
 
         assertThatThrownBy { projectService.createProject(request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Must be a team member to create a project")
     }
 
@@ -231,7 +231,7 @@ class ProjectServiceTest {
         whenever(projectRepository.existsByTeamIdAndHackathonId(testTeamId, testHackathonId)).thenReturn(true)
 
         assertThatThrownBy { projectService.createProject(request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ConflictException::class.java)
             .hasMessage("Team already has a project for this hackathon")
     }
 
@@ -266,7 +266,7 @@ class ProjectServiceTest {
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { projectService.updateProject(testProjectId, request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Project not found")
     }
 
@@ -278,7 +278,7 @@ class ProjectServiceTest {
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
 
         assertThatThrownBy { projectService.updateProject(testProjectId, request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Must be a team member to update the project")
     }
 
@@ -297,7 +297,7 @@ class ProjectServiceTest {
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
 
         assertThatThrownBy { projectService.updateProject(testProjectId, request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ValidationException::class.java)
             .hasMessage("Cannot update a submitted project")
     }
 
@@ -318,7 +318,7 @@ class ProjectServiceTest {
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { projectService.submitProject(testProjectId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Project not found")
     }
 
@@ -328,7 +328,7 @@ class ProjectServiceTest {
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
 
         assertThatThrownBy { projectService.submitProject(testProjectId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Must be a team member to submit the project")
     }
 
@@ -346,7 +346,7 @@ class ProjectServiceTest {
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
 
         assertThatThrownBy { projectService.submitProject(testProjectId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ValidationException::class.java)
             .hasMessage("Project already submitted")
     }
 
@@ -376,7 +376,7 @@ class ProjectServiceTest {
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { projectService.unsubmitProject(testProjectId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Project not found")
     }
 
@@ -394,7 +394,7 @@ class ProjectServiceTest {
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
 
         assertThatThrownBy { projectService.unsubmitProject(testProjectId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Must be a team member to unsubmit the project")
     }
 
@@ -404,7 +404,7 @@ class ProjectServiceTest {
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
 
         assertThatThrownBy { projectService.unsubmitProject(testProjectId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ValidationException::class.java)
             .hasMessage("Project is not submitted")
     }
 }

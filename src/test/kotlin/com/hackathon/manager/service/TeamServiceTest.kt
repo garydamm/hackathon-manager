@@ -7,7 +7,7 @@ import com.hackathon.manager.entity.Team
 import com.hackathon.manager.entity.TeamMember
 import com.hackathon.manager.entity.User
 import com.hackathon.manager.entity.enums.HackathonStatus
-import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.exception.*
 import com.hackathon.manager.repository.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -118,7 +118,7 @@ class TeamServiceTest {
         whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { teamService.getTeamById(testTeamId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Team not found")
     }
 
@@ -200,7 +200,7 @@ class TeamServiceTest {
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { teamService.createTeam(request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Hackathon not found")
     }
 
@@ -215,7 +215,7 @@ class TeamServiceTest {
         whenever(hackathonUserRepository.existsByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(false)
 
         assertThatThrownBy { teamService.createTeam(request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Must be registered for the hackathon to create a team")
     }
 
@@ -231,7 +231,7 @@ class TeamServiceTest {
         whenever(teamRepository.findByHackathonIdAndMemberUserId(testHackathonId, testUserId)).thenReturn(testTeam)
 
         assertThatThrownBy { teamService.createTeam(request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ConflictException::class.java)
             .hasMessage("Already a member of a team in this hackathon")
     }
 
@@ -248,7 +248,7 @@ class TeamServiceTest {
         whenever(teamRepository.existsByHackathonIdAndName(testHackathonId, "Existing Team")).thenReturn(true)
 
         assertThatThrownBy { teamService.createTeam(request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ConflictException::class.java)
             .hasMessage("Team name already exists in this hackathon")
     }
 
@@ -280,7 +280,7 @@ class TeamServiceTest {
         whenever(teamMemberRepository.findByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(null)
 
         assertThatThrownBy { teamService.updateTeam(testTeamId, request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Not a member of this team")
     }
 
@@ -298,7 +298,7 @@ class TeamServiceTest {
         whenever(teamMemberRepository.findByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(regularMember)
 
         assertThatThrownBy { teamService.updateTeam(testTeamId, request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Only team leader can update team")
     }
 
@@ -339,7 +339,7 @@ class TeamServiceTest {
         whenever(teamRepository.findByInviteCode("INVALID")).thenReturn(null)
 
         assertThatThrownBy { teamService.joinTeamByInviteCode("INVALID", testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Invalid invite code")
     }
 
@@ -357,7 +357,7 @@ class TeamServiceTest {
         whenever(teamRepository.findByInviteCode("CLOSED01")).thenReturn(closedTeam)
 
         assertThatThrownBy { teamService.joinTeamByInviteCode("CLOSED01", testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Team is not accepting new members")
     }
 
@@ -367,7 +367,7 @@ class TeamServiceTest {
         whenever(hackathonUserRepository.existsByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(false)
 
         assertThatThrownBy { teamService.joinTeamByInviteCode("ABC12345", testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Must be registered for the hackathon to join a team")
     }
 
@@ -378,7 +378,7 @@ class TeamServiceTest {
         whenever(teamRepository.findByHackathonIdAndMemberUserId(testHackathonId, testUserId)).thenReturn(testTeam)
 
         assertThatThrownBy { teamService.joinTeamByInviteCode("ABC12345", testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ConflictException::class.java)
             .hasMessage("Already a member of a team in this hackathon")
     }
 
@@ -392,7 +392,7 @@ class TeamServiceTest {
         whenever(teamMemberRepository.countByTeamId(testTeamId)).thenReturn(5)
 
         assertThatThrownBy { teamService.joinTeamByInviteCode("ABC12345", newUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ValidationException::class.java)
             .hasMessage("Team is full")
     }
 
@@ -445,7 +445,7 @@ class TeamServiceTest {
         whenever(teamMemberRepository.findByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(null)
 
         assertThatThrownBy { teamService.leaveTeam(testTeamId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Not a member of this team")
     }
 
@@ -475,7 +475,7 @@ class TeamServiceTest {
         whenever(teamMemberRepository.findByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(regularMember)
 
         assertThatThrownBy { teamService.regenerateInviteCode(testTeamId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(UnauthorizedException::class.java)
             .hasMessage("Only team leader can regenerate invite code")
     }
 }

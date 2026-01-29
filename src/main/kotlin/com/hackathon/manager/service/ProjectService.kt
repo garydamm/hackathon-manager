@@ -5,9 +5,8 @@ import com.hackathon.manager.dto.ProjectResponse
 import com.hackathon.manager.dto.UpdateProjectRequest
 import com.hackathon.manager.entity.Project
 import com.hackathon.manager.entity.enums.SubmissionStatus
-import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.exception.*
 import com.hackathon.manager.repository.*
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.OffsetDateTime
@@ -36,7 +35,7 @@ class ProjectService(
     @Transactional(readOnly = true)
     fun getProjectById(id: UUID): ProjectResponse {
         val project = projectRepository.findById(id)
-            .orElseThrow { ApiException("Project not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Project not found") }
         return ProjectResponse.fromEntity(project)
     }
 
@@ -49,14 +48,14 @@ class ProjectService(
     @Transactional
     fun createProject(request: CreateProjectRequest, userId: UUID): ProjectResponse {
         val team = teamRepository.findById(request.teamId)
-            .orElseThrow { ApiException("Team not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Team not found") }
 
         if (!teamMemberRepository.existsByTeamIdAndUserId(request.teamId, userId)) {
-            throw ApiException("Must be a team member to create a project", HttpStatus.FORBIDDEN)
+            throw UnauthorizedException("Must be a team member to create a project")
         }
 
         if (projectRepository.existsByTeamIdAndHackathonId(request.teamId, team.hackathon.id!!)) {
-            throw ApiException("Team already has a project for this hackathon", HttpStatus.CONFLICT)
+            throw ConflictException("Team already has a project for this hackathon")
         }
 
         val project = Project(
@@ -79,14 +78,14 @@ class ProjectService(
     @Transactional
     fun updateProject(id: UUID, request: UpdateProjectRequest, userId: UUID): ProjectResponse {
         val project = projectRepository.findById(id)
-            .orElseThrow { ApiException("Project not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Project not found") }
 
         if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
-            throw ApiException("Must be a team member to update the project", HttpStatus.FORBIDDEN)
+            throw UnauthorizedException("Must be a team member to update the project")
         }
 
         if (project.status == SubmissionStatus.submitted) {
-            throw ApiException("Cannot update a submitted project", HttpStatus.BAD_REQUEST)
+            throw ValidationException("Cannot update a submitted project")
         }
 
         request.name?.let { project.name = it }
@@ -106,14 +105,14 @@ class ProjectService(
     @Transactional
     fun submitProject(id: UUID, userId: UUID): ProjectResponse {
         val project = projectRepository.findById(id)
-            .orElseThrow { ApiException("Project not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Project not found") }
 
         if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
-            throw ApiException("Must be a team member to submit the project", HttpStatus.FORBIDDEN)
+            throw UnauthorizedException("Must be a team member to submit the project")
         }
 
         if (project.status == SubmissionStatus.submitted) {
-            throw ApiException("Project already submitted", HttpStatus.BAD_REQUEST)
+            throw ValidationException("Project already submitted")
         }
 
         project.status = SubmissionStatus.submitted
@@ -126,14 +125,14 @@ class ProjectService(
     @Transactional
     fun unsubmitProject(id: UUID, userId: UUID): ProjectResponse {
         val project = projectRepository.findById(id)
-            .orElseThrow { ApiException("Project not found", HttpStatus.NOT_FOUND) }
+            .orElseThrow { NotFoundException("Project not found") }
 
         if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
-            throw ApiException("Must be a team member to unsubmit the project", HttpStatus.FORBIDDEN)
+            throw UnauthorizedException("Must be a team member to unsubmit the project")
         }
 
         if (project.status != SubmissionStatus.submitted) {
-            throw ApiException("Project is not submitted", HttpStatus.BAD_REQUEST)
+            throw ValidationException("Project is not submitted")
         }
 
         project.status = SubmissionStatus.draft

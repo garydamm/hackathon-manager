@@ -35,6 +35,50 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(ex.status).body(response)
     }
 
+    @ExceptionHandler(NotFoundException::class)
+    fun handleNotFoundException(exception: NotFoundException): ResponseEntity<ErrorResponse> {
+        logger.warn("Not Found: ${exception.message}")
+        val response = ErrorResponse(
+            status = HttpStatus.NOT_FOUND.value(),
+            error = HttpStatus.NOT_FOUND.reasonPhrase,
+            message = exception.message
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response)
+    }
+
+    @ExceptionHandler(UnauthorizedException::class)
+    fun handleUnauthorizedException(exception: UnauthorizedException): ResponseEntity<ErrorResponse> {
+        logger.warn("Unauthorized: ${exception.message}")
+        val response = ErrorResponse(
+            status = HttpStatus.FORBIDDEN.value(),
+            error = HttpStatus.FORBIDDEN.reasonPhrase,
+            message = exception.message
+        )
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response)
+    }
+
+    @ExceptionHandler(ValidationException::class)
+    fun handleValidationException(exception: ValidationException): ResponseEntity<ErrorResponse> {
+        logger.warn("Validation Error: ${exception.message}")
+        val response = ErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = exception.message
+        )
+        return ResponseEntity.badRequest().body(response)
+    }
+
+    @ExceptionHandler(ConflictException::class)
+    fun handleConflictException(exception: ConflictException): ResponseEntity<ErrorResponse> {
+        logger.warn("Conflict: ${exception.message}")
+        val response = ErrorResponse(
+            status = HttpStatus.CONFLICT.value(),
+            error = HttpStatus.CONFLICT.reasonPhrase,
+            message = exception.message
+        )
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response)
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         val errors = ex.bindingResult.allErrors.associate { error ->

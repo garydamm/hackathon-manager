@@ -7,7 +7,7 @@ import com.hackathon.manager.entity.HackathonUser
 import com.hackathon.manager.entity.User
 import com.hackathon.manager.entity.enums.HackathonStatus
 import com.hackathon.manager.entity.enums.UserRole
-import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.exception.*
 import com.hackathon.manager.repository.HackathonRepository
 import com.hackathon.manager.repository.HackathonUserRepository
 import com.hackathon.manager.repository.TeamMemberRepository
@@ -128,7 +128,7 @@ class HackathonServiceTest {
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { hackathonService.getHackathonById(testHackathonId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Hackathon not found")
     }
 
@@ -148,7 +148,7 @@ class HackathonServiceTest {
         whenever(hackathonRepository.findBySlug("non-existent")).thenReturn(null)
 
         assertThatThrownBy { hackathonService.getHackathonBySlug("non-existent") }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Hackathon not found")
     }
 
@@ -202,7 +202,7 @@ class HackathonServiceTest {
         whenever(hackathonRepository.existsBySlug("existing-slug")).thenReturn(true)
 
         assertThatThrownBy { hackathonService.createHackathon(request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ConflictException::class.java)
             .hasMessage("Slug already exists")
     }
 
@@ -219,7 +219,7 @@ class HackathonServiceTest {
         whenever(userRepository.findById(testUserId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { hackathonService.createHackathon(request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("User not found")
     }
 
@@ -248,7 +248,7 @@ class HackathonServiceTest {
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { hackathonService.updateHackathon(testHackathonId, request) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(NotFoundException::class.java)
             .hasMessage("Hackathon not found")
     }
 
@@ -283,7 +283,7 @@ class HackathonServiceTest {
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
 
         assertThatThrownBy { hackathonService.registerForHackathon(testHackathonId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ValidationException::class.java)
             .hasMessage("Registration is not open")
     }
 
@@ -300,7 +300,7 @@ class HackathonServiceTest {
         whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(existingParticipant)
 
         assertThatThrownBy { hackathonService.registerForHackathon(testHackathonId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ConflictException::class.java)
             .hasMessage("Already registered for this hackathon")
     }
 
@@ -355,7 +355,7 @@ class HackathonServiceTest {
             .thenReturn(listOf(existingParticipant))
 
         assertThatThrownBy { hackathonService.registerForHackathon(testHackathonId, testUserId) }
-            .isInstanceOf(ApiException::class.java)
+            .isInstanceOf(ValidationException::class.java)
             .hasMessage("Hackathon is full")
     }
 
