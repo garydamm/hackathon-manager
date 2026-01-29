@@ -29,7 +29,7 @@ import java.time.OffsetDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
-class JudgingServiceTest {
+class LeaderboardServiceTest {
 
     @Mock
     lateinit var judgingCriteriaRepository: JudgingCriteriaRepository
@@ -50,7 +50,7 @@ class JudgingServiceTest {
     lateinit var scoreRepository: ScoreRepository
 
     @InjectMocks
-    lateinit var judgingService: JudgingService
+    lateinit var leaderboardService: LeaderboardService
 
     private lateinit var testUser: User
     private lateinit var testJudgeUser: User
@@ -130,8 +130,6 @@ class JudgingServiceTest {
         )
     }
 
-    // Leaderboard tests
-
     @Test
     fun `getLeaderboard should return ranked projects for organizer`() {
         val testCriteria2 = JudgingCriteria(
@@ -169,7 +167,7 @@ class JudgingServiceTest {
         whenever(scoreRepository.findByJudgeAssignmentId(testAssignmentId))
             .thenReturn(listOf(score1, score2))
 
-        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+        val result = leaderboardService.getLeaderboard(testHackathonId, testUserId)
 
         assertThat(result).hasSize(1)
         assertThat(result[0].rank).isEqualTo(1)
@@ -221,7 +219,7 @@ class JudgingServiceTest {
         whenever(scoreRepository.findByJudgeAssignmentId(testAssignmentId))
             .thenReturn(listOf(score1, score2))
 
-        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+        val result = leaderboardService.getLeaderboard(testHackathonId, testUserId)
 
         assertThat(result).hasSize(1)
         // (10*1 + 5*2) / (1+2) = 20/3 ≈ 6.67
@@ -249,7 +247,7 @@ class JudgingServiceTest {
         whenever(judgeAssignmentRepository.findByProjectId(testProjectId))
             .thenReturn(emptyList())
 
-        val result = judgingService.getLeaderboard(testHackathonId, testJudgeUserId)
+        val result = leaderboardService.getLeaderboard(testHackathonId, testJudgeUserId)
 
         assertThat(result).hasSize(1)
     }
@@ -259,7 +257,7 @@ class JudgingServiceTest {
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
         whenever(hackathonService.isUserOrganizer(testHackathonId, testJudgeUserId)).thenReturn(false)
 
-        assertThatThrownBy { judgingService.getLeaderboard(testHackathonId, testJudgeUserId) }
+        assertThatThrownBy { leaderboardService.getLeaderboard(testHackathonId, testJudgeUserId) }
             .isInstanceOf(ApiException::class.java)
             .hasMessage("Results are only available after the hackathon is completed")
     }
@@ -268,7 +266,7 @@ class JudgingServiceTest {
     fun `getLeaderboard should throw not found when hackathon does not exist`() {
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
 
-        assertThatThrownBy { judgingService.getLeaderboard(testHackathonId, testUserId) }
+        assertThatThrownBy { leaderboardService.getLeaderboard(testHackathonId, testUserId) }
             .isInstanceOf(ApiException::class.java)
             .hasMessage("Hackathon not found")
     }
@@ -280,7 +278,7 @@ class JudgingServiceTest {
         whenever(judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(testHackathonId))
             .thenReturn(emptyList())
 
-        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+        val result = leaderboardService.getLeaderboard(testHackathonId, testUserId)
 
         assertThat(result).isEmpty()
     }
@@ -294,7 +292,7 @@ class JudgingServiceTest {
         whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
             .thenReturn(emptyList())
 
-        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+        val result = leaderboardService.getLeaderboard(testHackathonId, testUserId)
 
         assertThat(result).isEmpty()
     }
@@ -352,7 +350,7 @@ class JudgingServiceTest {
         whenever(scoreRepository.findByJudgeAssignmentId(testAssignment2.id!!))
             .thenReturn(listOf(score2))
 
-        val result = judgingService.getLeaderboard(testHackathonId, testUserId)
+        val result = leaderboardService.getLeaderboard(testHackathonId, testUserId)
 
         assertThat(result).hasSize(2)
         // Project 2 should be ranked first with higher score

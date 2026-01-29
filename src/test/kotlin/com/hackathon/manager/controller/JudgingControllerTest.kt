@@ -8,7 +8,7 @@ import com.hackathon.manager.security.JwtTokenProvider
 import com.hackathon.manager.security.UserPrincipal
 import com.hackathon.manager.service.JudgeManagementService
 import com.hackathon.manager.service.JudgingCriteriaService
-import com.hackathon.manager.service.JudgingService
+import com.hackathon.manager.service.LeaderboardService
 import com.hackathon.manager.service.ScoringService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -43,9 +43,6 @@ class JudgingControllerTest {
     lateinit var objectMapper: ObjectMapper
 
     @MockBean
-    lateinit var judgingService: JudgingService
-
-    @MockBean
     lateinit var judgingCriteriaService: JudgingCriteriaService
 
     @MockBean
@@ -53,6 +50,9 @@ class JudgingControllerTest {
 
     @MockBean
     lateinit var scoringService: ScoringService
+
+    @MockBean
+    lateinit var leaderboardService: LeaderboardService
 
     @MockBean
     lateinit var jwtTokenProvider: JwtTokenProvider
@@ -436,7 +436,7 @@ class JudgingControllerTest {
             createLeaderboardEntryResponse(rank = 2, projectId = UUID.randomUUID())
         )
 
-        whenever(judgingService.getLeaderboard(testHackathonId, testUserId))
+        whenever(leaderboardService.getLeaderboard(testHackathonId, testUserId))
             .thenReturn(leaderboard)
 
         mockMvc.perform(

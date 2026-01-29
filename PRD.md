@@ -329,16 +329,16 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want leaderboard calculation extracted to a focused service so that ranking logic is isolated.
 
 **Acceptance Criteria:**
-- [ ] Create `LeaderboardService.kt` with leaderboard calculation
-- [ ] Move `getLeaderboard()` from JudgingService
-- [ ] Extract complex calculation logic (lines 371-408) into private helper methods
-- [ ] Update JudgingController to inject LeaderboardService
-- [ ] Create `LeaderboardServiceTest.kt` by extracting relevant tests
-- [ ] All existing tests still pass
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage maintained at >80%
-- [ ] JudgingService.kt now <150 lines (reduced from 431)
+- [x] Create `LeaderboardService.kt` with leaderboard calculation
+- [x] Move `getLeaderboard()` from JudgingService
+- [x] Extract complex calculation logic (lines 371-408) into private helper methods
+- [x] Update JudgingController to inject LeaderboardService
+- [x] Create `LeaderboardServiceTest.kt` by extracting relevant tests
+- [x] All existing tests still pass
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage maintained at >80%
+- [x] JudgingService.kt now <150 lines (reduced from 431)
 
 #### US-021: Extract domain exceptions from ApiException
 **Description:** As a developer, I want domain exceptions decoupled from HTTP layer so that business logic doesn't depend on web concerns.

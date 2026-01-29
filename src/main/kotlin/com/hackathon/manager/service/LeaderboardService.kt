@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-class JudgingService(
+class LeaderboardService(
     private val judgingCriteriaRepository: JudgingCriteriaRepository,
     private val hackathonRepository: HackathonRepository,
     private val hackathonService: HackathonService,
@@ -25,21 +25,13 @@ class JudgingService(
     private val scoreRepository: ScoreRepository
 ) {
 
-    // Leaderboard methods
-
     @Transactional(readOnly = true)
     fun getLeaderboard(hackathonId: UUID, userId: UUID): List<LeaderboardEntryResponse> {
         val hackathon = hackathonRepository.findById(hackathonId)
             .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
 
         // Check authorization: organizers can view anytime, participants only when completed
-        val isOrganizer = hackathonService.isUserOrganizer(hackathonId, userId)
-
-        if (!isOrganizer) {
-            if (hackathon.status != HackathonStatus.completed) {
-                throw ApiException("Results are only available after the hackathon is completed", HttpStatus.FORBIDDEN)
-            }
-        }
+        validateLeaderboardAccess(hackathonId, userId, hackathon.status)
 
         // Get all criteria for this hackathon
         val criteria = judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(hackathonId)
@@ -54,37 +46,28 @@ class JudgingService(
         }
 
         // Calculate scores for each project
-        val projectScores = submittedProjects.map { project ->
-            // Get all scores for this project across all judge assignments
+        val projectScores = calculateProjectScores(submittedProjects, criteria)
+
+        // Sort by total score descending and assign ranks
+        return buildLeaderboardEntries(projectScores)
+    }
+
+    private fun validateLeaderboardAccess(hackathonId: UUID, userId: UUID, status: HackathonStatus) {
+        val isOrganizer = hackathonService.isUserOrganizer(hackathonId, userId)
+
+        if (!isOrganizer && status != HackathonStatus.completed) {
+            throw ApiException("Results are only available after the hackathon is completed", HttpStatus.FORBIDDEN)
+        }
+    }
+
+    private fun calculateProjectScores(
+        projects: List<com.hackathon.manager.entity.Project>,
+        criteria: List<com.hackathon.manager.entity.JudgingCriteria>
+    ): List<ProjectScoreData> {
+        return projects.map { project ->
             val projectAssignments = judgeAssignmentRepository.findByProjectId(project.id!!)
-
-            // Calculate weighted average per criteria
-            val criteriaAverages = criteria.map { criterion ->
-                val scoresForCriteria = projectAssignments.flatMap { assignment ->
-                    scoreRepository.findByJudgeAssignmentId(assignment.id!!)
-                        .filter { it.criteria.id == criterion.id }
-                }
-
-                val averageScore = if (scoresForCriteria.isNotEmpty()) {
-                    scoresForCriteria.map { it.score }.average()
-                } else {
-                    0.0
-                }
-
-                CriteriaAverageResponse(
-                    criteriaId = criterion.id!!,
-                    criteriaName = criterion.name,
-                    averageScore = averageScore,
-                    maxScore = criterion.maxScore
-                ) to criterion.weight.toDouble()
-            }
-
-            // Calculate total weighted score: sum(score * weight) / sum(weight)
-            val totalWeightedScore = criteriaAverages.sumOf { (avg, weight) ->
-                avg.averageScore * weight
-            }
-            val totalWeight = criteriaAverages.sumOf { (_, weight) -> weight }
-            val totalScore = if (totalWeight > 0) totalWeightedScore / totalWeight else 0.0
+            val criteriaAverages = calculateCriteriaAverages(projectAssignments, criteria)
+            val totalScore = calculateTotalWeightedScore(criteriaAverages)
 
             ProjectScoreData(
                 project = project,
@@ -92,8 +75,46 @@ class JudgingService(
                 criteriaAverages = criteriaAverages.map { it.first }
             )
         }
+    }
 
-        // Sort by total score descending and assign ranks
+    private fun calculateCriteriaAverages(
+        projectAssignments: List<com.hackathon.manager.entity.JudgeAssignment>,
+        criteria: List<com.hackathon.manager.entity.JudgingCriteria>
+    ): List<Pair<CriteriaAverageResponse, Double>> {
+        return criteria.map { criterion ->
+            val scoresForCriteria = projectAssignments.flatMap { assignment ->
+                scoreRepository.findByJudgeAssignmentId(assignment.id!!)
+                    .filter { it.criteria.id == criterion.id }
+            }
+
+            val averageScore = if (scoresForCriteria.isNotEmpty()) {
+                scoresForCriteria.map { it.score }.average()
+            } else {
+                0.0
+            }
+
+            val criteriaAverage = CriteriaAverageResponse(
+                criteriaId = criterion.id!!,
+                criteriaName = criterion.name,
+                averageScore = averageScore,
+                maxScore = criterion.maxScore
+            )
+
+            criteriaAverage to criterion.weight.toDouble()
+        }
+    }
+
+    private fun calculateTotalWeightedScore(
+        criteriaAverages: List<Pair<CriteriaAverageResponse, Double>>
+    ): Double {
+        val totalWeightedScore = criteriaAverages.sumOf { (avg, weight) ->
+            avg.averageScore * weight
+        }
+        val totalWeight = criteriaAverages.sumOf { (_, weight) -> weight }
+        return if (totalWeight > 0) totalWeightedScore / totalWeight else 0.0
+    }
+
+    private fun buildLeaderboardEntries(projectScores: List<ProjectScoreData>): List<LeaderboardEntryResponse> {
         val sortedProjects = projectScores.sortedByDescending { it.totalScore }
 
         return sortedProjects.mapIndexed { index, data ->

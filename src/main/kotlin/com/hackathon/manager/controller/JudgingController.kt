@@ -11,7 +11,7 @@ import com.hackathon.manager.dto.UpdateJudgingCriteriaRequest
 import com.hackathon.manager.security.UserPrincipal
 import com.hackathon.manager.service.JudgeManagementService
 import com.hackathon.manager.service.JudgingCriteriaService
-import com.hackathon.manager.service.JudgingService
+import com.hackathon.manager.service.LeaderboardService
 import com.hackathon.manager.service.ScoringService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -23,10 +23,10 @@ import java.util.*
 @RestController
 @RequestMapping("/api/judging")
 class JudgingController(
-    private val judgingService: JudgingService,
     private val judgingCriteriaService: JudgingCriteriaService,
     private val judgeManagementService: JudgeManagementService,
-    private val scoringService: ScoringService
+    private val scoringService: ScoringService,
+    private val leaderboardService: LeaderboardService
 ) {
 
     @GetMapping("/hackathons/{hackathonId}/criteria")
@@ -134,7 +134,7 @@ class JudgingController(
         @PathVariable hackathonId: UUID,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<List<LeaderboardEntryResponse>> {
-        val leaderboard = judgingService.getLeaderboard(hackathonId, principal.id)
+        val leaderboard = leaderboardService.getLeaderboard(hackathonId, principal.id)
         return ResponseEntity.ok(leaderboard)
     }
 }
