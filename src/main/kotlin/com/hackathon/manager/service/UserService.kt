@@ -1,5 +1,6 @@
 package com.hackathon.manager.service
 
+import com.hackathon.manager.config.AppConstants.SecurityConstants
 import com.hackathon.manager.dto.auth.UpdateUserRequest
 import com.hackathon.manager.dto.auth.UserResponse
 import com.hackathon.manager.entity.PasswordResetToken
@@ -70,7 +71,7 @@ class UserService(
 
         // Generate new token with 15-minute expiry
         val token = UUID.randomUUID().toString()
-        val expiresAt = OffsetDateTime.now().plusMinutes(15)
+        val expiresAt = OffsetDateTime.now().plusMinutes(SecurityConstants.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES)
 
         val resetToken = PasswordResetToken(
             id = UUID.randomUUID(),
@@ -123,8 +124,8 @@ class UserService(
     }
 
     private fun validatePassword(password: String) {
-        if (password.length < 8) {
-            throw ApiException("Password must be at least 8 characters long", HttpStatus.BAD_REQUEST)
+        if (password.length < SecurityConstants.MIN_PASSWORD_LENGTH) {
+            throw ApiException("Password must be at least ${SecurityConstants.MIN_PASSWORD_LENGTH} characters long", HttpStatus.BAD_REQUEST)
         }
 
         if (!password.contains(Regex("[A-Z]"))) {

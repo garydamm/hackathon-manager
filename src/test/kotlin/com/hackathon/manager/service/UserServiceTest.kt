@@ -1,5 +1,6 @@
 package com.hackathon.manager.service
 
+import com.hackathon.manager.config.AppConstants.SecurityConstants
 import com.hackathon.manager.dto.auth.UpdateUserRequest
 import com.hackathon.manager.entity.PasswordResetToken
 import com.hackathon.manager.entity.User
@@ -218,8 +219,8 @@ class UserServiceTest {
         verify(passwordResetTokenRepository).save(argThat { token ->
             token.user == testUser &&
             token.token.isNotEmpty() &&
-            token.expiresAt.isAfter(OffsetDateTime.now().plusMinutes(14)) &&
-            token.expiresAt.isBefore(OffsetDateTime.now().plusMinutes(16)) &&
+            token.expiresAt.isAfter(OffsetDateTime.now().plusMinutes(SecurityConstants.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES - 1)) &&
+            token.expiresAt.isBefore(OffsetDateTime.now().plusMinutes(SecurityConstants.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES + 1)) &&
             token.usedAt == null
         })
         verify(emailService).sendPasswordResetEmail(eq(email), any(), eq("Test"))
@@ -372,7 +373,7 @@ class UserServiceTest {
 
         assertThatThrownBy { userService.resetPassword(tokenString, shortPassword) }
             .isInstanceOf(ApiException::class.java)
-            .hasMessage("Password must be at least 8 characters long")
+            .hasMessage("Password must be at least ${SecurityConstants.MIN_PASSWORD_LENGTH} characters long")
 
         verify(userRepository, never()).save(any())
         verify(emailService, never()).sendPasswordChangeConfirmation(any(), any())

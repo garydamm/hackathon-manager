@@ -1,5 +1,6 @@
 package com.hackathon.manager.security
 
+import com.hackathon.manager.config.AppConstants.SecurityConstants
 import com.hackathon.manager.config.JwtConfig
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
@@ -21,7 +22,7 @@ class JwtTokenProvider(private val jwtConfig: JwtConfig) {
     private val key: SecretKey by lazy {
         val secretBytes = jwtConfig.secret.toByteArray()
         // Use first 32 bytes for HS256 (256 bits minimum)
-        val keyBytes = if (secretBytes.size > 32) secretBytes.copyOf(32) else secretBytes
+        val keyBytes = if (secretBytes.size > SecurityConstants.JWT_KEY_SIZE) secretBytes.copyOf(SecurityConstants.JWT_KEY_SIZE) else secretBytes
         Keys.hmacShaKeyFor(keyBytes)
     }
 

@@ -78,17 +78,17 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want all magic numbers in constants so that security and configuration values are centralized and maintainable.
 
 **Acceptance Criteria:**
-- [ ] Create `src/main/kotlin/com/hackathon/manager/config/AppConstants.kt`
-- [ ] Define `SecurityConstants.MIN_PASSWORD_LENGTH = 8`
-- [ ] Define `SecurityConstants.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES = 15L`
-- [ ] Define `SecurityConstants.JWT_KEY_SIZE = 32`
-- [ ] Replace hardcoded `8` in UserService.kt:126 with constant
-- [ ] Replace hardcoded `15` in UserService.kt:73 with constant
-- [ ] Replace hardcoded `32` in JwtTokenProvider.kt:24 with constant
-- [ ] Update UserServiceTest to reference new constants
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Verify application starts successfully
+- [x] Create `src/main/kotlin/com/hackathon/manager/config/AppConstants.kt`
+- [x] Define `SecurityConstants.MIN_PASSWORD_LENGTH = 8`
+- [x] Define `SecurityConstants.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES = 15L`
+- [x] Define `SecurityConstants.JWT_KEY_SIZE = 32`
+- [x] Replace hardcoded `8` in UserService.kt:126 with constant
+- [x] Replace hardcoded `15` in UserService.kt:73 with constant
+- [x] Replace hardcoded `32` in JwtTokenProvider.kt:24 with constant
+- [x] Update UserServiceTest to reference new constants
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Verify application starts successfully
 
 ### Phase 2: Controller Test Coverage
 
