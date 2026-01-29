@@ -269,3 +269,22 @@
   - All repository tests (60 tests across 8 test classes) pass together
   - Typecheck passed successfully
 ---
+## Iteration 67 - Add JudgeAssignmentRepository tests
+- Created comprehensive JudgeAssignmentRepositoryTest.kt with 13 test cases covering all repository methods
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/repository/JudgeAssignmentRepositoryTest.kt
+  - Updated: PRD.md (marked US-016 as complete)
+- Learnings for future iterations:
+  - JudgeAssignment entity has ManyToOne relationships with Hackathon, User (judge), and Project
+  - JudgeAssignment has a unique constraint on (judge_id, project_id) preventing duplicate assignments
+  - The entity tracks two timestamps: assignedAt (OffsetDateTime, auto-set) and completedAt (OffsetDateTime?, nullable)
+  - The completedAt field is used to track when a judge finishes scoring a project (not an isCompleted boolean flag)
+  - Repository methods cover multiple access patterns: by hackathon, by judge, by project, and combinations
+  - findByJudgeIdAndHackathonId returns all projects assigned to a specific judge within a hackathon
+  - findByProjectId returns all judges assigned to evaluate a specific project (useful for multi-judge scoring)
+  - Test both findByJudgeIdAndProjectId (returns entity or null) and existsByJudgeIdAndProjectId (boolean check)
+  - Use OffsetDateTime assertions with time buffers (isAfterOrEqualTo/isBeforeOrEqualTo) when testing completedAt updates
+  - All 13 tests passed successfully on first run
+  - All repository tests (73 tests across 9 test classes) pass together
+  - Typecheck passed successfully
+---
