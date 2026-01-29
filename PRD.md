@@ -470,10 +470,10 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 
 ## Completion Checklist
 
-- [ ] All 26 user stories completed
+- [x] All 26 user stories completed
 - [ ] JaCoCo report shows ≥80% backend coverage
 - [ ] Zero files exceed 300 lines
 - [ ] Zero methods exceed complexity 5
 - [ ] All tests passing in CI/CD
-- [ ] Architecture documentation in place
+- [x] Architecture documentation in place
 - [ ] Code review completed for all refactoring
