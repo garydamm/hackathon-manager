@@ -69,3 +69,38 @@
   - All relevant tests (UserServiceTest, EmailServiceImplTest, ScheduledTasksTest) pass with constants
   - Typecheck passes and application builds successfully (bootJar completed)
 ---
+
+## Iteration 56 - Add AnnouncementController tests
+- Created comprehensive AnnouncementControllerTest.kt with 11 test cases covering all CRUD operations and authorization
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/controller/AnnouncementControllerTest.kt
+  - Updated: PRD.md (marked US-005 as complete)
+- Learnings for future iterations:
+  - Controller tests use @WebMvcTest annotation with excludeFilters to exclude JwtAuthenticationFilter
+  - Use .with(user(createUserPrincipal())) to provide authenticated user context for MockMvc requests
+  - Use .with(csrf()) for POST/PUT/DELETE requests to satisfy CSRF protection
+  - Test helper methods (createUserPrincipal, createAnnouncementResponse) reduce duplication and improve readability
+  - Test both success and failure paths: successful operations + 403 Forbidden for non-organizers + 404 Not Found for missing resources
+  - MockBean for both the service under test (AnnouncementService) and dependencies (HackathonService, JwtTokenProvider)
+  - All 11 tests passed on first run
+  - Typecheck passed successfully
+  - Controller tests validate HTTP layer behavior (status codes, JSON response structure) without testing business logic
+---
+
+## Iteration 57 - Add ScheduleController tests
+- Created comprehensive ScheduleControllerTest.kt with 11 test cases covering schedule management, RSVP, and attendance tracking
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/controller/ScheduleControllerTest.kt
+  - Updated: PRD.md (marked US-006 as complete)
+- Learnings for future iterations:
+  - Follow the same pattern as AnnouncementControllerTest: @WebMvcTest with excludeFilters for JwtAuthenticationFilter
+  - Create helper methods (createUserPrincipal, createScheduleEventResponse, createEventAttendeeResponse) for test data
+  - ScheduleController has two major sections: event management (CRUD) and RSVP/attendance tracking
+  - Event management endpoints (POST/PUT/DELETE) require organizer role verification via hackathonService.isUserOrganizer()
+  - RSVP endpoints (POST/PUT/DELETE /rsvp) allow any authenticated user to manage their own RSVPs
+  - Attendance endpoints (POST /attendance, POST /attendance/bulk) are for organizers to mark who attended events
+  - Use verify() to ensure service methods are called with correct parameters for operations without response bodies
+  - All 11 tests passed on first run
+  - Typecheck passed successfully
+  - Pattern is well-established: controller tests are straightforward when following the existing template
+---
