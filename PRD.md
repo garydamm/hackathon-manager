@@ -96,20 +96,20 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for announcement endpoints so that CRUD operations and authorization are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `AnnouncementControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
-- [ ] Test `GET /api/announcements/hackathon/{id}` returns announcements
-- [ ] Test `GET /api/announcements/{id}` returns single announcement
-- [ ] Test `POST /api/announcements` creates announcement (organizer only)
-- [ ] Test `POST` returns 403 when non-organizer attempts creation
-- [ ] Test `PUT /api/announcements/{id}` updates announcement (organizer only)
-- [ ] Test `PUT` returns 403 when non-organizer attempts update
-- [ ] Test `DELETE /api/announcements/{id}` deletes announcement (organizer only)
-- [ ] Test `DELETE` returns 403 when non-organizer attempts deletion
-- [ ] Test 404 responses for non-existent announcements
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage for AnnouncementController >80%
+- [x] Create `AnnouncementControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
+- [x] Test `GET /api/announcements/hackathon/{id}` returns announcements
+- [x] Test `GET /api/announcements/{id}` returns single announcement
+- [x] Test `POST /api/announcements` creates announcement (organizer only)
+- [x] Test `POST` returns 403 when non-organizer attempts creation
+- [x] Test `PUT /api/announcements/{id}` updates announcement (organizer only)
+- [x] Test `PUT` returns 403 when non-organizer attempts update
+- [x] Test `DELETE /api/announcements/{id}` deletes announcement (organizer only)
+- [x] Test `DELETE` returns 403 when non-organizer attempts deletion
+- [x] Test 404 responses for non-existent announcements
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage for AnnouncementController >80%
 
 #### US-006: Add ScheduleController tests
 **Description:** As a developer, I need tests for schedule endpoints so that RSVP and attendance tracking are validated.
