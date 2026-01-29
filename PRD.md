@@ -403,14 +403,14 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want robust error handling in email service so that failures are logged and don't crash the system.
 
 **Acceptance Criteria:**
-- [ ] Wrap Resend API calls in try-catch blocks
-- [ ] Log email sending failures with error details
-- [ ] Return success/failure status from `sendEmail()` method
-- [ ] Update callers to check email send status
-- [ ] Test error handling in EmailServiceImplTest with API failures
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Verify error handling works in browser during password reset
+- [x] Wrap Resend API calls in try-catch blocks
+- [x] Log email sending failures with error details
+- [x] Return success/failure status from `sendEmail()` method
+- [x] Update callers to check email send status
+- [x] Test error handling in EmailServiceImplTest with API failures
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Verify error handling works in browser during password reset
 
 #### US-026: Document architectural decisions and patterns
 **Description:** As a developer, I want cleanup decisions documented so that future developers understand the architecture.

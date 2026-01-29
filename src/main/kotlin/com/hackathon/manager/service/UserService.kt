@@ -8,6 +8,7 @@ import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.repository.PasswordResetTokenRepository
 import com.hackathon.manager.repository.UserRepository
 import com.hackathon.manager.util.applyIfNotNull
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -22,6 +23,7 @@ class UserService(
     private val emailService: EmailService,
     private val passwordEncoder: PasswordEncoder
 ) {
+    private val logger = LoggerFactory.getLogger(UserService::class.java)
 
     @Transactional(readOnly = true)
     fun getUserById(id: UUID): UserResponse {
@@ -85,7 +87,10 @@ class UserService(
         passwordResetTokenRepository.save(resetToken)
 
         // Send password reset email
-        emailService.sendPasswordResetEmail(user.email, token, user.firstName)
+        val emailSent = emailService.sendPasswordResetEmail(user.email, token, user.firstName)
+        if (!emailSent) {
+            logger.warn("Failed to send password reset email to ${user.email}")
+        }
     }
 
     @Transactional(readOnly = true)
@@ -121,7 +126,10 @@ class UserService(
         passwordResetTokenRepository.save(resetToken)
 
         // Send password change confirmation email
-        emailService.sendPasswordChangeConfirmation(user.email, user.firstName)
+        val emailSent = emailService.sendPasswordChangeConfirmation(user.email, user.firstName)
+        if (!emailSent) {
+            logger.warn("Failed to send password change confirmation email to ${user.email}")
+        }
     }
 
     private fun validatePassword(password: String) {

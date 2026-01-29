@@ -33,13 +33,13 @@ class EmailServiceImpl(
         }
     }
 
-    override fun sendPasswordResetEmail(toEmail: String, resetToken: String, userFirstName: String) {
+    override fun sendPasswordResetEmail(toEmail: String, resetToken: String, userFirstName: String): Boolean {
         val resetUrl = "$frontendUrl/reset-password?token=$resetToken"
         val subject = "Password Reset Request"
         val htmlContent = buildPasswordResetEmailHtml(userFirstName, resetUrl)
         val textContent = buildPasswordResetEmailText(userFirstName, resetUrl)
 
-        sendEmail(
+        return sendEmail(
             to = toEmail,
             subject = subject,
             htmlContent = htmlContent,
@@ -47,12 +47,12 @@ class EmailServiceImpl(
         )
     }
 
-    override fun sendPasswordChangeConfirmation(toEmail: String, userFirstName: String) {
+    override fun sendPasswordChangeConfirmation(toEmail: String, userFirstName: String): Boolean {
         val subject = "Your Password Has Been Changed"
         val htmlContent = buildPasswordChangeEmailHtml(userFirstName)
         val textContent = buildPasswordChangeEmailText(userFirstName)
 
-        sendEmail(
+        return sendEmail(
             to = toEmail,
             subject = subject,
             htmlContent = htmlContent,
@@ -60,7 +60,7 @@ class EmailServiceImpl(
         )
     }
 
-    private fun sendEmail(to: String, subject: String, htmlContent: String, textContent: String) {
+    private fun sendEmail(to: String, subject: String, htmlContent: String, textContent: String): Boolean {
         if (emailEnabled && resend != null) {
             try {
                 val email = CreateEmailOptions.builder()
@@ -73,14 +73,17 @@ class EmailServiceImpl(
 
                 val response = resend.emails().send(email)
                 logger.info("Email sent successfully to $to (ID: ${response.id})")
+                return true
             } catch (e: Exception) {
                 logger.error("Failed to send email to $to: ${e.message}", e)
                 // Fallback to console logging
                 logEmailToConsole(to, subject, textContent)
+                return false
             }
         } else {
             // Log to console when email is disabled
             logEmailToConsole(to, subject, textContent)
+            return true // Console logging is considered successful
         }
     }
 

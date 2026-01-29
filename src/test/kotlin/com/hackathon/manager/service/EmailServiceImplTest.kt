@@ -65,9 +65,10 @@ class EmailServiceImplTest {
         whenever(mockEmailsService.send(any())).thenReturn(mockResponse)
 
         // When
-        emailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
+        val result = emailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
 
         // Then
+        assertThat(result).isTrue()
         verify(mockEmailsService).send(emailOptionsCaptor.capture())
         val capturedEmail = emailOptionsCaptor.value
 
@@ -99,9 +100,10 @@ class EmailServiceImplTest {
         whenever(mockEmailsService.send(any())).thenReturn(mockResponse)
 
         // When
-        emailService.sendPasswordChangeConfirmation(testEmail, testFirstName)
+        val result = emailService.sendPasswordChangeConfirmation(testEmail, testFirstName)
 
         // Then
+        assertThat(result).isTrue()
         verify(mockEmailsService).send(emailOptionsCaptor.capture())
         val capturedEmail = emailOptionsCaptor.value
 
@@ -123,27 +125,29 @@ class EmailServiceImplTest {
     }
 
     @Test
-    fun `sendPasswordResetEmail should fallback to console when Resend API fails`() {
+    fun `sendPasswordResetEmail should return false and fallback to console when Resend API fails`() {
         // Given
         whenever(mockEmailsService.send(any())).thenThrow(ResendException("API error"))
 
         // When - should not throw exception
-        emailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
+        val result = emailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
 
-        // Then - verify email was attempted
+        // Then - verify email was attempted and returned false
+        assertThat(result).isFalse()
         verify(mockEmailsService).send(any())
         // Email should fall back to console logging (no exception thrown)
     }
 
     @Test
-    fun `sendPasswordChangeConfirmation should fallback to console when Resend API fails`() {
+    fun `sendPasswordChangeConfirmation should return false and fallback to console when Resend API fails`() {
         // Given
         whenever(mockEmailsService.send(any())).thenThrow(RuntimeException("Network error"))
 
         // When - should not throw exception
-        emailService.sendPasswordChangeConfirmation(testEmail, testFirstName)
+        val result = emailService.sendPasswordChangeConfirmation(testEmail, testFirstName)
 
-        // Then - verify email was attempted
+        // Then - verify email was attempted and returned false
+        assertThat(result).isFalse()
         verify(mockEmailsService).send(any())
         // Email should fall back to console logging (no exception thrown)
     }
@@ -160,9 +164,10 @@ class EmailServiceImplTest {
         )
 
         // When
-        consoleEmailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
+        val result = consoleEmailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
 
         // Then - no API calls should be made (console mode only)
+        assertThat(result).isTrue() // Console logging is considered successful
         verifyNoInteractions(mockResend)
     }
 
@@ -178,9 +183,10 @@ class EmailServiceImplTest {
         )
 
         // When
-        consoleEmailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
+        val result = consoleEmailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
 
         // Then - no API calls should be made (console mode only)
+        assertThat(result).isTrue() // Console logging is considered successful
         verifyNoInteractions(mockResend)
     }
 
@@ -196,10 +202,12 @@ class EmailServiceImplTest {
         )
 
         // When
-        consoleEmailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
-        consoleEmailService.sendPasswordChangeConfirmation(testEmail, testFirstName)
+        val result1 = consoleEmailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
+        val result2 = consoleEmailService.sendPasswordChangeConfirmation(testEmail, testFirstName)
 
         // Then - should complete without errors (console logging only)
+        assertThat(result1).isTrue() // Console logging is considered successful
+        assertThat(result2).isTrue() // Console logging is considered successful
         verifyNoInteractions(mockResend)
     }
 
@@ -212,9 +220,10 @@ class EmailServiceImplTest {
         whenever(mockEmailsService.send(any())).thenReturn(mockResponse)
 
         // When
-        emailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
+        val result = emailService.sendPasswordResetEmail(testEmail, testResetToken, testFirstName)
 
         // Then
+        assertThat(result).isTrue()
         verify(mockEmailsService).send(emailOptionsCaptor.capture())
         val capturedEmail = emailOptionsCaptor.value
 
@@ -233,9 +242,10 @@ class EmailServiceImplTest {
         whenever(mockEmailsService.send(any())).thenReturn(mockResponse)
 
         // When
-        emailService.sendPasswordChangeConfirmation(testEmail, testFirstName)
+        val result = emailService.sendPasswordChangeConfirmation(testEmail, testFirstName)
 
         // Then
+        assertThat(result).isTrue()
         verify(mockEmailsService).send(emailOptionsCaptor.capture())
         val capturedEmail = emailOptionsCaptor.value
 
