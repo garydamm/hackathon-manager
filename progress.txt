@@ -437,3 +437,25 @@
   - Pre-existing test failures (HackathonServiceTest with 6 UnnecessaryStubbingException, repository tests with Docker connection issues) are unrelated to this change
   - This utility makes entity update code more DRY and maintainable by centralizing the null-checking pattern
 ---
+
+## Iteration 75 - Improve naming conventions in service layer
+- Improved naming consistency across service layer for better code readability
+- Files changed:
+  - Modified: src/main/kotlin/com/hackathon/manager/exception/GlobalExceptionHandler.kt (renamed `ex` to `exception` in all handlers)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/HackathonService.kt (replaced ambiguous `it` with descriptive names)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/TeamService.kt (replaced ambiguous `it` with descriptive names)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/ProjectService.kt (replaced ambiguous `it` with descriptive names)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/JudgingCriteriaService.kt (renamed `criteria` to `judgingCriteria`)
+  - Updated: PRD.md (marked US-024 as complete)
+- Learnings for future iterations:
+  - Consistent naming conventions improve code readability without changing functionality
+  - When replacing `it` in lambdas, choose names that describe the domain entity: `hackathon`, `team`, `project`, `judgingCriteria`
+  - For nested lambdas or when `it` is ambiguous, use descriptive names like `uid` (user ID), `foundTeam`, `newName`, `newDescription`
+  - In filter operations, use domain-specific names like `teamMember` instead of `it`
+  - In exception handlers, `exception` is more descriptive than `ex` for parameter names
+  - Added missing import (AccessDeniedException) that was being used but not imported in GlobalExceptionHandler
+  - All tests for modified services pass: TeamServiceTest, ProjectServiceTest, JudgingCriteriaServiceTest (13 tests each)
+  - Pre-existing HackathonServiceTest failures (6 tests with UnnecessaryStubbingException) remain unchanged and are unrelated to naming improvements
+  - Typecheck passes successfully - all code compiles correctly
+  - Naming improvements make code more maintainable and easier to understand for future developers
+---
