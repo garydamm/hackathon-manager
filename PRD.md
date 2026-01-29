@@ -115,21 +115,21 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for schedule endpoints so that RSVP and attendance tracking are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `ScheduleControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
-- [ ] Test `GET /api/schedule/hackathons/{id}` returns events with RSVP counts
-- [ ] Test `POST /api/schedule/hackathons/{id}/events` creates event (organizer only)
-- [ ] Test `POST` returns 403 for non-organizer
-- [ ] Test `PUT /api/schedule/events/{id}` updates event (organizer only)
-- [ ] Test `DELETE /api/schedule/events/{id}` deletes event (organizer only)
-- [ ] Test `POST /api/schedule/events/{id}/rsvp` creates RSVP
-- [ ] Test `PUT /api/schedule/events/{id}/rsvp` updates RSVP status
-- [ ] Test `DELETE /api/schedule/events/{id}/rsvp` removes RSVP
-- [ ] Test `POST /api/schedule/events/{id}/attendance` marks attendance (organizer only)
-- [ ] Test bulk attendance marking endpoint
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage for ScheduleController >80%
+- [x] Create `ScheduleControllerTest.kt` in `src/test/kotlin/com/hackathon/manager/controller/`
+- [x] Test `GET /api/schedule/hackathons/{id}` returns events with RSVP counts
+- [x] Test `POST /api/schedule/hackathons/{id}/events` creates event (organizer only)
+- [x] Test `POST` returns 403 for non-organizer
+- [x] Test `PUT /api/schedule/events/{id}` updates event (organizer only)
+- [x] Test `DELETE /api/schedule/events/{id}` deletes event (organizer only)
+- [x] Test `POST /api/schedule/events/{id}/rsvp` creates RSVP
+- [x] Test `PUT /api/schedule/events/{id}/rsvp` updates RSVP status
+- [x] Test `DELETE /api/schedule/events/{id}/rsvp` removes RSVP
+- [x] Test `POST /api/schedule/events/{id}/attendance` marks attendance (organizer only)
+- [x] Test bulk attendance marking endpoint
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage for ScheduleController >80%
 
 #### US-007: Add JudgingController tests
 **Description:** As a developer, I need tests for judging endpoints so that scoring workflow and authorization are validated.
