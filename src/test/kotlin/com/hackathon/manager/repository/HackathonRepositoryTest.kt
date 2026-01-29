@@ -7,7 +7,6 @@ import com.hackathon.manager.entity.enums.HackathonStatus
 import com.hackathon.manager.entity.enums.UserRole
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -17,7 +16,6 @@ import java.time.OffsetDateTime
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Disabled("Requires Docker/TestContainers - enable when Docker is available")
 class HackathonRepositoryTest : AbstractRepositoryTest() {
 
     @Autowired

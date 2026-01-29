@@ -170,15 +170,15 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need TestContainers configuration enabled so that repository integration tests can run.
 
 **Acceptance Criteria:**
-- [ ] Remove `@Disabled` annotations from HackathonRepositoryTest.kt
-- [ ] Remove `@Disabled` annotations from TeamRepositoryTest.kt
-- [ ] Remove `@Disabled` annotations from UserRepositoryTest.kt
-- [ ] Verify TestContainers PostgreSQL starts correctly
-- [ ] Run all three existing repository tests successfully
-- [ ] Document TestContainers setup in README if not already present
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Integration tests pass with TestContainers
+- [x] Remove `@Disabled` annotations from HackathonRepositoryTest.kt
+- [x] Remove `@Disabled` annotations from TeamRepositoryTest.kt
+- [x] Remove `@Disabled` annotations from UserRepositoryTest.kt
+- [x] Verify TestContainers PostgreSQL starts correctly
+- [x] Run all three existing repository tests successfully
+- [x] Document TestContainers setup in README if not already present
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Integration tests pass with TestContainers
 
 #### US-010: Add PasswordResetTokenRepository tests
 **Description:** As a developer, I need tests for password reset token repository so that token queries and deletions are validated.

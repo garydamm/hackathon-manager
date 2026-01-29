@@ -90,6 +90,14 @@ Run the backend tests:
 open build/reports/tests/test/index.html
 ```
 
+**Note on Repository Tests**: Integration tests for repositories use [TestContainers](https://testcontainers.com/) to spin up a PostgreSQL database automatically during test execution. Docker must be running for these tests to pass. TestContainers will:
+- Automatically download the `postgres:16-alpine` image (if not already present)
+- Start a PostgreSQL container for the test duration
+- Run Flyway migrations to set up the test database schema
+- Tear down the container after tests complete
+
+If repository tests fail, ensure Docker is running on your machine.
+
 ### 3. Frontend Setup
 
 Install dependencies and start the development server:
