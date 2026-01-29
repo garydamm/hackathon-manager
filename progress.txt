@@ -250,3 +250,22 @@
   - All 5 tests passed successfully on first run
   - Typecheck passed successfully
 ---
+
+## Iteration 66 - Add ScoreRepository tests
+- Created comprehensive ScoreRepositoryTest.kt with 8 test cases covering all repository methods
+- Files changed:
+  - Created: src/test/kotlin/com/hackathon/manager/repository/ScoreRepositoryTest.kt
+  - Updated: PRD.md (marked US-015 as complete)
+- Learnings for future iterations:
+  - Score entity has ManyToOne relationships with both JudgeAssignment and JudgingCriteria
+  - Score has a unique constraint on (judge_assignment_id, criteria_id) preventing duplicate scores for the same assignment and criteria
+  - When testing score value constraints (min/max), need to use different criteria for each score to avoid unique constraint violations
+  - ScoreRepository includes a custom @Query method findByProjectId that joins through judge assignments to get all scores for a project
+  - Test data setup requires persisting: User -> Hackathon -> Team -> Project, and separately User (judge) -> JudgingCriteria, then JudgeAssignment linking them all
+  - Score entity has two fields: score (Int) and optional feedback (String?)
+  - Score entity has @CreationTimestamp and @UpdateTimestamp for tracking when scores are created/modified
+  - The unique constraint allows updating existing scores rather than creating duplicates
+  - All 8 tests passed successfully after fixing the unique constraint issue
+  - All repository tests (60 tests across 8 test classes) pass together
+  - Typecheck passed successfully
+---
