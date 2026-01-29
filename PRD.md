@@ -258,15 +258,15 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for score repository so that scoring queries are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `ScoreRepositoryTest.kt` extending AbstractRepositoryTest
-- [ ] Test `findByJudgeAssignmentId()` returns scores for assignment
-- [ ] Test `findByJudgeAssignmentIdAndCriteriaId()` returns specific score
-- [ ] Test score creation with assignment and criteria relationships
-- [ ] Test score value constraints (min/max)
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Integration tests pass with TestContainers
+- [x] Create `ScoreRepositoryTest.kt` extending AbstractRepositoryTest
+- [x] Test `findByJudgeAssignmentId()` returns scores for assignment
+- [x] Test `findByJudgeAssignmentIdAndCriteriaId()` returns specific score
+- [x] Test score creation with assignment and criteria relationships
+- [x] Test score value constraints (min/max)
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Integration tests pass with TestContainers
 
 #### US-016: Add JudgeAssignmentRepository tests
 **Description:** As a developer, I need tests for judge assignment repository so that assignment queries are validated.
