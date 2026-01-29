@@ -312,3 +312,24 @@
   - Typecheck passes successfully
   - JudgingService reduced from 431 lines to ~340 lines (criteria methods removed)
 ---
+## Iteration 69 - Extract JudgeManagementService from JudgingService
+- Created new JudgeManagementService with judge operations (getJudgesByHackathon, addJudge, removeJudge)
+- Files changed:
+  - Created: src/main/kotlin/com/hackathon/manager/service/JudgeManagementService.kt
+  - Created: src/test/kotlin/com/hackathon/manager/service/JudgeManagementServiceTest.kt
+  - Modified: src/main/kotlin/com/hackathon/manager/controller/JudgingController.kt (injected JudgeManagementService)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/JudgingService.kt (removed judge methods)
+  - Modified: src/test/kotlin/com/hackathon/manager/service/JudgingServiceTest.kt (removed judge tests)
+  - Modified: src/test/kotlin/com/hackathon/manager/controller/JudgingControllerTest.kt (added JudgeManagementService mock)
+  - Updated: PRD.md (marked US-018 as complete)
+- Learnings for future iterations:
+  - When extracting service methods, update controller to inject new service in constructor
+  - Extract relevant tests to new test file - moved 10 judge management tests from JudgingServiceTest to JudgeManagementServiceTest
+  - Update controller tests to mock the new service - added @MockBean for JudgeManagementService
+  - Remember to add import statement for new service in controller
+  - Pattern: 1) Create service, 2) Create tests, 3) Update controller, 4) Remove from original service, 5) Update tests, 6) Update controller tests
+  - JudgingService still depends on hackathonService.isUserOrganizer() for leaderboard authorization, so hackathonService remains in constructor
+  - All tests pass (JudgeManagementServiceTest, JudgingServiceTest, JudgingControllerTest)
+  - Typecheck passes successfully
+  - JudgingService reduced from ~340 lines to ~244 lines (judge methods removed)
+---

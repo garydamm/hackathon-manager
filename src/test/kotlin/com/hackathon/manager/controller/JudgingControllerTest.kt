@@ -9,6 +9,7 @@ import com.hackathon.manager.security.UserPrincipal
 import com.hackathon.manager.service.JudgeManagementService
 import com.hackathon.manager.service.JudgingCriteriaService
 import com.hackathon.manager.service.JudgingService
+import com.hackathon.manager.service.ScoringService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -49,6 +50,9 @@ class JudgingControllerTest {
 
     @MockBean
     lateinit var judgeManagementService: JudgeManagementService
+
+    @MockBean
+    lateinit var scoringService: ScoringService
 
     @MockBean
     lateinit var jwtTokenProvider: JwtTokenProvider
@@ -355,7 +359,7 @@ class JudgingControllerTest {
             createJudgeAssignmentResponse(id = UUID.randomUUID())
         )
 
-        whenever(judgingService.getAssignmentsByJudge(testHackathonId, testUserId))
+        whenever(scoringService.getAssignmentsByJudge(testHackathonId, testUserId))
             .thenReturn(assignments)
 
         mockMvc.perform(
@@ -372,7 +376,7 @@ class JudgingControllerTest {
     fun `getAssignment should return single assignment for judge`() {
         val assignment = createJudgeAssignmentResponse()
 
-        whenever(judgingService.getAssignment(testAssignmentId, testUserId))
+        whenever(scoringService.getAssignment(testAssignmentId, testUserId))
             .thenReturn(assignment)
 
         mockMvc.perform(
@@ -409,7 +413,7 @@ class JudgingControllerTest {
             )
         )
 
-        whenever(judgingService.submitScores(eq(testAssignmentId), any(), eq(testUserId)))
+        whenever(scoringService.submitScores(eq(testAssignmentId), any(), eq(testUserId)))
             .thenReturn(response)
 
         mockMvc.perform(

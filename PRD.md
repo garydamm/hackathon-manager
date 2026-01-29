@@ -316,14 +316,14 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want score submission extracted to a focused service so that scoring logic is isolated.
 
 **Acceptance Criteria:**
-- [ ] Create `ScoringService.kt` with scoring operations
-- [ ] Move `submitScores()`, `getAssignmentsByJudge()`, `getAssignmentById()` from JudgingService
-- [ ] Update JudgingController to inject ScoringService
-- [ ] Create `ScoringServiceTest.kt` by extracting relevant tests
-- [ ] All existing tests still pass
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage maintained at >80%
+- [x] Create `ScoringService.kt` with scoring operations
+- [x] Move `submitScores()`, `getAssignmentsByJudge()`, `getAssignmentById()` from JudgingService
+- [x] Update JudgingController to inject ScoringService
+- [x] Create `ScoringServiceTest.kt` by extracting relevant tests
+- [x] All existing tests still pass
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage maintained at >80%
 
 #### US-020: Extract LeaderboardService from JudgingService
 **Description:** As a developer, I want leaderboard calculation extracted to a focused service so that ranking logic is isolated.

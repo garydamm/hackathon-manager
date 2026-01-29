@@ -12,6 +12,7 @@ import com.hackathon.manager.security.UserPrincipal
 import com.hackathon.manager.service.JudgeManagementService
 import com.hackathon.manager.service.JudgingCriteriaService
 import com.hackathon.manager.service.JudgingService
+import com.hackathon.manager.service.ScoringService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -24,7 +25,8 @@ import java.util.*
 class JudgingController(
     private val judgingService: JudgingService,
     private val judgingCriteriaService: JudgingCriteriaService,
-    private val judgeManagementService: JudgeManagementService
+    private val judgeManagementService: JudgeManagementService,
+    private val scoringService: ScoringService
 ) {
 
     @GetMapping("/hackathons/{hackathonId}/criteria")
@@ -102,7 +104,7 @@ class JudgingController(
         @PathVariable hackathonId: UUID,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<List<JudgeAssignmentResponse>> {
-        val assignments = judgingService.getAssignmentsByJudge(hackathonId, principal.id)
+        val assignments = scoringService.getAssignmentsByJudge(hackathonId, principal.id)
         return ResponseEntity.ok(assignments)
     }
 
@@ -111,7 +113,7 @@ class JudgingController(
         @PathVariable assignmentId: UUID,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<JudgeAssignmentResponse> {
-        val assignment = judgingService.getAssignment(assignmentId, principal.id)
+        val assignment = scoringService.getAssignment(assignmentId, principal.id)
         return ResponseEntity.ok(assignment)
     }
 
@@ -121,7 +123,7 @@ class JudgingController(
         @Valid @RequestBody request: SubmitScoresRequest,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<JudgeAssignmentResponse> {
-        val assignment = judgingService.submitScores(assignmentId, request, principal.id)
+        val assignment = scoringService.submitScores(assignmentId, request, principal.id)
         return ResponseEntity.ok(assignment)
     }
 
