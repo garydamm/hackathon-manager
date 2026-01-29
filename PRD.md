@@ -184,17 +184,17 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I need tests for password reset token repository so that token queries and deletions are validated.
 
 **Acceptance Criteria:**
-- [ ] Create `PasswordResetTokenRepositoryTest.kt` extending AbstractRepositoryTest
-- [ ] Test `findByToken()` returns token when exists
-- [ ] Test `findByToken()` returns empty when token doesn't exist
-- [ ] Test `findByUserId()` returns all tokens for user
-- [ ] Test `deleteByExpiresAtBefore()` deletes only expired tokens
-- [ ] Test token creation and persistence
-- [ ] Test cascade deletion when user is deleted
-- [ ] Unit tests added for new functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Integration tests pass with TestContainers
+- [x] Create `PasswordResetTokenRepositoryTest.kt` extending AbstractRepositoryTest
+- [x] Test `findByToken()` returns token when exists
+- [x] Test `findByToken()` returns empty when token doesn't exist
+- [x] Test `findByUserId()` returns all tokens for user
+- [x] Test `deleteByExpiresAtBefore()` deletes only expired tokens
+- [x] Test token creation and persistence
+- [x] Test cascade deletion when user is deleted
+- [x] Unit tests added for new functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Integration tests pass with TestContainers
 
 #### US-011: Add ProjectRepository tests
 **Description:** As a developer, I need tests for project repository so that project queries are validated.

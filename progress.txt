@@ -140,3 +140,21 @@
   - Typecheck passed successfully
   - Pattern learned: Use @SpringBootTest for endpoints with special security configuration (permitAll, custom filters)
 ---
+
+## Iteration 60 - Enable TestContainers in repository tests
+- Verified that @Disabled annotations were already removed from repository tests (they were already enabled)
+- Confirmed TestContainers setup works correctly with all three repository tests
+- Files changed:
+  - Updated: README.md (added TestContainers documentation in testing section)
+  - Updated: PRD.md (marked US-009 as complete)
+- Learnings for future iterations:
+  - Repository tests (HackathonRepositoryTest, TeamRepositoryTest, UserRepositoryTest) were already enabled - no @Disabled annotations present
+  - TestContainers configuration in AbstractRepositoryTest.kt uses postgres:16-alpine image
+  - TestContainers automatically starts PostgreSQL in Docker during test execution
+  - Tests use @DataJpaTest with @AutoConfigureTestDatabase(replace = NONE) to use TestContainers instead of H2
+  - Flyway migrations run automatically in test context (spring.flyway.enabled=true in AbstractRepositoryTest)
+  - All repository tests passed successfully (29 tests across 3 test classes)
+  - Docker must be running for repository tests to pass - documented this requirement in README
+  - TestContainers provides isolated, reproducible test database environment without manual setup
+  - Typecheck passed successfully
+---
