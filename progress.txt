@@ -459,3 +459,47 @@
   - Typecheck passes successfully - all code compiles correctly
   - Naming improvements make code more maintainable and easier to understand for future developers
 ---
+
+## Iteration 76 - Add error handling to EmailServiceImpl
+- Enhanced EmailServiceImpl error handling with return status tracking
+- Files changed:
+  - Modified: src/main/kotlin/com/hackathon/manager/service/EmailService.kt (changed methods to return Boolean)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/EmailServiceImpl.kt (return true on success, false on failure)
+  - Modified: src/main/kotlin/com/hackathon/manager/service/UserService.kt (added logger and status checking)
+  - Modified: src/test/kotlin/com/hackathon/manager/service/EmailServiceImplTest.kt (verify return values in all tests)
+  - Updated: PRD.md (marked US-025 as complete)
+- Learnings for future iterations:
+  - Error handling was already in place (try-catch blocks), but return values now expose success/failure status
+  - Return true for successful email sends (via Resend API or console logging)
+  - Return false when Resend API throws exceptions (fallback to console still occurs)
+  - Console logging is considered successful (returns true) since it's the expected behavior when email is disabled
+  - UserService logs warnings when email fails but doesn't break the password reset workflow
+  - Email failures are non-critical - password reset still succeeds even if email fails
+  - All 9 EmailServiceImplTest tests pass with updated assertions
+  - All 22 UserServiceTest tests pass with new logging
+  - Typecheck passes successfully
+  - Pattern: Make failure observable via return values without breaking existing behavior
+---
+
+## Iteration 77 - Document architectural decisions and patterns
+- Created comprehensive ARCHITECTURE.md documenting all architectural decisions and patterns
+- Files changed:
+  - Created: docs/ARCHITECTURE.md (633 lines of comprehensive documentation)
+  - Updated: PRD.md (marked US-026 as complete)
+- Learnings for future iterations:
+  - Documentation should cover all major patterns discovered during implementation
+  - Service layer organization section explains SRP and service decomposition (JudgingService -> 4 focused services)
+  - Domain exception pattern section provides clear usage guidelines for each exception type
+  - Test coverage standards section defines 80% minimum and when to write tests
+  - Code quality standards section explains 300-line file limit and complexity <5 requirement
+  - Testing strategies section distinguishes TestContainers (integration) vs Mockito (unit) tests
+  - Constants management section shows how to centralize configuration values in AppConstants
+  - Entity update patterns section documents applyIfNotNull utility for DRY code
+  - Naming conventions section provides examples of descriptive naming vs ambiguous `it`
+  - Error handling section shows domain exception pattern and non-critical failure handling (email)
+  - Common patterns and anti-patterns section provides concrete examples to follow/avoid
+  - Documentation includes migration guidelines for adding services, refactoring code, and adding endpoints
+  - All sections include code examples for clarity and practical application
+  - Typecheck passes successfully (docs don't affect compilation)
+  - This documentation provides a comprehensive guide for future developers maintaining the codebase
+---
