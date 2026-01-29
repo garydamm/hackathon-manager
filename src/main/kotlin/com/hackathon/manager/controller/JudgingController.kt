@@ -9,6 +9,7 @@ import com.hackathon.manager.dto.LeaderboardEntryResponse
 import com.hackathon.manager.dto.SubmitScoresRequest
 import com.hackathon.manager.dto.UpdateJudgingCriteriaRequest
 import com.hackathon.manager.security.UserPrincipal
+import com.hackathon.manager.service.JudgingCriteriaService
 import com.hackathon.manager.service.JudgingService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -20,14 +21,15 @@ import java.util.*
 @RestController
 @RequestMapping("/api/judging")
 class JudgingController(
-    private val judgingService: JudgingService
+    private val judgingService: JudgingService,
+    private val judgingCriteriaService: JudgingCriteriaService
 ) {
 
     @GetMapping("/hackathons/{hackathonId}/criteria")
     fun getCriteriaByHackathon(
         @PathVariable hackathonId: UUID
     ): ResponseEntity<List<JudgingCriteriaResponse>> {
-        val criteria = judgingService.getCriteriaByHackathon(hackathonId)
+        val criteria = judgingCriteriaService.getCriteriaByHackathon(hackathonId)
         return ResponseEntity.ok(criteria)
     }
 
@@ -37,7 +39,7 @@ class JudgingController(
         @Valid @RequestBody request: CreateJudgingCriteriaRequest,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<JudgingCriteriaResponse> {
-        val criteria = judgingService.createCriteria(hackathonId, request, principal.id)
+        val criteria = judgingCriteriaService.createCriteria(hackathonId, request, principal.id)
         return ResponseEntity.status(HttpStatus.CREATED).body(criteria)
     }
 
@@ -47,7 +49,7 @@ class JudgingController(
         @Valid @RequestBody request: UpdateJudgingCriteriaRequest,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<JudgingCriteriaResponse> {
-        val criteria = judgingService.updateCriteria(criteriaId, request, principal.id)
+        val criteria = judgingCriteriaService.updateCriteria(criteriaId, request, principal.id)
         return ResponseEntity.ok(criteria)
     }
 
@@ -56,7 +58,7 @@ class JudgingController(
         @PathVariable criteriaId: UUID,
         @AuthenticationPrincipal principal: UserPrincipal
     ): ResponseEntity<Void> {
-        judgingService.deleteCriteria(criteriaId, principal.id)
+        judgingCriteriaService.deleteCriteria(criteriaId, principal.id)
         return ResponseEntity.noContent().build()
     }
 

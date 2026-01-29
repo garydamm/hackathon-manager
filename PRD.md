@@ -288,15 +288,15 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want criteria management extracted to a focused service so that JudgingService has a single responsibility.
 
 **Acceptance Criteria:**
-- [ ] Create `JudgingCriteriaService.kt` with criteria CRUD methods
-- [ ] Move `createCriteria()`, `updateCriteria()`, `deleteCriteria()`, `getCriteria()` from JudgingService
-- [ ] Update JudgingController to inject JudgingCriteriaService
-- [ ] Create `JudgingCriteriaServiceTest.kt` by extracting relevant tests from JudgingServiceTest
-- [ ] Update JudgingService to use JudgingCriteriaService for criteria access
-- [ ] All existing tests still pass
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] JaCoCo coverage maintained at >80%
+- [x] Create `JudgingCriteriaService.kt` with criteria CRUD methods
+- [x] Move `createCriteria()`, `updateCriteria()`, `deleteCriteria()`, `getCriteria()` from JudgingService
+- [x] Update JudgingController to inject JudgingCriteriaService
+- [x] Create `JudgingCriteriaServiceTest.kt` by extracting relevant tests from JudgingServiceTest
+- [x] Update JudgingService to use JudgingCriteriaService for criteria access
+- [x] All existing tests still pass
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] JaCoCo coverage maintained at >80%
 
 #### US-018: Extract JudgeManagementService from JudgingService
 **Description:** As a developer, I want judge management extracted to a focused service so that judge operations are isolated.

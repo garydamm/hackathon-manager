@@ -6,6 +6,7 @@ import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.security.JwtAuthenticationFilter
 import com.hackathon.manager.security.JwtTokenProvider
 import com.hackathon.manager.security.UserPrincipal
+import com.hackathon.manager.service.JudgingCriteriaService
 import com.hackathon.manager.service.JudgingService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -41,6 +42,9 @@ class JudgingControllerTest {
 
     @MockBean
     lateinit var judgingService: JudgingService
+
+    @MockBean
+    lateinit var judgingCriteriaService: JudgingCriteriaService
 
     @MockBean
     lateinit var jwtTokenProvider: JwtTokenProvider
@@ -128,7 +132,7 @@ class JudgingControllerTest {
             createJudgingCriteriaResponse(id = UUID.randomUUID())
         )
 
-        whenever(judgingService.getCriteriaByHackathon(testHackathonId))
+        whenever(judgingCriteriaService.getCriteriaByHackathon(testHackathonId))
             .thenReturn(criteria)
 
         mockMvc.perform(
@@ -152,7 +156,7 @@ class JudgingControllerTest {
         )
         val response = createJudgingCriteriaResponse()
 
-        whenever(judgingService.createCriteria(eq(testHackathonId), any(), eq(testUserId)))
+        whenever(judgingCriteriaService.createCriteria(eq(testHackathonId), any(), eq(testUserId)))
             .thenReturn(response)
 
         mockMvc.perform(
@@ -174,7 +178,7 @@ class JudgingControllerTest {
             maxScore = 10
         )
 
-        whenever(judgingService.createCriteria(eq(testHackathonId), any(), eq(testUserId)))
+        whenever(judgingCriteriaService.createCriteria(eq(testHackathonId), any(), eq(testUserId)))
             .thenThrow(ApiException("Only organizers can create criteria", HttpStatus.FORBIDDEN))
 
         mockMvc.perform(
@@ -198,7 +202,7 @@ class JudgingControllerTest {
             description = "Updated description"
         )
 
-        whenever(judgingService.updateCriteria(eq(testCriteriaId), any(), eq(testUserId)))
+        whenever(judgingCriteriaService.updateCriteria(eq(testCriteriaId), any(), eq(testUserId)))
             .thenReturn(response)
 
         mockMvc.perform(
@@ -219,7 +223,7 @@ class JudgingControllerTest {
             name = "Updated Innovation"
         )
 
-        whenever(judgingService.updateCriteria(eq(testCriteriaId), any(), eq(testUserId)))
+        whenever(judgingCriteriaService.updateCriteria(eq(testCriteriaId), any(), eq(testUserId)))
             .thenThrow(ApiException("Only organizers can update criteria", HttpStatus.FORBIDDEN))
 
         mockMvc.perform(
@@ -244,7 +248,7 @@ class JudgingControllerTest {
 
     @Test
     fun `deleteCriteria should return 403 when non-organizer attempts deletion`() {
-        whenever(judgingService.deleteCriteria(testCriteriaId, testUserId))
+        whenever(judgingCriteriaService.deleteCriteria(testCriteriaId, testUserId))
             .thenThrow(ApiException("Only organizers can delete criteria", HttpStatus.FORBIDDEN))
 
         mockMvc.perform(

@@ -10,6 +10,7 @@ import com.hackathon.manager.entity.enums.UserRole
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.repository.HackathonRepository
 import com.hackathon.manager.repository.HackathonUserRepository
+import com.hackathon.manager.repository.TeamMemberRepository
 import com.hackathon.manager.repository.UserRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -35,6 +36,9 @@ class HackathonServiceTest {
 
     @Mock
     lateinit var userRepository: UserRepository
+
+    @Mock
+    lateinit var teamMemberRepository: TeamMemberRepository
 
     @InjectMocks
     lateinit var hackathonService: HackathonService

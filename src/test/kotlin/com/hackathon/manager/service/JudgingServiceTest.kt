@@ -1,9 +1,7 @@
 package com.hackathon.manager.service
 
-import com.hackathon.manager.dto.CreateJudgingCriteriaRequest
 import com.hackathon.manager.dto.SubmitScoreRequest
 import com.hackathon.manager.dto.SubmitScoresRequest
-import com.hackathon.manager.dto.UpdateJudgingCriteriaRequest
 import com.hackathon.manager.entity.Hackathon
 import com.hackathon.manager.entity.HackathonUser
 import com.hackathon.manager.entity.JudgeAssignment
@@ -142,101 +140,6 @@ class JudgingServiceTest {
             judge = testJudgeUser,
             project = testProject
         )
-    }
-
-    // Criteria management tests
-
-    @Test
-    fun `getCriteriaByHackathon should return criteria ordered by displayOrder`() {
-        whenever(judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(testHackathonId))
-            .thenReturn(listOf(testCriteria))
-
-        val result = judgingService.getCriteriaByHackathon(testHackathonId)
-
-        assertThat(result).hasSize(1)
-        assertThat(result[0].name).isEqualTo("Innovation")
-        assertThat(result[0].hackathonId).isEqualTo(testHackathonId)
-    }
-
-    @Test
-    fun `createCriteria should create criteria when user is organizer`() {
-        val request = CreateJudgingCriteriaRequest(
-            name = "Technical Excellence",
-            description = "Quality of code",
-            maxScore = 10,
-            weight = BigDecimal("1.50"),
-            displayOrder = 2
-        )
-
-        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(true)
-        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
-        whenever(judgingCriteriaRepository.save(any<JudgingCriteria>())).thenAnswer { invocation ->
-            val criteria = invocation.arguments[0] as JudgingCriteria
-            JudgingCriteria(
-                id = UUID.randomUUID(),
-                hackathon = criteria.hackathon,
-                name = criteria.name,
-                description = criteria.description,
-                maxScore = criteria.maxScore,
-                weight = criteria.weight,
-                displayOrder = criteria.displayOrder
-            )
-        }
-
-        val result = judgingService.createCriteria(testHackathonId, request, testUserId)
-
-        assertThat(result.name).isEqualTo("Technical Excellence")
-        assertThat(result.weight).isEqualTo(BigDecimal("1.50"))
-        verify(judgingCriteriaRepository).save(any<JudgingCriteria>())
-    }
-
-    @Test
-    fun `createCriteria should throw forbidden when user is not organizer`() {
-        val request = CreateJudgingCriteriaRequest(name = "Test")
-
-        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(false)
-
-        assertThatThrownBy { judgingService.createCriteria(testHackathonId, request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
-            .hasMessage("Only organizers can create judging criteria")
-    }
-
-    @Test
-    fun `updateCriteria should update criteria when user is organizer`() {
-        val request = UpdateJudgingCriteriaRequest(
-            name = "Updated Name",
-            maxScore = 20
-        )
-
-        whenever(judgingCriteriaRepository.findById(testCriteriaId)).thenReturn(Optional.of(testCriteria))
-        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(true)
-        whenever(judgingCriteriaRepository.save(any<JudgingCriteria>())).thenAnswer { it.arguments[0] }
-
-        val result = judgingService.updateCriteria(testCriteriaId, request, testUserId)
-
-        assertThat(result.name).isEqualTo("Updated Name")
-        assertThat(result.maxScore).isEqualTo(20)
-    }
-
-    @Test
-    fun `updateCriteria should throw not found when criteria does not exist`() {
-        val request = UpdateJudgingCriteriaRequest(name = "Test")
-
-        whenever(judgingCriteriaRepository.findById(testCriteriaId)).thenReturn(Optional.empty())
-
-        assertThatThrownBy { judgingService.updateCriteria(testCriteriaId, request, testUserId) }
-            .isInstanceOf(ApiException::class.java)
-            .hasMessage("Judging criteria not found")
-    }
-
-    @Test
-    fun `deleteCriteria should delete criteria when user is organizer`() {
-        whenever(judgingCriteriaRepository.findById(testCriteriaId)).thenReturn(Optional.of(testCriteria))
-        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(true)
-
-        judgingService.deleteCriteria(testCriteriaId, testUserId)
-
-        verify(judgingCriteriaRepository).delete(testCriteria)
     }
 
     // Judge management tests

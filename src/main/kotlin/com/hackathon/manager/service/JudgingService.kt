@@ -1,13 +1,10 @@
 package com.hackathon.manager.service
 
-import com.hackathon.manager.dto.CreateJudgingCriteriaRequest
 import com.hackathon.manager.dto.CriteriaAverageResponse
 import com.hackathon.manager.dto.JudgeAssignmentResponse
 import com.hackathon.manager.dto.JudgeInfoResponse
-import com.hackathon.manager.dto.JudgingCriteriaResponse
 import com.hackathon.manager.dto.LeaderboardEntryResponse
 import com.hackathon.manager.dto.SubmitScoresRequest
-import com.hackathon.manager.dto.UpdateJudgingCriteriaRequest
 import com.hackathon.manager.entity.HackathonUser
 import com.hackathon.manager.entity.JudgeAssignment
 import com.hackathon.manager.entity.JudgingCriteria
@@ -40,65 +37,6 @@ class JudgingService(
     private val judgeAssignmentRepository: JudgeAssignmentRepository,
     private val scoreRepository: ScoreRepository
 ) {
-
-    @Transactional(readOnly = true)
-    fun getCriteriaByHackathon(hackathonId: UUID): List<JudgingCriteriaResponse> {
-        return judgingCriteriaRepository.findByHackathonIdOrderByDisplayOrder(hackathonId)
-            .map { JudgingCriteriaResponse.fromEntity(it) }
-    }
-
-    @Transactional
-    fun createCriteria(hackathonId: UUID, request: CreateJudgingCriteriaRequest, userId: UUID): JudgingCriteriaResponse {
-        if (!hackathonService.isUserOrganizer(hackathonId, userId)) {
-            throw ApiException("Only organizers can create judging criteria", HttpStatus.FORBIDDEN)
-        }
-
-        val hackathon = hackathonRepository.findById(hackathonId)
-            .orElseThrow { ApiException("Hackathon not found", HttpStatus.NOT_FOUND) }
-
-        val criteria = JudgingCriteria(
-            hackathon = hackathon,
-            name = request.name,
-            description = request.description,
-            maxScore = request.maxScore,
-            weight = request.weight,
-            displayOrder = request.displayOrder
-        )
-
-        val savedCriteria = judgingCriteriaRepository.save(criteria)
-        return JudgingCriteriaResponse.fromEntity(savedCriteria)
-    }
-
-    @Transactional
-    fun updateCriteria(criteriaId: UUID, request: UpdateJudgingCriteriaRequest, userId: UUID): JudgingCriteriaResponse {
-        val criteria = judgingCriteriaRepository.findById(criteriaId)
-            .orElseThrow { ApiException("Judging criteria not found", HttpStatus.NOT_FOUND) }
-
-        if (!hackathonService.isUserOrganizer(criteria.hackathon.id!!, userId)) {
-            throw ApiException("Only organizers can update judging criteria", HttpStatus.FORBIDDEN)
-        }
-
-        request.name?.let { criteria.name = it }
-        request.description?.let { criteria.description = it }
-        request.maxScore?.let { criteria.maxScore = it }
-        request.weight?.let { criteria.weight = it }
-        request.displayOrder?.let { criteria.displayOrder = it }
-
-        val savedCriteria = judgingCriteriaRepository.save(criteria)
-        return JudgingCriteriaResponse.fromEntity(savedCriteria)
-    }
-
-    @Transactional
-    fun deleteCriteria(criteriaId: UUID, userId: UUID) {
-        val criteria = judgingCriteriaRepository.findById(criteriaId)
-            .orElseThrow { ApiException("Judging criteria not found", HttpStatus.NOT_FOUND) }
-
-        if (!hackathonService.isUserOrganizer(criteria.hackathon.id!!, userId)) {
-            throw ApiException("Only organizers can delete judging criteria", HttpStatus.FORBIDDEN)
-        }
-
-        judgingCriteriaRepository.delete(criteria)
-    }
 
     // Judge management methods
 

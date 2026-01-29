@@ -8,8 +8,10 @@ import com.hackathon.manager.entity.User
 import com.hackathon.manager.entity.enums.EventType
 import com.hackathon.manager.entity.enums.HackathonStatus
 import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.repository.EventAttendeeRepository
 import com.hackathon.manager.repository.HackathonRepository
 import com.hackathon.manager.repository.ScheduleEventRepository
+import com.hackathon.manager.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -30,6 +32,15 @@ class ScheduleServiceTest {
 
     @Mock
     lateinit var hackathonRepository: HackathonRepository
+
+    @Mock
+    lateinit var eventAttendeeRepository: EventAttendeeRepository
+
+    @Mock
+    lateinit var userRepository: UserRepository
+
+    @Mock
+    lateinit var hackathonService: HackathonService
 
     @InjectMocks
     lateinit var scheduleService: ScheduleService
