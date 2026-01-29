@@ -373,16 +373,16 @@ The work focuses exclusively on backend (Kotlin/Spring Boot) components, with fr
 **Description:** As a developer, I want optional field updates centralized so that update logic is DRY.
 
 **Acceptance Criteria:**
-- [ ] Create `src/main/kotlin/com/hackathon/manager/util/EntityUpdateUtil.kt`
-- [ ] Define `applyIfNotNull<T, R>` extension function
-- [ ] Replace `.let` patterns in HackathonService with utility (lines 106-123)
-- [ ] Replace `.let` patterns in ProjectService with utility (lines 92-100)
-- [ ] Replace `.let` patterns in JudgingCriteriaService with utility
-- [ ] Replace `.let` patterns in UserService with utility (lines 43-50)
-- [ ] Create `EntityUpdateUtilTest.kt` to test utility
-- [ ] All existing tests still pass
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `src/main/kotlin/com/hackathon/manager/util/EntityUpdateUtil.kt`
+- [x] Define `applyIfNotNull<T, R>` extension function
+- [x] Replace `.let` patterns in HackathonService with utility (lines 106-123)
+- [x] Replace `.let` patterns in ProjectService with utility (lines 92-100)
+- [x] Replace `.let` patterns in JudgingCriteriaService with utility
+- [x] Replace `.let` patterns in UserService with utility (lines 43-50)
+- [x] Create `EntityUpdateUtilTest.kt` to test utility
+- [x] All existing tests still pass
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### Phase 5: Code Quality Improvements
 

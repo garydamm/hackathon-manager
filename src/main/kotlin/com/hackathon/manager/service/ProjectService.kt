@@ -7,6 +7,7 @@ import com.hackathon.manager.entity.Project
 import com.hackathon.manager.entity.enums.SubmissionStatus
 import com.hackathon.manager.exception.*
 import com.hackathon.manager.repository.*
+import com.hackathon.manager.util.applyIfNotNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.OffsetDateTime
@@ -88,15 +89,15 @@ class ProjectService(
             throw ValidationException("Cannot update a submitted project")
         }
 
-        request.name?.let { project.name = it }
-        request.tagline?.let { project.tagline = it }
-        request.description?.let { project.description = it }
-        request.demoUrl?.let { project.demoUrl = it }
-        request.videoUrl?.let { project.videoUrl = it }
-        request.repositoryUrl?.let { project.repositoryUrl = it }
-        request.presentationUrl?.let { project.presentationUrl = it }
-        request.thumbnailUrl?.let { project.thumbnailUrl = it }
-        request.technologies?.let { project.technologies = it.toTypedArray() }
+        request.name.applyIfNotNull { project.name = it }
+        request.tagline.applyIfNotNull { project.tagline = it }
+        request.description.applyIfNotNull { project.description = it }
+        request.demoUrl.applyIfNotNull { project.demoUrl = it }
+        request.videoUrl.applyIfNotNull { project.videoUrl = it }
+        request.repositoryUrl.applyIfNotNull { project.repositoryUrl = it }
+        request.presentationUrl.applyIfNotNull { project.presentationUrl = it }
+        request.thumbnailUrl.applyIfNotNull { project.thumbnailUrl = it }
+        request.technologies.applyIfNotNull { project.technologies = it.toTypedArray() }
 
         val savedProject = projectRepository.save(project)
         return ProjectResponse.fromEntity(savedProject)

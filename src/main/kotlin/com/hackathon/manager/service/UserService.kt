@@ -7,6 +7,7 @@ import com.hackathon.manager.entity.PasswordResetToken
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.repository.PasswordResetTokenRepository
 import com.hackathon.manager.repository.UserRepository
+import com.hackathon.manager.util.applyIfNotNull
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -41,14 +42,14 @@ class UserService(
         val user = userRepository.findById(id)
             .orElseThrow { ApiException("User not found", HttpStatus.NOT_FOUND) }
 
-        request.firstName?.let { user.firstName = it }
-        request.lastName?.let { user.lastName = it }
-        request.displayName?.let { user.displayName = it }
-        request.bio?.let { user.bio = it }
-        request.skills?.let { user.skills = it.toTypedArray() }
-        request.githubUrl?.let { user.githubUrl = it }
-        request.linkedinUrl?.let { user.linkedinUrl = it }
-        request.portfolioUrl?.let { user.portfolioUrl = it }
+        request.firstName.applyIfNotNull { user.firstName = it }
+        request.lastName.applyIfNotNull { user.lastName = it }
+        request.displayName.applyIfNotNull { user.displayName = it }
+        request.bio.applyIfNotNull { user.bio = it }
+        request.skills.applyIfNotNull { user.skills = it.toTypedArray() }
+        request.githubUrl.applyIfNotNull { user.githubUrl = it }
+        request.linkedinUrl.applyIfNotNull { user.linkedinUrl = it }
+        request.portfolioUrl.applyIfNotNull { user.portfolioUrl = it }
 
         val savedUser = userRepository.save(user)
         return UserResponse.fromEntity(savedUser)

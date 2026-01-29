@@ -7,6 +7,7 @@ import com.hackathon.manager.entity.JudgingCriteria
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.repository.HackathonRepository
 import com.hackathon.manager.repository.JudgingCriteriaRepository
+import com.hackathon.manager.util.applyIfNotNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -56,11 +57,11 @@ class JudgingCriteriaService(
             throw ApiException("Only organizers can update judging criteria", HttpStatus.FORBIDDEN)
         }
 
-        request.name?.let { criteria.name = it }
-        request.description?.let { criteria.description = it }
-        request.maxScore?.let { criteria.maxScore = it }
-        request.weight?.let { criteria.weight = it }
-        request.displayOrder?.let { criteria.displayOrder = it }
+        request.name.applyIfNotNull { criteria.name = it }
+        request.description.applyIfNotNull { criteria.description = it }
+        request.maxScore.applyIfNotNull { criteria.maxScore = it }
+        request.weight.applyIfNotNull { criteria.weight = it }
+        request.displayOrder.applyIfNotNull { criteria.displayOrder = it }
 
         val savedCriteria = judgingCriteriaRepository.save(criteria)
         return JudgingCriteriaResponse.fromEntity(savedCriteria)

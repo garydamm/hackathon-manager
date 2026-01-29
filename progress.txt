@@ -399,3 +399,20 @@
   - Typecheck passes successfully - all code compiles correctly
   - ApiException is still used in some other services (AuthService, AnnouncementService, ScheduleService, etc.) but the three core services specified in US-021 now use domain exceptions
 ---
+## Iteration 73 - Refactor complex methods in ScoringService
+- Extracted helper methods from submitScores() to reduce cyclomatic complexity
+- Files changed:
+  - Modified: src/main/kotlin/com/hackathon/manager/service/ScoringService.kt (extracted helper methods)
+  - Updated: PRD.md (marked US-022 as complete)
+- Learnings for future iterations:
+  - Original submitScores() had cyclomatic complexity of ~6 (multiple if statements, for loop, elvis operator)
+  - Refactored into 5 helper methods: mapCriteriaIds, validateAndSaveScores, validateScoreRange, saveOrUpdateScore, checkAssignmentCompletion
+  - New submitScores() has cyclomatic complexity of 1 (only the judge authorization check remains)
+  - Each helper method has complexity <= 2, making them easy to understand and test
+  - When using associateBy with nullable IDs, use mapNotNull with explicit pair creation to handle null safety
+  - The existing test suite validates that the refactoring preserves behavior - no new tests needed for helper methods
+  - All 13 ScoringServiceTest tests pass after refactoring
+  - JudgingControllerTest (20 tests) also passes, confirming no regression
+  - Typecheck passes successfully
+  - This pattern of extracting validation, mapping, and state-checking logic into focused helper methods can be applied to other complex methods
+---

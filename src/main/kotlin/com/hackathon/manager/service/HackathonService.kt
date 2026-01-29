@@ -12,6 +12,7 @@ import com.hackathon.manager.repository.HackathonRepository
 import com.hackathon.manager.repository.HackathonUserRepository
 import com.hackathon.manager.repository.TeamMemberRepository
 import com.hackathon.manager.repository.UserRepository
+import com.hackathon.manager.util.applyIfNotNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -102,24 +103,24 @@ class HackathonService(
         val hackathon = hackathonRepository.findById(id)
             .orElseThrow { NotFoundException("Hackathon not found") }
 
-        request.name?.let { hackathon.name = it }
-        request.description?.let { hackathon.description = it }
-        request.rules?.let { hackathon.rules = it }
-        request.status?.let { hackathon.status = it }
-        request.bannerUrl?.let { hackathon.bannerUrl = it }
-        request.logoUrl?.let { hackathon.logoUrl = it }
-        request.location?.let { hackathon.location = it }
-        request.isVirtual?.let { hackathon.isVirtual = it }
-        request.timezone?.let { hackathon.timezone = it }
-        request.registrationOpensAt?.let { hackathon.registrationOpensAt = it }
-        request.registrationClosesAt?.let { hackathon.registrationClosesAt = it }
-        request.startsAt?.let { hackathon.startsAt = it }
-        request.endsAt?.let { hackathon.endsAt = it }
-        request.judgingStartsAt?.let { hackathon.judgingStartsAt = it }
-        request.judgingEndsAt?.let { hackathon.judgingEndsAt = it }
-        request.maxTeamSize?.let { hackathon.maxTeamSize = it }
-        request.minTeamSize?.let { hackathon.minTeamSize = it }
-        request.maxParticipants?.let { hackathon.maxParticipants = it }
+        request.name.applyIfNotNull { hackathon.name = it }
+        request.description.applyIfNotNull { hackathon.description = it }
+        request.rules.applyIfNotNull { hackathon.rules = it }
+        request.status.applyIfNotNull { hackathon.status = it }
+        request.bannerUrl.applyIfNotNull { hackathon.bannerUrl = it }
+        request.logoUrl.applyIfNotNull { hackathon.logoUrl = it }
+        request.location.applyIfNotNull { hackathon.location = it }
+        request.isVirtual.applyIfNotNull { hackathon.isVirtual = it }
+        request.timezone.applyIfNotNull { hackathon.timezone = it }
+        request.registrationOpensAt.applyIfNotNull { hackathon.registrationOpensAt = it }
+        request.registrationClosesAt.applyIfNotNull { hackathon.registrationClosesAt = it }
+        request.startsAt.applyIfNotNull { hackathon.startsAt = it }
+        request.endsAt.applyIfNotNull { hackathon.endsAt = it }
+        request.judgingStartsAt.applyIfNotNull { hackathon.judgingStartsAt = it }
+        request.judgingEndsAt.applyIfNotNull { hackathon.judgingEndsAt = it }
+        request.maxTeamSize.applyIfNotNull { hackathon.maxTeamSize = it }
+        request.minTeamSize.applyIfNotNull { hackathon.minTeamSize = it }
+        request.maxParticipants.applyIfNotNull { hackathon.maxParticipants = it }
 
         val savedHackathon = hackathonRepository.save(hackathon)
         return HackathonResponse.fromEntity(savedHackathon)
