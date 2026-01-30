@@ -17,6 +17,12 @@ interface TeamMemberRepository : JpaRepository<TeamMember, UUID> {
     @Query("SELECT COUNT(DISTINCT tm.user.id) FROM TeamMember tm WHERE tm.team.hackathon.id = :hackathonId")
     fun countDistinctUsersByHackathonId(hackathonId: UUID): Int
 
-    @Query("SELECT tm FROM TeamMember tm WHERE tm.team.hackathon.id = :hackathonId")
+    @Query("""
+        SELECT tm FROM TeamMember tm
+        JOIN FETCH tm.user
+        JOIN FETCH tm.team t
+        JOIN FETCH t.hackathon
+        WHERE t.hackathon.id = :hackathonId
+    """)
     fun findByHackathonId(hackathonId: UUID): List<TeamMember>
 }
