@@ -392,7 +392,7 @@ export interface OrganizerInfo {
 export interface Participant {
   name: string
   email: string
-  registrationDate: string
+  registeredAt: string
   teamName?: string | null
-  isLeader: boolean
+  isTeamLeader: boolean
 }

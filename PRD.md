@@ -49,7 +49,7 @@ Add participant visibility to the hackathon manager by displaying participant co
 - [x] Unit tests added for participant list component
 - [x] Unit tests pass
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-004: Add empty state with registration CTA
 **Description:** As an authenticated user viewing a hackathon with no participants, I want to see a registration call-to-action so I know how to register.

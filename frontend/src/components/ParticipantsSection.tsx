@@ -64,7 +64,7 @@ export function ParticipantsSection({ hackathonId }: ParticipantsSectionProps) {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <p className="font-medium">{participant.name}</p>
-                    {participant.isLeader && (
+                    {participant.isTeamLeader && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary">
                         <Shield className="h-3 w-3" />
                         Team Leader
@@ -81,7 +81,7 @@ export function ParticipantsSection({ hackathonId }: ParticipantsSectionProps) {
                     </a>
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      Registered {formatDate(participant.registrationDate)}
+                      Registered {formatDate(participant.registeredAt)}
                     </span>
                   </div>
                 </div>
