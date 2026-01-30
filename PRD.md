@@ -80,11 +80,11 @@ Add participant visibility to the hackathon manager by displaying participant co
 **Description:** As a developer, I need end-to-end tests for the participant display feature to ensure the complete user flow works correctly.
 
 **Acceptance Criteria:**
-- [ ] UI system test: Login → View dashboard → Verify participant count appears
-- [ ] UI system test: Navigate to hackathon details → Verify participant list displays
-- [ ] UI system test: View hackathon with no participants → Verify empty state and CTA appear
-- [ ] UI system tests pass
-- [ ] Typecheck passes
+- [x] UI system test: Login → View dashboard → Verify participant count appears
+- [x] UI system test: Navigate to hackathon details → Verify participant list displays
+- [x] UI system test: View hackathon with no participants → Verify empty state and CTA appear
+- [x] UI system tests pass
+- [x] Typecheck passes
 
 ## Non-Goals
 
