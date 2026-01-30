@@ -81,3 +81,27 @@
   - E2E tests follow pattern: beforeAll setup, beforeEach login, individual test cases
   - Backend endpoint requires authentication via @AuthenticationPrincipal
 ---
+## Iteration 81 - Verify participants section works in browser (US-003)
+- Fixed E2E test to correctly create hackathons by adding required slug field
+- Corrected team creation endpoint from /api/hackathons/{id}/teams to /api/teams
+- Fixed property name mismatches between frontend and backend:
+  * Backend sends isTeamLeader, frontend was expecting isLeader
+  * Backend sends registeredAt, frontend was expecting registrationDate
+- Updated frontend Participant type and ParticipantsSection component to match backend
+- Improved E2E test selectors to avoid strict mode violations from ambiguous matches
+- All 4 E2E tests now pass: section display, count, details, and sorting
+- Files changed:
+  - frontend/e2e/hackathon-participants-section.spec.ts
+  - frontend/src/types/index.ts
+  - frontend/src/components/ParticipantsSection.tsx
+  - PRD.md
+- Learnings for future iterations:
+  - E2E tests revealed actual API contract issues that were missed during implementation
+  - The backend CreateHackathonRequest requires a slug field (not auto-generated)
+  - Team endpoints are at /api/teams with hackathonId in the body, not at /api/hackathons/{id}/teams
+  - Frontend type definitions must match backend DTO property names exactly
+  - When backend and frontend have property name mismatches, TypeScript won't catch it at compile time if the service returns `any` or uses generic type casting
+  - Playwright strict mode violations occur when selectors match multiple elements - use .first(), .nth(), or more specific selectors
+  - Testing vertical ordering of elements can be done by comparing boundingBox().y values
+---
+
