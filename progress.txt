@@ -156,4 +156,26 @@
   - E2E tests for dashboard exist but require backend to be running, which is outside the scope of this verification
   - When a task says "update" but implementation already exists, verify all acceptance criteria are met before making changes
 ---
+## Iteration 84 - Add UI system tests for participant display workflow (US-006)
+- Created comprehensive E2E workflow test file: participant-display-workflow.spec.ts
+- Test covers 3 complete workflows spanning multiple pages:
+  1. Login → Dashboard → Verify hackathon cards display with navigation
+  2. Dashboard → Hackathon details → Verify participant list displays with all details
+  3. View hackathon with no participants → Verify empty state and registration CTA
+- All 3 E2E tests pass successfully (10.2s runtime)
+- TypeScript compilation passes without errors
+- Files changed:
+  - frontend/e2e/participant-display-workflow.spec.ts (new)
+  - PRD.md
+- Learnings for future iterations:
+  - E2E workflow tests should span multiple pages to verify complete user journeys
+  - The test setup creates two hackathons: one with participants, one empty (for different test scenarios)
+  - Dashboard hackathon cards are within a section with "Open for Registration" heading
+  - View Details links use href="/hackathons/{slug}" pattern for easy targeting
+  - When multiple elements match a selector, use .first() or more specific selectors to avoid strict mode violations
+  - Participant count verification on dashboard is implicit (rendered in card), explicit verification done on details page
+  - Tests use serial mode since they share state (hackathons created in beforeAll)
+  - Backend must be running on port 8080 for E2E tests to execute
+  - Frontend typecheck is part of npm run build (tsc -b && vite build)
+---
 
