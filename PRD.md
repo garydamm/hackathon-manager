@@ -55,14 +55,14 @@ Add participant visibility to the hackathon manager by displaying participant co
 **Description:** As an authenticated user viewing a hackathon with no participants, I want to see a registration call-to-action so I know how to register.
 
 **Acceptance Criteria:**
-- [ ] Empty state shown when participant count is zero
-- [ ] Displays message: "No participants registered yet"
-- [ ] Shows registration button/CTA
-- [ ] Empty state has appropriate styling consistent with app design
-- [ ] Unit tests added for empty state component
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Empty state shown when participant count is zero
+- [x] Displays message: "No participants registered yet"
+- [x] Shows registration button/CTA
+- [x] Empty state has appropriate styling consistent with app design
+- [x] Unit tests added for empty state component
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-005: Update dashboard participant count
 **Description:** As an authenticated user, I want to see accurate participant counts on the dashboard so I can quickly assess hackathon engagement.

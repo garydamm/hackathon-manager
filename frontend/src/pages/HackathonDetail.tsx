@@ -504,7 +504,11 @@ function ViewMode({
       <OrganizersSection hackathonId={hackathon.id} />
 
       {/* Participants Section - visible to authenticated users */}
-      <ParticipantsSection hackathonId={hackathon.id} />
+      <ParticipantsSection
+        hackathonId={hackathon.id}
+        hackathon={hackathon}
+        onRegisterClick={onRegisterClick}
+      />
 
       {/* Judging Criteria Section - visible to organizers only */}
       {isOrganizer && <JudgingCriteriaSection hackathonId={hackathon.id} />}

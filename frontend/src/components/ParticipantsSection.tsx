@@ -1,10 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
-import { Loader2, Users, Mail, Calendar, Shield } from "lucide-react"
+import { Loader2, Users, Mail, Calendar, Shield, UserPlus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { hackathonService } from "@/services/hackathons"
+import type { Hackathon } from "@/types"
 
 interface ParticipantsSectionProps {
   hackathonId: string
+  hackathon?: Hackathon
+  onRegisterClick?: () => void
 }
 
 function formatDate(dateString: string): string {
@@ -15,13 +19,20 @@ function formatDate(dateString: string): string {
   })
 }
 
-export function ParticipantsSection({ hackathonId }: ParticipantsSectionProps) {
+export function ParticipantsSection({
+  hackathonId,
+  hackathon,
+  onRegisterClick
+}: ParticipantsSectionProps) {
   const { data: participants, isLoading } = useQuery({
     queryKey: ["participants", hackathonId],
     queryFn: () => hackathonService.getParticipants(hackathonId),
   })
 
   const participantCount = participants?.length ?? 0
+  const isRegistered = hackathon?.userRole === "participant"
+  const isRegistrationOpen = hackathon?.status === "registration_open"
+  const showRegisterButton = isRegistrationOpen && !isRegistered && onRegisterClick
 
   if (isLoading) {
     return (
@@ -51,9 +62,23 @@ export function ParticipantsSection({ hackathonId }: ParticipantsSectionProps) {
       </CardHeader>
       <CardContent>
         {participantCount === 0 ? (
-          <p className="text-muted-foreground text-center py-4">
-            No participants registered yet.
-          </p>
+          <div className="flex flex-col items-center text-center space-y-4 py-8">
+            <div className="rounded-full bg-muted/50 p-4">
+              <Users className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+              <p className="font-medium">No participants registered yet</p>
+              <p className="text-sm text-muted-foreground">
+                Be the first to join this hackathon!
+              </p>
+            </div>
+            {showRegisterButton && (
+              <Button onClick={onRegisterClick} className="mt-2">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Register Now
+              </Button>
+            )}
+          </div>
         ) : (
           <div className="space-y-3">
             {participants!.map((participant, index) => (

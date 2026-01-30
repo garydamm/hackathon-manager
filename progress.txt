@@ -104,4 +104,36 @@
   - Playwright strict mode violations occur when selectors match multiple elements - use .first(), .nth(), or more specific selectors
   - Testing vertical ordering of elements can be done by comparing boundingBox().y values
 ---
+## Iteration 82 - Add empty state with registration CTA (US-004)
+- Enhanced ParticipantsSection component to display improved empty state when no participants registered
+- Added UserPlus icon from lucide-react for the registration button
+- Empty state now shows:
+  * Users icon in a muted circular background
+  * "No participants registered yet" message
+  * "Be the first to join this hackathon!" subtext
+  * "Register Now" button with UserPlus icon (conditionally shown)
+- Registration button only displays when:
+  * Registration is open (status === "registration_open")
+  * User is not already registered (userRole !== "participant")
+  * onRegisterClick callback is provided
+- Updated ParticipantsSection interface to accept hackathon and onRegisterClick props
+- Modified HackathonDetail to pass hackathon object and onRegisterClick to ParticipantsSection
+- Created comprehensive E2E test file: hackathon-participants-empty-state.spec.ts with 4 test cases:
+  * Displays empty state message when no participants registered
+  * Displays registration CTA button when user not registered and registration open
+  * Does not display CTA when user is already registered
+  * Empty state has appropriate styling consistent with app design
+- Files changed:
+  - frontend/src/components/ParticipantsSection.tsx
+  - frontend/src/pages/HackathonDetail.tsx
+  - frontend/e2e/hackathon-participants-empty-state.spec.ts (new)
+  - PRD.md
+- Learnings for future iterations:
+  - Empty state components should follow consistent patterns: icon in circular bg, heading, subtext, optional CTA
+  - Conditional CTAs should check multiple conditions: feature state (registration open), user state (not registered), and callback availability
+  - E2E tests require the backend to be running - use TypeScript build check for quick validation
+  - ParticipantsSection now properly integrates with the existing RegisterModal flow via onRegisterClick callback
+  - The empty state styling uses flex-col, items-center, text-center, and space-y-4 for consistent spacing
+  - Icon containers use rounded-full with bg-muted/50 and appropriate padding for visual consistency
+---
 
