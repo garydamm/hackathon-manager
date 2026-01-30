@@ -3,4 +3,35 @@
 ## Learnings
 (Patterns discovered during implementation)
 
+### Participant Count Implementation
+- Participant counts are retrieved via `TeamMemberRepository.countDistinctUsersByHackathonId()`
+- The query counts DISTINCT users in team_members table, not hackathon_users table
+- This ensures only active participants (those who joined teams) are counted
+- All service methods that return HackathonResponse must call `getParticipantCount()` to populate the count
+- Methods that were missing participant counts: `getAllHackathons()`, `getActiveHackathons()`, `getUserDraftHackathons()`, `updateHackathon()`
+
+### Testing Patterns
+- Tests use Mockito with `@Mock` and `@InjectMocks` annotations
+- Use `whenever().thenReturn()` to mock repository responses
+- For methods that call participant count multiple times, use chained `.thenReturn()` calls
+- Always verify repository methods were called with `verify()`
+- Test both zero and non-zero participant counts
+
+---
+
+## Iteration 78 - Fix participant count query (US-001)
+- Fixed getAllHackathons() to include participant counts by calling getParticipantCount()
+- Fixed getActiveHackathons() to include participant counts
+- Fixed getUserDraftHackathons() to include participant counts
+- Fixed updateHackathon() to include participant counts in response
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt
+  - src/test/kotlin/com/hackathon/manager/service/HackathonServiceTest.kt
+  - PRD.md
+- Learnings for future iterations:
+  - The participant count query already existed and was correct (uses COUNT DISTINCT on team members)
+  - The issue was that list endpoints (getAllHackathons, getActiveHackathons) weren't calling getParticipantCount()
+  - Single hackathon endpoints (getHackathonById, getHackathonBySlug) already had participant counts
+  - When adding mocks for teamMemberRepository in tests, need to update all existing tests that call the affected methods
+  - Tests must mock the return value even when the actual value doesn't matter for that specific test assertion
 ---
