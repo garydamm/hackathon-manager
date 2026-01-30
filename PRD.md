@@ -68,13 +68,13 @@ Add participant visibility to the hackathon manager by displaying participant co
 **Description:** As an authenticated user, I want to see accurate participant counts on the dashboard so I can quickly assess hackathon engagement.
 
 **Acceptance Criteria:**
-- [ ] Dashboard uses fixed participant count query
-- [ ] Each hackathon card shows correct participant count
-- [ ] Count updates reflect actual database state
-- [ ] Zero participants displays as "0" (not hidden or showing placeholder)
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Dashboard uses fixed participant count query
+- [x] Each hackathon card shows correct participant count
+- [x] Count updates reflect actual database state
+- [x] Zero participants displays as "0" (not hidden or showing placeholder)
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-006: Add UI system tests for participant display workflow
 **Description:** As a developer, I need end-to-end tests for the participant display feature to ensure the complete user flow works correctly.
