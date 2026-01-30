@@ -42,13 +42,13 @@ Add participant visibility to the hackathon manager by displaying participant co
 **Description:** As an authenticated user, I want to see all registered participants on the hackathon details page so I know who's participating.
 
 **Acceptance Criteria:**
-- [ ] Participants section added to hackathon details page
-- [ ] Displays participant name, email, registration date, and team/role
-- [ ] Participants sorted alphabetically by name
-- [ ] Section shows participant count in header (e.g., "Participants (12)")
-- [ ] Unit tests added for participant list component
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Participants section added to hackathon details page
+- [x] Displays participant name, email, registration date, and team/role
+- [x] Participants sorted alphabetically by name
+- [x] Section shows participant count in header (e.g., "Participants (12)")
+- [x] Unit tests added for participant list component
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-004: Add empty state with registration CTA

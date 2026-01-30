@@ -3,6 +3,7 @@ package com.hackathon.manager.controller
 import com.hackathon.manager.dto.CreateHackathonRequest
 import com.hackathon.manager.dto.HackathonResponse
 import com.hackathon.manager.dto.OrganizerInfo
+import com.hackathon.manager.dto.ParticipantResponse
 import com.hackathon.manager.dto.UpdateHackathonRequest
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.security.UserPrincipal
@@ -98,5 +99,17 @@ class HackathonController(
     ): ResponseEntity<List<OrganizerInfo>> {
         val organizers = hackathonService.getHackathonOrganizers(id)
         return ResponseEntity.ok(organizers)
+    }
+
+    @GetMapping("/{id}/participants")
+    fun getHackathonParticipants(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal?
+    ): ResponseEntity<List<ParticipantResponse>> {
+        if (principal == null) {
+            throw ApiException("Authentication required", HttpStatus.UNAUTHORIZED)
+        }
+        val participants = hackathonService.getHackathonParticipants(id)
+        return ResponseEntity.ok(participants)
     }
 }

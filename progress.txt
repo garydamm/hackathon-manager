@@ -35,3 +35,49 @@
   - When adding mocks for teamMemberRepository in tests, need to update all existing tests that call the affected methods
   - Tests must mock the return value even when the actual value doesn't matter for that specific test assertion
 ---
+
+## Iteration 79 - Create participant list query (US-002)
+- Created ParticipantResponse DTO with name, email, registration date, team name, and leader flag
+- Added TeamMemberRepository.findByHackathonId() query to fetch all team members for a hackathon
+- Implemented HackathonService.getHackathonParticipants() that returns participants sorted alphabetically by name
+- Added comprehensive unit tests covering sorting, empty lists, and error handling
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/dto/ParticipantDtos.kt (new)
+  - src/main/kotlin/com/hackathon/manager/repository/TeamMemberRepository.kt
+  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt
+  - src/test/kotlin/com/hackathon/manager/service/HackathonServiceTest.kt
+  - PRD.md
+- Learnings for future iterations:
+  - Participant data comes from TeamMember entities (users who joined teams)
+  - TeamMember contains user, team, isLeader flag, and joinedAt timestamp
+  - The service method uses .sortedBy { it.name } to sort alphabetically
+  - ParticipantResponse.fromTeamMember() constructs full name from firstName + lastName
+  - Tests should verify sorting order by using intentionally out-of-order test data
+  - Need to import Team and TeamMember entities in test files when creating test data
+---
+
+## Iteration 80 - Display participant list on details page (US-003)
+- Added GET /api/hackathons/{id}/participants endpoint to HackathonController (requires authentication)
+- Created Participant type in frontend types (name, email, registrationDate, teamName, isLeader)
+- Added getParticipants() method to hackathonService frontend service
+- Created ParticipantsSection component that displays participants in a card format
+- Added ParticipantsSection to HackathonDetail page (visible to all authenticated users)
+- Created E2E test hackathon-participants-section.spec.ts covering display, count, details, and sorting
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/controller/HackathonController.kt
+  - frontend/src/types/index.ts
+  - frontend/src/services/hackathons.ts
+  - frontend/src/components/ParticipantsSection.tsx (new)
+  - frontend/src/pages/HackathonDetail.tsx
+  - frontend/e2e/hackathon-participants-section.spec.ts (new)
+  - PRD.md
+- Learnings for future iterations:
+  - Frontend components use React Query with useQuery for data fetching
+  - The ParticipantsSection follows the same pattern as other sections (OrganizersSection, TeamsSection)
+  - Components show loading state with Loader2 spinner while data is being fetched
+  - Participant cards display name, email (as mailto link), registration date, team name, and leader badge
+  - Team leader badge uses Shield icon with primary styling
+  - This project uses Playwright for E2E tests, not unit tests for frontend components
+  - E2E tests follow pattern: beforeAll setup, beforeEach login, individual test cases
+  - Backend endpoint requires authentication via @AuthenticationPrincipal
+---

@@ -387,3 +387,12 @@ export interface OrganizerInfo {
   displayName?: string | null
   avatarUrl?: string | null
 }
+
+// Participant types
+export interface Participant {
+  name: string
+  email: string
+  registrationDate: string
+  teamName?: string | null
+  isLeader: boolean
+}

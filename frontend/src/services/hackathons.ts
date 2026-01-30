@@ -1,5 +1,5 @@
 import { api } from "./api"
-import type { Hackathon, CreateHackathonRequest, UpdateHackathonRequest, OrganizerInfo } from "@/types"
+import type { Hackathon, CreateHackathonRequest, UpdateHackathonRequest, OrganizerInfo, Participant } from "@/types"
 
 export const hackathonService = {
   async getAll(): Promise<Hackathon[]> {
@@ -36,5 +36,9 @@ export const hackathonService = {
 
   async getOrganizers(hackathonId: string): Promise<OrganizerInfo[]> {
     return api.get<OrganizerInfo[]>(`/hackathons/${hackathonId}/organizers`)
+  },
+
+  async getParticipants(hackathonId: string): Promise<Participant[]> {
+    return api.get<Participant[]>(`/hackathons/${hackathonId}/participants`)
   },
 }
