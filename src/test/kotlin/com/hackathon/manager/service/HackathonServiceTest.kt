@@ -71,38 +71,57 @@ class HackathonServiceTest {
     }
 
     @Test
-    fun `getAllHackathons should return all hackathons`() {
+    fun `getAllHackathons should return all hackathons with participant counts`() {
         whenever(hackathonRepository.findAll()).thenReturn(listOf(testHackathon))
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(5)
 
         val result = hackathonService.getAllHackathons()
 
         assertThat(result).hasSize(1)
         assertThat(result[0].name).isEqualTo("Test Hackathon")
         assertThat(result[0].slug).isEqualTo("test-hackathon")
+        assertThat(result[0].participantCount).isEqualTo(5)
         verify(hackathonRepository).findAll()
+        verify(teamMemberRepository).countDistinctUsersByHackathonId(testHackathonId)
     }
 
     @Test
-    fun `getActiveHackathons should return active hackathons`() {
+    fun `getAllHackathons should return hackathons with zero participants`() {
+        whenever(hackathonRepository.findAll()).thenReturn(listOf(testHackathon))
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(0)
+
+        val result = hackathonService.getAllHackathons()
+
+        assertThat(result).hasSize(1)
+        assertThat(result[0].participantCount).isEqualTo(0)
+        verify(teamMemberRepository).countDistinctUsersByHackathonId(testHackathonId)
+    }
+
+    @Test
+    fun `getActiveHackathons should return active hackathons with participant counts`() {
         val activeHackathon = testHackathon.copy(status = HackathonStatus.registration_open)
         whenever(hackathonRepository.findActiveHackathons(any())).thenReturn(listOf(activeHackathon))
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(10)
 
         val result = hackathonService.getActiveHackathons()
 
         assertThat(result).hasSize(1)
         assertThat(result[0].status).isEqualTo(HackathonStatus.registration_open)
+        assertThat(result[0].participantCount).isEqualTo(10)
+        verify(teamMemberRepository).countDistinctUsersByHackathonId(testHackathonId)
     }
 
     @Test
-    fun `getHackathonById should return hackathon when found`() {
+    fun `getHackathonById should return hackathon with participant count when found`() {
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
-        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
-            .thenReturn(emptyList())
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(3)
 
         val result = hackathonService.getHackathonById(testHackathonId)
 
         assertThat(result.id).isEqualTo(testHackathonId)
         assertThat(result.name).isEqualTo("Test Hackathon")
+        assertThat(result.participantCount).isEqualTo(3)
+        verify(teamMemberRepository).countDistinctUsersByHackathonId(testHackathonId)
     }
 
     @Test
@@ -113,14 +132,14 @@ class HackathonServiceTest {
             role = UserRole.organizer
         )
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
-        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
-            .thenReturn(emptyList())
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(2)
         whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId))
             .thenReturn(hackathonUser)
 
         val result = hackathonService.getHackathonById(testHackathonId, testUserId)
 
         assertThat(result.userRole).isEqualTo(UserRole.organizer)
+        assertThat(result.participantCount).isEqualTo(2)
     }
 
     @Test
@@ -133,14 +152,15 @@ class HackathonServiceTest {
     }
 
     @Test
-    fun `getHackathonBySlug should return hackathon when found`() {
+    fun `getHackathonBySlug should return hackathon with participant count when found`() {
         whenever(hackathonRepository.findBySlug("test-hackathon")).thenReturn(testHackathon)
-        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
-            .thenReturn(emptyList())
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(7)
 
         val result = hackathonService.getHackathonBySlug("test-hackathon")
 
         assertThat(result.slug).isEqualTo("test-hackathon")
+        assertThat(result.participantCount).isEqualTo(7)
+        verify(teamMemberRepository).countDistinctUsersByHackathonId(testHackathonId)
     }
 
     @Test
@@ -233,12 +253,14 @@ class HackathonServiceTest {
 
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
         whenever(hackathonRepository.save(any<Hackathon>())).thenAnswer { it.arguments[0] }
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(4)
 
         val result = hackathonService.updateHackathon(testHackathonId, request)
 
         assertThat(result.name).isEqualTo("Updated Hackathon")
         assertThat(result.description).isEqualTo("Updated description")
         assertThat(result.status).isEqualTo(HackathonStatus.registration_open)
+        assertThat(result.participantCount).isEqualTo(4)
     }
 
     @Test
@@ -267,8 +289,9 @@ class HackathonServiceTest {
 
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(openHackathon))
         whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(null)
-        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
-            .thenReturn(emptyList())
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId))
+            .thenReturn(0)  // Before registration
+            .thenReturn(1)  // After registration
         whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
         whenever(hackathonUserRepository.save(any<HackathonUser>())).thenAnswer { it.arguments[0] }
 
@@ -315,12 +338,12 @@ class HackathonServiceTest {
 
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(openHackathon))
         whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(existingOrganizer)
-        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
-            .thenReturn(emptyList())
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(5)
 
         val result = hackathonService.registerForHackathon(testHackathonId, testUserId)
 
         assertThat(result.userRole).isEqualTo(UserRole.organizer)
+        assertThat(result.participantCount).isEqualTo(5)
     }
 
     @Test
@@ -351,8 +374,7 @@ class HackathonServiceTest {
 
         whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(fullHackathon))
         whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId)).thenReturn(null)
-        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
-            .thenReturn(listOf(existingParticipant))
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(1)
 
         assertThatThrownBy { hackathonService.registerForHackathon(testHackathonId, testUserId) }
             .isInstanceOf(ValidationException::class.java)
@@ -434,14 +456,17 @@ class HackathonServiceTest {
     }
 
     @Test
-    fun `getUserDraftHackathons should return draft hackathons for user`() {
+    fun `getUserDraftHackathons should return draft hackathons for user with participant counts`() {
         whenever(hackathonRepository.findByOrganizerAndStatus(testUserId, HackathonStatus.draft))
             .thenReturn(listOf(testHackathon))
+        whenever(teamMemberRepository.countDistinctUsersByHackathonId(testHackathonId)).thenReturn(2)
 
         val result = hackathonService.getUserDraftHackathons(testUserId)
 
         assertThat(result).hasSize(1)
         assertThat(result[0].status).isEqualTo(HackathonStatus.draft)
+        assertThat(result[0].participantCount).isEqualTo(2)
+        verify(teamMemberRepository).countDistinctUsersByHackathonId(testHackathonId)
     }
 
     private fun Hackathon.copy(

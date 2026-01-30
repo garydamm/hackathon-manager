@@ -27,12 +27,18 @@ class HackathonService(
 
     @Transactional(readOnly = true)
     fun getAllHackathons(): List<HackathonResponse> {
-        return hackathonRepository.findAll().map { hackathon -> HackathonResponse.fromEntity(hackathon) }
+        return hackathonRepository.findAll().map { hackathon ->
+            val participantCount = getParticipantCount(hackathon.id!!)
+            HackathonResponse.fromEntity(hackathon, participantCount)
+        }
     }
 
     @Transactional(readOnly = true)
     fun getActiveHackathons(): List<HackathonResponse> {
-        return hackathonRepository.findActiveHackathons().map { hackathon -> HackathonResponse.fromEntity(hackathon) }
+        return hackathonRepository.findActiveHackathons().map { hackathon ->
+            val participantCount = getParticipantCount(hackathon.id!!)
+            HackathonResponse.fromEntity(hackathon, participantCount)
+        }
     }
 
     @Transactional(readOnly = true)
@@ -123,7 +129,8 @@ class HackathonService(
         request.maxParticipants.applyIfNotNull { hackathon.maxParticipants = it }
 
         val savedHackathon = hackathonRepository.save(hackathon)
-        return HackathonResponse.fromEntity(savedHackathon)
+        val participantCount = getParticipantCount(id)
+        return HackathonResponse.fromEntity(savedHackathon, participantCount)
     }
 
     @Transactional
@@ -197,7 +204,10 @@ class HackathonService(
     @Transactional(readOnly = true)
     fun getUserDraftHackathons(userId: UUID): List<HackathonResponse> {
         return hackathonRepository.findByOrganizerAndStatus(userId, HackathonStatus.draft)
-            .map { hackathon -> HackathonResponse.fromEntity(hackathon) }
+            .map { hackathon ->
+                val participantCount = getParticipantCount(hackathon.id!!)
+                HackathonResponse.fromEntity(hackathon, participantCount)
+            }
     }
 
     @Transactional(readOnly = true)
