@@ -233,7 +233,8 @@ class HackathonService(
     /**
      * Get all participants for a hackathon.
      * Returns participants sorted alphabetically by name.
-     * Participants are users who have joined teams in the hackathon.
+     * Participants are all users registered for the hackathon with the participant role,
+     * regardless of whether they have joined a team.
      */
     @Transactional(readOnly = true)
     fun getHackathonParticipants(hackathonId: UUID): List<ParticipantResponse> {
@@ -241,18 +242,27 @@ class HackathonService(
         hackathonRepository.findById(hackathonId)
             .orElseThrow { NotFoundException("Hackathon not found") }
 
+        // Get all registered participants
+        val hackathonUsers = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.participant)
+
+        // Get all team members for the hackathon to map users to their teams
         val teamMembers = teamMemberRepository.findByHackathonId(hackathonId)
-        return teamMembers
-            .map { ParticipantResponse.fromTeamMember(it) }
+        val teamMembersByUserId = teamMembers.associateBy { it.user.id }
+
+        // Create participant responses, including team info if available
+        return hackathonUsers
+            .map { hackathonUser ->
+                val teamMember = teamMembersByUserId[hackathonUser.user.id]
+                ParticipantResponse.fromHackathonUser(hackathonUser, teamMember)
+            }
             .sortedBy { it.name }
     }
 
     /**
      * Get the participant count for a hackathon.
-     * Counts all distinct users who are members of teams in the hackathon.
-     * This provides a more accurate count of active participants than just counting HackathonUser entries with participant role.
+     * Counts all users registered for the hackathon with the participant role.
      */
     private fun getParticipantCount(hackathonId: UUID): Int {
-        return teamMemberRepository.countDistinctUsersByHackathonId(hackathonId)
+        return hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.participant).size
     }
 }
