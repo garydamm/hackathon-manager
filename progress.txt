@@ -136,4 +136,24 @@
   - The empty state styling uses flex-col, items-center, text-center, and space-y-4 for consistent spacing
   - Icon containers use rounded-full with bg-muted/50 and appropriate padding for visual consistency
 ---
+## Iteration 83 - Update dashboard participant count (US-005)
+- Verified that dashboard participant count display was already implemented in iteration 78
+- Backend service methods (getAllHackathons, getActiveHackathons, getUserDraftHackathons) populate participant counts
+- Frontend HackathonCard component displays counts at line 170: {hackathon.participantCount ?? 0}
+- Zero participants correctly displays as "0" using nullish coalescing operator
+- Backend tests pass (HackathonServiceTest)
+- Frontend typecheck passes (tsc -b && vite build)
+- Files verified:
+  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt
+  - frontend/src/components/HackathonCard.tsx
+  - frontend/src/pages/Dashboard.tsx
+  - PRD.md
+- Learnings for future iterations:
+  - Task US-005 was actually already completed in iteration 78 when backend services were fixed
+  - The HackathonCard component already had the display logic for participant counts
+  - Both list endpoints (getAllHackathons, getActiveHackathons) and individual endpoints properly populate counts
+  - The ?? 0 fallback ensures zero participants display correctly without null/undefined issues
+  - E2E tests for dashboard exist but require backend to be running, which is outside the scope of this verification
+  - When a task says "update" but implementation already exists, verify all acceptance criteria are met before making changes
+---
 
