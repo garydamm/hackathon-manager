@@ -30,13 +30,13 @@ Add participant visibility to the hackathon manager by displaying participant co
 **Description:** As a developer, I need a server action to fetch the full participant list with details so it can be displayed on the details page.
 
 **Acceptance Criteria:**
-- [ ] Server action fetches participants for a specific hackathon
-- [ ] Returns name, email, registration date, and team/role for each participant
-- [ ] Results sorted alphabetically by name
-- [ ] Requires authentication to access
-- [ ] Unit tests added for participant list query
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Server action fetches participants for a specific hackathon
+- [x] Returns name, email, registration date, and team/role for each participant
+- [x] Results sorted alphabetically by name
+- [x] Requires authentication to access
+- [x] Unit tests added for participant list query
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-003: Display participant list on details page
 **Description:** As an authenticated user, I want to see all registered participants on the hackathon details page so I know who's participating.

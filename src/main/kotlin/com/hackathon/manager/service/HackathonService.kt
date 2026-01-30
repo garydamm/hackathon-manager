@@ -2,6 +2,7 @@ package com.hackathon.manager.service
 
 import com.hackathon.manager.dto.CreateHackathonRequest
 import com.hackathon.manager.dto.HackathonResponse
+import com.hackathon.manager.dto.ParticipantResponse
 import com.hackathon.manager.dto.UpdateHackathonRequest
 import com.hackathon.manager.entity.Hackathon
 import com.hackathon.manager.entity.HackathonUser
@@ -227,6 +228,23 @@ class HackathonService(
                 avatarUrl = hackathonUser.user.avatarUrl
             )
         }
+    }
+
+    /**
+     * Get all participants for a hackathon.
+     * Returns participants sorted alphabetically by name.
+     * Participants are users who have joined teams in the hackathon.
+     */
+    @Transactional(readOnly = true)
+    fun getHackathonParticipants(hackathonId: UUID): List<ParticipantResponse> {
+        // Verify hackathon exists
+        hackathonRepository.findById(hackathonId)
+            .orElseThrow { NotFoundException("Hackathon not found") }
+
+        val teamMembers = teamMemberRepository.findByHackathonId(hackathonId)
+        return teamMembers
+            .map { ParticipantResponse.fromTeamMember(it) }
+            .sortedBy { it.name }
     }
 
     /**

@@ -4,6 +4,8 @@ import com.hackathon.manager.dto.CreateHackathonRequest
 import com.hackathon.manager.dto.UpdateHackathonRequest
 import com.hackathon.manager.entity.Hackathon
 import com.hackathon.manager.entity.HackathonUser
+import com.hackathon.manager.entity.Team
+import com.hackathon.manager.entity.TeamMember
 import com.hackathon.manager.entity.User
 import com.hackathon.manager.entity.enums.HackathonStatus
 import com.hackathon.manager.entity.enums.UserRole
@@ -467,6 +469,121 @@ class HackathonServiceTest {
         assertThat(result[0].status).isEqualTo(HackathonStatus.draft)
         assertThat(result[0].participantCount).isEqualTo(2)
         verify(teamMemberRepository).countDistinctUsersByHackathonId(testHackathonId)
+    }
+
+    @Test
+    fun `getHackathonParticipants should return all participants sorted by name`() {
+        // Create test users
+        val user1 = User(
+            id = UUID.randomUUID(),
+            email = "alice@example.com",
+            passwordHash = "hash",
+            firstName = "Alice",
+            lastName = "Smith"
+        )
+        val user2 = User(
+            id = UUID.randomUUID(),
+            email = "bob@example.com",
+            passwordHash = "hash",
+            firstName = "Bob",
+            lastName = "Johnson"
+        )
+        val user3 = User(
+            id = UUID.randomUUID(),
+            email = "charlie@example.com",
+            passwordHash = "hash",
+            firstName = "Charlie",
+            lastName = "Davis"
+        )
+
+        // Create test teams
+        val team1 = Team(
+            id = UUID.randomUUID(),
+            hackathon = testHackathon,
+            name = "Team Alpha",
+            createdBy = user1
+        )
+        val team2 = Team(
+            id = UUID.randomUUID(),
+            hackathon = testHackathon,
+            name = "Team Beta",
+            createdBy = user2
+        )
+
+        // Create team members (note: intentionally out of alphabetical order)
+        val member1 = TeamMember(
+            id = UUID.randomUUID(),
+            team = team1,
+            user = user3,
+            isLeader = false,
+            joinedAt = OffsetDateTime.now().minusDays(2)
+        )
+        val member2 = TeamMember(
+            id = UUID.randomUUID(),
+            team = team1,
+            user = user1,
+            isLeader = true,
+            joinedAt = OffsetDateTime.now().minusDays(3)
+        )
+        val member3 = TeamMember(
+            id = UUID.randomUUID(),
+            team = team2,
+            user = user2,
+            isLeader = true,
+            joinedAt = OffsetDateTime.now().minusDays(1)
+        )
+
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(teamMemberRepository.findByHackathonId(testHackathonId))
+            .thenReturn(listOf(member1, member2, member3))
+
+        val result = hackathonService.getHackathonParticipants(testHackathonId)
+
+        assertThat(result).hasSize(3)
+        // Should be sorted alphabetically by name
+        assertThat(result[0].name).isEqualTo("Alice Smith")
+        assertThat(result[0].email).isEqualTo("alice@example.com")
+        assertThat(result[0].teamName).isEqualTo("Team Alpha")
+        assertThat(result[0].isTeamLeader).isTrue()
+
+        assertThat(result[1].name).isEqualTo("Bob Johnson")
+        assertThat(result[1].email).isEqualTo("bob@example.com")
+        assertThat(result[1].teamName).isEqualTo("Team Beta")
+        assertThat(result[1].isTeamLeader).isTrue()
+
+        assertThat(result[2].name).isEqualTo("Charlie Davis")
+        assertThat(result[2].email).isEqualTo("charlie@example.com")
+        assertThat(result[2].teamName).isEqualTo("Team Alpha")
+        assertThat(result[2].isTeamLeader).isFalse()
+
+        verify(hackathonRepository).findById(testHackathonId)
+        verify(teamMemberRepository).findByHackathonId(testHackathonId)
+    }
+
+    @Test
+    fun `getHackathonParticipants should return empty list when no participants`() {
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(teamMemberRepository.findByHackathonId(testHackathonId)).thenReturn(emptyList())
+
+        val result = hackathonService.getHackathonParticipants(testHackathonId)
+
+        assertThat(result).isEmpty()
+        verify(hackathonRepository).findById(testHackathonId)
+        verify(teamMemberRepository).findByHackathonId(testHackathonId)
+    }
+
+    @Test
+    fun `getHackathonParticipants should throw NotFoundException when hackathon does not exist`() {
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy {
+            hackathonService.getHackathonParticipants(testHackathonId)
+        }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Hackathon not found")
+
+        verify(hackathonRepository).findById(testHackathonId)
+        verify(teamMemberRepository, never()).findByHackathonId(any())
     }
 
     private fun Hackathon.copy(
