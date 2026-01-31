@@ -18,6 +18,7 @@ class ApiClient {
   private baseUrl: string
   private isRefreshing = false
   private refreshSubscribers: Array<(token: string) => void> = []
+  private lastActivityTime: number | null = null
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl
@@ -86,6 +87,12 @@ class ApiClient {
       if (token) {
         ;(headers as Record<string, string>)["Authorization"] = `Bearer ${token}`
       }
+    }
+
+    // Track activity for meaningful API calls (POST, PUT, DELETE, PATCH)
+    const method = fetchOptions.method?.toUpperCase() || "GET"
+    if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
+      this.lastActivityTime = Date.now()
     }
 
     const response = await fetch(url, {
@@ -188,6 +195,30 @@ class ApiClient {
 
   delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "DELETE" })
+  }
+
+  patch<T>(endpoint: string, data?: unknown, options?: RequestOptions): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "PATCH",
+      body: data ? JSON.stringify(data) : undefined,
+    })
+  }
+
+  /**
+   * Get the timestamp of the last meaningful activity (POST, PUT, DELETE, PATCH)
+   * Returns null if no activity has been tracked yet
+   */
+  getLastActivityTime(): number | null {
+    return this.lastActivityTime
+  }
+
+  /**
+   * Clear the last activity timestamp
+   * Used for testing purposes only
+   */
+  clearActivityTracking(): void {
+    this.lastActivityTime = null
   }
 }
 

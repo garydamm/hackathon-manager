@@ -77,13 +77,13 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a developer, I need to track user activity so sessions can be extended automatically when users are actively working.
 
 **Acceptance Criteria:**
-- [ ] Track timestamp of last "meaningful" API call (POST, PUT, DELETE, PATCH)
-- [ ] Exclude GET requests from activity tracking (viewing isn't active work)
-- [ ] Store last activity timestamp in memory (not localStorage)
-- [ ] Expose `getLastActivityTime()` function
-- [ ] Unit tests added for activity tracking
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Track timestamp of last "meaningful" API call (POST, PUT, DELETE, PATCH)
+- [x] Exclude GET requests from activity tracking (viewing isn't active work)
+- [x] Store last activity timestamp in memory (not localStorage)
+- [x] Expose `getLastActivityTime()` function
+- [x] Unit tests added for activity tracking
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-006: Backend endpoint to extend session on activity
 **Description:** As a user, I want my session to automatically extend when I'm actively working so I don't have to manually extend it.
