@@ -131,8 +131,8 @@ test.describe('Hackathon Detail View', () => {
     // Location card - should show "Virtual" or a location
     await expect(page.getByText('Location')).toBeVisible();
 
-    // Participants card
-    await expect(page.getByText('Participants')).toBeVisible();
+    // Participants card - use first() to select the one in quick info cards section
+    await expect(page.getByText('Participants').first()).toBeVisible();
   });
 
   test('displays rules section when rules are present', async ({ page }) => {
