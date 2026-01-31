@@ -5,6 +5,7 @@ import com.hackathon.manager.dto.auth.*
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.security.JwtAuthenticationFilter
 import com.hackathon.manager.security.JwtTokenProvider
+import com.hackathon.manager.security.UserPrincipal
 import com.hackathon.manager.service.AuthService
 import com.hackathon.manager.service.UserService
 import org.junit.jupiter.api.Test
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
@@ -47,6 +49,14 @@ class AuthControllerTest {
     lateinit var jwtTokenProvider: JwtTokenProvider
 
     private val testUserId = UUID.randomUUID()
+
+    private fun createUserPrincipal(id: UUID = testUserId) = UserPrincipal(
+        id = id,
+        email = "test@example.com",
+        passwordHash = "hashedpassword",
+        authorities = emptyList(),
+        isActive = true
+    )
 
     @Test
     @WithMockUser
@@ -240,5 +250,74 @@ class AuthControllerTest {
                 .content(objectMapper.writeValueAsString(request))
         )
             .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `extend-session should return 200 when successful`() {
+        val response = AuthResponse(
+            accessToken = "new-access-token",
+            refreshToken = "new-refresh-token",
+            user = UserResponse(
+                id = testUserId,
+                email = "test@example.com",
+                firstName = "Test",
+                lastName = "User",
+                displayName = null,
+                avatarUrl = null,
+                bio = null,
+                skills = null,
+                githubUrl = null,
+                linkedinUrl = null,
+                portfolioUrl = null,
+                createdAt = OffsetDateTime.now()
+            )
+        )
+
+        whenever(authService.extendSession(any())).thenReturn(response)
+
+        mockMvc.perform(
+            post("/api/auth/extend-session")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.accessToken").value("new-access-token"))
+            .andExpect(jsonPath("$.refreshToken").value("new-refresh-token"))
+            .andExpect(jsonPath("$.user.email").value("test@example.com"))
+    }
+
+    @Test
+    fun `extend-session should return 401 when not authenticated`() {
+        mockMvc.perform(
+            post("/api/auth/extend-session")
+                .with(csrf())
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `extend-session should return 429 when rate limit exceeded`() {
+        whenever(authService.extendSession(any()))
+            .thenThrow(ApiException("Session extension rate limit exceeded. Please wait 45 seconds.", HttpStatus.TOO_MANY_REQUESTS))
+
+        mockMvc.perform(
+            post("/api/auth/extend-session")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isTooManyRequests)
+    }
+
+    @Test
+    fun `extend-session should return 404 when user not found`() {
+        whenever(authService.extendSession(any()))
+            .thenThrow(ApiException("User not found", HttpStatus.NOT_FOUND))
+
+        mockMvc.perform(
+            post("/api/auth/extend-session")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isNotFound)
     }
 }

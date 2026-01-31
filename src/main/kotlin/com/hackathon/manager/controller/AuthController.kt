@@ -2,11 +2,14 @@ package com.hackathon.manager.controller
 
 import com.hackathon.manager.dto.auth.*
 import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.security.UserPrincipal
 import com.hackathon.manager.service.AuthService
 import com.hackathon.manager.service.UserService
 import org.springframework.http.HttpStatus
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -31,6 +34,13 @@ class AuthController(
     @PostMapping("/refresh")
     fun refreshToken(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<AuthResponse> {
         val response = authService.refreshToken(request)
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/extend-session")
+    @PreAuthorize("isAuthenticated()")
+    fun extendSession(@AuthenticationPrincipal principal: UserPrincipal): ResponseEntity<AuthResponse> {
+        val response = authService.extendSession(principal.id)
         return ResponseEntity.ok(response)
     }
 

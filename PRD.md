@@ -89,14 +89,14 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a user, I want my session to automatically extend when I'm actively working so I don't have to manually extend it.
 
 **Acceptance Criteria:**
-- [ ] Create `POST /api/auth/extend-session` endpoint
-- [ ] Requires valid access token (authenticated)
-- [ ] Issues new access + refresh tokens with full duration
-- [ ] Returns same response format as `/auth/refresh`
-- [ ] Rate limit: max 1 extend per minute per user
-- [ ] Unit tests added for extend session endpoint
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `POST /api/auth/extend-session` endpoint
+- [x] Requires valid access token (authenticated)
+- [x] Issues new access + refresh tokens with full duration
+- [x] Returns same response format as `/auth/refresh`
+- [x] Rate limit: max 1 extend per minute per user
+- [x] Unit tests added for extend session endpoint
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-007: Integrate activity-based session extension
 **Description:** As a user, I want my session to extend automatically when I perform actions so I never see expiration warnings during active use.
