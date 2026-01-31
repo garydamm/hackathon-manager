@@ -104,6 +104,35 @@ test.describe('Hackathon Participants - Empty State', () => {
     await expect(page.getByText('Be the first to join this hackathon!')).toBeVisible();
   });
 
+  test('empty state has appropriate styling consistent with app design', async ({ page }) => {
+    // Login as organizer
+    await page.goto('/login');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+
+    await page.getByLabel('Email').fill(organizerEmail);
+    await page.getByLabel('Password').fill(TEST_PASSWORD);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await expect(page.getByRole('heading', { name: new RegExp(`Welcome back, ${organizerFirstName}`) })).toBeVisible({ timeout: 10000 });
+
+    // Navigate to hackathon detail page
+    await page.goto(`/hackathons/${hackathonSlug}`);
+
+    // Wait for page to load
+    await expect(page.getByRole('heading', { name: hackathonName, level: 1 })).toBeVisible({ timeout: 10000 });
+
+    // Verify the empty state container has proper spacing and centering
+    // Select the container with the specific flex layout classes used in the empty state
+    const emptyStateContainer = page.locator('div.flex.flex-col.items-center.text-center').first();
+    await expect(emptyStateContainer).toBeVisible();
+
+    // Check that the container has flex and center classes
+    const containerClass = await emptyStateContainer.getAttribute('class');
+    expect(containerClass).toContain('flex');
+    expect(containerClass).toContain('items-center');
+    expect(containerClass).toContain('text-center');
+  });
+
   test('displays registration CTA button when user not registered and registration is open', async ({ page }) => {
     // Login as unregistered user
     await page.goto('/login');
@@ -160,40 +189,11 @@ test.describe('Hackathon Participants - Empty State', () => {
     await page.reload();
     await expect(page.getByRole('heading', { name: hackathonName, level: 1 })).toBeVisible({ timeout: 10000 });
 
-    // Verify the empty state still shows but Register Now button is NOT visible
-    // (user is registered but hasn't joined a team yet, so participant count is still 0)
-    await expect(page.getByText('No participants registered yet')).toBeVisible();
+    // After registering, user becomes a participant (count = 1), so participants list should show
+    // Verify the Participants section shows 1 participant
+    await expect(page.getByRole('heading', { name: /Participants \(1\)/ })).toBeVisible({ timeout: 5000 });
 
-    // The Register Now button should NOT be visible since user is now registered
-    await expect(page.getByRole('button', { name: 'Register Now' })).not.toBeVisible();
-  });
-
-  test('empty state has appropriate styling consistent with app design', async ({ page }) => {
-    // Login as organizer
-    await page.goto('/login');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
-
-    await page.getByLabel('Email').fill(organizerEmail);
-    await page.getByLabel('Password').fill(TEST_PASSWORD);
-    await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page.getByRole('heading', { name: new RegExp(`Welcome back, ${organizerFirstName}`) })).toBeVisible({ timeout: 10000 });
-
-    // Navigate to hackathon detail page
-    await page.goto(`/hackathons/${hackathonSlug}`);
-
-    // Wait for page to load
-    await expect(page.getByRole('heading', { name: hackathonName, level: 1 })).toBeVisible({ timeout: 10000 });
-
-    // Verify the empty state container has proper spacing and centering
-    // Select the container with the specific flex layout classes used in the empty state
-    const emptyStateContainer = page.locator('div.flex.flex-col.items-center.text-center').first();
-    await expect(emptyStateContainer).toBeVisible();
-
-    // Check that the container has flex and center classes
-    const containerClass = await emptyStateContainer.getAttribute('class');
-    expect(containerClass).toContain('flex');
-    expect(containerClass).toContain('items-center');
-    expect(containerClass).toContain('text-center');
+    // Verify the participant (current user) is listed in the participants section
+    await expect(page.locator('.space-y-3 p.font-medium', { hasText: unregisteredUserFirstName })).toBeVisible();
   });
 });

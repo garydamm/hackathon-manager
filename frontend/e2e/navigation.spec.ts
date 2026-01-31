@@ -65,17 +65,23 @@ test.describe('Navigation and Logout', () => {
   });
 
   test('logout button is visible in nav when authenticated', async ({ page }) => {
-    // Verify the logout button is visible in the navigation
-    const logoutButton = page.getByRole('button', { name: 'Logout' });
-    await expect(logoutButton).toBeVisible();
+    // Click the user dropdown trigger to open it
+    await page.getByRole('button', { name: `${testUserFirstName} User` }).click();
+
+    // Verify the logout menu item is visible in the dropdown
+    const logoutMenuItem = page.getByRole('menuitem', { name: 'Logout' });
+    await expect(logoutMenuItem).toBeVisible();
   });
 
   test('clicking logout clears session and redirects to login page', async ({ page }) => {
     // Verify we're on the dashboard first
     await expect(page).toHaveURL('/');
 
-    // Click the logout button
-    await page.getByRole('button', { name: 'Logout' }).click();
+    // Open the user dropdown
+    await page.getByRole('button', { name: `${testUserFirstName} User` }).click();
+
+    // Click the logout menu item
+    await page.getByRole('menuitem', { name: 'Logout' }).click();
 
     // Verify redirect to login page
     await expect(page).toHaveURL('/login');
