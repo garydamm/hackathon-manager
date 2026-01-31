@@ -40,6 +40,7 @@ Files changed:
 - Created: `frontend/src/utils/refreshTimer.ts` (refresh timer implementation)
 - Created: `frontend/src/utils/refreshTimer.test.ts` (comprehensive unit tests)
 - Modified: `frontend/src/services/auth.ts` (integrated refresh timer)
+- Modified: `frontend/src/contexts/AuthContext.tsx` (initialize timer on app load)
 - Modified: `PRD.md` (marked US-002 acceptance criteria as complete)
 
 Learnings for future iterations:
@@ -51,6 +52,7 @@ Learnings for future iterations:
 - REFRESH_BUFFER_MS is 5 minutes (300 seconds) as per requirements
 - Timer handles edge cases: immediate refresh if < 5 min remaining, invalid tokens
 - authService now has startRefreshTimer() and initializeRefreshTimer() methods
-- Next iteration should call initializeRefreshTimer() on app load (e.g., in App.tsx or main.tsx)
+- AuthContext initializes timer on mount when user is already logged in
+- Timer is fully integrated: starts on login/register, restarts on refresh, clears on logout, initializes on app load
 
 ---
