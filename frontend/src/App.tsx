@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { SessionExpiredBanner } from "@/components/SessionExpiredBanner"
+import { SessionTimeoutNotification } from "@/components/SessionTimeoutNotification"
 import { LoginPage } from "@/pages/Login"
 import { RegisterPage } from "@/pages/Register"
 import { ForgotPasswordPage } from "@/pages/ForgotPassword"
@@ -31,6 +32,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <SessionExpiredBanner />
+          <SessionTimeoutNotification />
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />

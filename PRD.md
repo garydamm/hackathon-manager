@@ -63,14 +63,14 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a user, I want a prominent warning when my session is about to expire so I can save my work or extend it.
 
 **Acceptance Criteria:**
-- [ ] Notification appears when < 5 minutes remain
-- [ ] Shows countdown with "Extend Session" button
-- [ ] Clicking "Extend Session" triggers token refresh
-- [ ] Notification dismisses after successful refresh
-- [ ] Uses toast/banner style (less intrusive than current expired banner)
-- [ ] Unit tests added for notification logic
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Notification appears when < 5 minutes remain
+- [x] Shows countdown with "Extend Session" button
+- [x] Clicking "Extend Session" triggers token refresh
+- [x] Notification dismisses after successful refresh
+- [x] Uses toast/banner style (less intrusive than current expired banner)
+- [x] Unit tests added for notification logic
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify notification appears and extend button works in browser
 
 ### US-005: Add activity tracking to API client

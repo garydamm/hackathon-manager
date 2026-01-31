@@ -56,3 +56,31 @@ Learnings for future iterations:
 - Timer is fully integrated: starts on login/register, restarts on refresh, clears on logout, initializes on app load
 
 ---
+
+## Iteration 3 - Create session countdown UI component (US-003)
+- Created SessionCountdown component that displays remaining session time
+- Component shows countdown when < 10 minutes remain (unobtrusive)
+- Updates every second using setInterval
+- Conditional styling: yellow/warning when < 5 minutes, blue/normal when >= 5 minutes
+- Fixed positioning in top-right corner (below navbar at top-16)
+- Automatically hides when > 10 minutes remain
+- Added comprehensive unit tests (18 tests covering all scenarios)
+
+Files changed:
+- Created: `frontend/src/components/SessionCountdown.tsx` (countdown component)
+- Created: `frontend/src/components/SessionCountdown.test.tsx` (comprehensive unit tests)
+- Modified: `PRD.md` (marked US-003 as complete)
+
+Learnings for future iterations:
+- Use `act()` from React Testing Library to wrap timer advances in tests
+- Timer state updates must be wrapped in `act()` to avoid warnings
+- Component visibility logic: only show when time is in specific range (< 10 min)
+- Format time conditionally: show hours+minutes for > 1hr, minutes+seconds otherwise
+- Use `window.clearInterval` instead of `global.clearInterval` for TypeScript
+- Fixed positioning classes: `fixed top-16 right-4 z-40` places below navbar
+- Accessibility: use `role="status"` and `aria-live="polite"` for screen readers
+- Conditional CSS classes using template literals for warning vs normal states
+- Component uses lucide-react icons (Clock icon) - consistent with existing patterns
+- Test all edge cases: visibility thresholds, formatting, styling transitions, cleanup
+
+---
