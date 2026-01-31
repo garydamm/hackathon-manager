@@ -628,3 +628,44 @@ Learnings for future iterations:
 - Next step (US-019) will add frontend support for cookie-based authentication
 ---
 
+
+## Iteration 19 - Frontend support for cookie-based auth (US-019)
+- Added useCookies flag to authService to control token storage method (default: false)
+- When useCookies=true, login/register/refresh endpoints receive useCookies=true query param
+- Tokens are NOT stored in localStorage when using cookies (HttpOnly security)
+- User object and rememberMe preference still stored in localStorage (not sensitive)
+- Updated API client to include credentials: "include" in all fetch calls for automatic cookie handling
+- Logout method now async and calls DELETE /auth/logout to clear cookies on backend
+- getAccessToken() returns null in cookie mode (tokens are in HttpOnly cookies, not accessible)
+- isAuthenticated() checks user object existence in cookie mode instead of access token
+- Created startRefreshTimerWithToken() method for cookie mode (uses token from response body)
+- Updated AuthContext logout signature to async Promise<void>
+- Updated AppLayout handleLogout to async function
+- Created 18 comprehensive unit tests for cookie-based authentication flow
+- All 186 frontend unit tests pass (38 in auth.test.ts including 18 new cookie tests)
+- TypeScript build passes
+
+Files changed:
+- Modified: `frontend/src/services/auth.ts` (added useCookies flag, cookie-aware logic in all auth methods)
+- Modified: `frontend/src/services/auth.test.ts` (added 18 cookie-based auth tests)
+- Modified: `frontend/src/services/api.ts` (added credentials: "include" to all fetch calls)
+- Modified: `frontend/src/contexts/AuthContext.tsx` (updated logout to async)
+- Modified: `frontend/src/components/layouts/AppLayout.tsx` (updated handleLogout to async)
+- Modified: `PRD.md` (marked US-019 as complete)
+
+Learnings for future iterations:
+- Cookie-based auth requires credentials: "include" in fetch options for cookies to be sent/received
+- HttpOnly cookies are not accessible from JavaScript (getAccessToken returns null in cookie mode)
+- Backend still returns tokens in response body for backward compatibility (used for refresh timer)
+- isAuthenticated logic differs: localStorage mode checks token, cookie mode checks user object
+- Tokens from response body can be used to start refresh timer even when not storing in localStorage
+- startRefreshTimerWithToken() accepts token directly, useful when tokens aren't in storage
+- Async logout is necessary to wait for backend cookie clearing endpoint
+- All components using logout must handle it as async (await or .then())
+- Pattern: When useCookies flag changes behavior, test both modes (18 tests cover cookie=true, existing tests cover cookie=false)
+- Cookie mode security: tokens in HttpOnly cookies (XSS protection), user object in localStorage (needed for isAuthenticated)
+- Refresh token logic: localStorage sends token in body, cookie mode sends empty string (backend reads cookie)
+- The authService.useCookies flag can be set dynamically (next US-020 will add environment variable config)
+- US-019 completes frontend cookie support - next US-020 will add configuration to toggle storage methods
+---
+
