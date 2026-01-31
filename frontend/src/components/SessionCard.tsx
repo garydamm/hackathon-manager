@@ -1,9 +1,12 @@
-import { Monitor, Smartphone, Tablet, Laptop, Chrome, Cpu } from "lucide-react"
+import { Monitor, Smartphone, Tablet, Laptop, Chrome, Cpu, Trash2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
+import { Button } from "@/components/ui/button"
 import type { SessionResponse } from "@/types"
 
 interface SessionCardProps {
   session: SessionResponse
+  onRevoke: (sessionId: string) => void
+  isRevoking: boolean
 }
 
 /**
@@ -52,7 +55,7 @@ function maskIpAddress(ipAddress: string | null): string {
   return `${parts[0]}.${parts[1]}.*.*`
 }
 
-export function SessionCard({ session }: SessionCardProps) {
+export function SessionCard({ session, onRevoke, isRevoking }: SessionCardProps) {
   const { browser, os, icon: DeviceIcon } = parseDeviceInfo(session.deviceInfo)
   const maskedIp = maskIpAddress(session.ipAddress)
 
@@ -63,6 +66,12 @@ export function SessionCard({ session }: SessionCardProps) {
     month: "short",
     day: "numeric",
   })
+
+  const handleRevokeClick = () => {
+    if (window.confirm("Revoke this session? You'll be logged out on that device.")) {
+      onRevoke(session.id)
+    }
+  }
 
   return (
     <div
@@ -107,6 +116,19 @@ export function SessionCard({ session }: SessionCardProps) {
             </div>
           </div>
         </div>
+
+        {/* Revoke button - only show for non-current sessions */}
+        {!session.isCurrent && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleRevokeClick}
+            disabled={isRevoking}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {isRevoking ? "Revoking..." : "Revoke"}
+          </Button>
+        )}
       </div>
     </div>
   )

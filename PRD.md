@@ -225,15 +225,15 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a user, I want to revoke individual sessions so I can remotely log out devices I no longer use.
 
 **Acceptance Criteria:**
-- [ ] Add "Revoke" button to each session card (except current)
-- [ ] Show confirmation dialog: "Revoke this session? You'll be logged out on that device."
-- [ ] Call `DELETE /api/auth/sessions/{id}` on confirm
-- [ ] Remove session from list on success
-- [ ] Show success toast: "Session revoked successfully"
-- [ ] Show error toast if revoke fails
-- [ ] Unit tests added for revoke functionality
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Add "Revoke" button to each session card (except current)
+- [x] Show confirmation dialog: "Revoke this session? You'll be logged out on that device."
+- [x] Call `DELETE /api/auth/sessions/{id}` on confirm
+- [x] Remove session from list on success
+- [x] Show success toast: "Session revoked successfully"
+- [x] Show error toast if revoke fails
+- [x] Unit tests added for revoke functionality
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify revoke button works in browser
 
 ### US-017: Backend cookie-based authentication middleware

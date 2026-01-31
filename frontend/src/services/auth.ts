@@ -65,6 +65,10 @@ export const authService = {
     return response
   },
 
+  async revokeSession(sessionId: string): Promise<void> {
+    await api.delete(`/auth/sessions/${sessionId}`)
+  },
+
   async forgotPassword(email: string): Promise<PasswordResetResponse> {
     const response = await api.post<PasswordResetResponse>(
       "/auth/forgot-password",

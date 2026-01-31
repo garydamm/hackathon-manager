@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, waitFor } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { render, screen, waitFor, fireEvent } from "@testing-library/react"
 import { BrowserRouter } from "react-router-dom"
 import { SessionManagementPage } from "./SessionManagement"
 import * as AuthContext from "@/contexts/AuthContext"
@@ -11,12 +11,14 @@ vi.mock("framer-motion", () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   },
+  AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
 
 // Mock authService
 vi.mock("@/services/auth", () => ({
   authService: {
     listSessions: vi.fn(),
+    revokeSession: vi.fn(),
   },
 }))
 
@@ -266,5 +268,179 @@ describe("SessionManagementPage", () => {
 
     // Should not show empty state yet
     expect(screen.queryByText("No active sessions")).not.toBeInTheDocument()
+  })
+
+  describe("Revoke functionality", () => {
+    beforeEach(() => {
+      // Mock window.confirm
+      vi.stubGlobal("confirm", vi.fn(() => true))
+    })
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it("does not show revoke button for current session", async () => {
+      vi.mocked(authService.listSessions).mockResolvedValue(mockSessions)
+
+      render(
+        <BrowserRouter>
+          <SessionManagementPage />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText("Chrome on macOS")).toBeInTheDocument()
+      })
+
+      // Current session (Chrome on macOS) should not have revoke button
+      const currentSessionCard = screen.getByText("Chrome on macOS").closest("div")
+      expect(currentSessionCard).toBeInTheDocument()
+
+      // Should have exactly one revoke button (for the non-current session)
+      const revokeButtons = screen.getAllByRole("button", { name: /Revoke/i })
+      expect(revokeButtons).toHaveLength(1)
+    })
+
+    it("shows revoke button for non-current sessions", async () => {
+      vi.mocked(authService.listSessions).mockResolvedValue(mockSessions)
+
+      render(
+        <BrowserRouter>
+          <SessionManagementPage />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText("Firefox on Windows")).toBeInTheDocument()
+      })
+
+      // Non-current session should have revoke button
+      const revokeButtons = screen.getAllByRole("button", { name: /Revoke/i })
+      expect(revokeButtons).toHaveLength(1)
+    })
+
+    it("successfully revokes a session", async () => {
+      vi.mocked(authService.listSessions).mockResolvedValue(mockSessions)
+      vi.mocked(authService.revokeSession).mockResolvedValue()
+
+      render(
+        <BrowserRouter>
+          <SessionManagementPage />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText("Firefox on Windows")).toBeInTheDocument()
+      })
+
+      const revokeButton = screen.getByRole("button", { name: /Revoke/i })
+      fireEvent.click(revokeButton)
+
+      await waitFor(() => {
+        expect(authService.revokeSession).toHaveBeenCalledWith("session-2")
+      })
+
+      // Session should be removed from list
+      await waitFor(() => {
+        expect(screen.queryByText("Firefox on Windows")).not.toBeInTheDocument()
+      })
+
+      // Success notification should appear
+      await waitFor(() => {
+        expect(screen.getByText("Session revoked successfully")).toBeInTheDocument()
+      })
+    })
+
+    it("shows error notification when revoke fails", async () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => {})
+      vi.mocked(authService.listSessions).mockResolvedValue(mockSessions)
+      vi.mocked(authService.revokeSession).mockRejectedValue(new Error("Network error"))
+
+      render(
+        <BrowserRouter>
+          <SessionManagementPage />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText("Firefox on Windows")).toBeInTheDocument()
+      })
+
+      const revokeButton = screen.getByRole("button", { name: /Revoke/i })
+      fireEvent.click(revokeButton)
+
+      await waitFor(() => {
+        expect(authService.revokeSession).toHaveBeenCalledWith("session-2")
+      })
+
+      // Session should still be in list
+      expect(screen.getByText("Firefox on Windows")).toBeInTheDocument()
+
+      // Error notification should appear
+      await waitFor(() => {
+        expect(screen.getByText("Failed to revoke session. Please try again.")).toBeInTheDocument()
+      })
+
+      consoleError.mockRestore()
+    })
+
+    it("dismisses notification when close button is clicked", async () => {
+      vi.mocked(authService.listSessions).mockResolvedValue(mockSessions)
+      vi.mocked(authService.revokeSession).mockResolvedValue()
+
+      render(
+        <BrowserRouter>
+          <SessionManagementPage />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText("Firefox on Windows")).toBeInTheDocument()
+      })
+
+      const revokeButton = screen.getByRole("button", { name: /Revoke/i })
+      fireEvent.click(revokeButton)
+
+      // Wait for success notification
+      await waitFor(() => {
+        expect(screen.getByText("Session revoked successfully")).toBeInTheDocument()
+      })
+
+      // Find and click dismiss button
+      const dismissButton = screen.getByLabelText("Dismiss notification")
+      fireEvent.click(dismissButton)
+
+      // Notification should disappear
+      await waitFor(() => {
+        expect(screen.queryByText("Session revoked successfully")).not.toBeInTheDocument()
+      })
+    })
+
+    it("disables revoke button while revoking", async () => {
+      vi.mocked(authService.listSessions).mockResolvedValue(mockSessions)
+      vi.mocked(authService.revokeSession).mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100))
+      )
+
+      render(
+        <BrowserRouter>
+          <SessionManagementPage />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText("Firefox on Windows")).toBeInTheDocument()
+      })
+
+      const revokeButton = screen.getByRole("button", { name: /Revoke/i })
+      fireEvent.click(revokeButton)
+
+      // Button should be disabled and show "Revoking..."
+      await waitFor(() => {
+        const revokingButton = screen.getByRole("button", { name: /Revoking/i })
+        expect(revokingButton).toBeDisabled()
+      })
+    })
   })
 })

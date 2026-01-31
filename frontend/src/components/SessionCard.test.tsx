@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { SessionCard } from "./SessionCard"
 import type { SessionResponse } from "@/types"
 
@@ -13,54 +13,56 @@ describe("SessionCard", () => {
     isCurrent: false,
   }
 
+  const mockOnRevoke = vi.fn()
+
   it("renders session card with device info", () => {
-    render(<SessionCard session={mockSession} />)
+    render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
     expect(screen.getByText("Chrome on macOS")).toBeInTheDocument()
   })
 
   it("shows current session badge when isCurrent is true", () => {
     const currentSession = { ...mockSession, isCurrent: true }
-    render(<SessionCard session={currentSession} />)
+    render(<SessionCard session={currentSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
     expect(screen.getByText("Current Session")).toBeInTheDocument()
   })
 
   it("does not show current session badge when isCurrent is false", () => {
-    render(<SessionCard session={mockSession} />)
+    render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
     expect(screen.queryByText("Current Session")).not.toBeInTheDocument()
   })
 
   it("displays masked IP address for privacy", () => {
-    render(<SessionCard session={mockSession} />)
+    render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
     expect(screen.getByText(/IP Address: 192\.168\.\*\.\*/)).toBeInTheDocument()
     expect(screen.queryByText(/192\.168\.1\.100/)).not.toBeInTheDocument()
   })
 
   it("shows relative last activity time", () => {
-    render(<SessionCard session={mockSession} />)
+    render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
     expect(screen.getByText(/Last activity: .* ago/)).toBeInTheDocument()
   })
 
   it("displays formatted creation date", () => {
-    render(<SessionCard session={mockSession} />)
+    render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
     expect(screen.getByText(/Created: Jan 15, 2024/)).toBeInTheDocument()
   })
 
   it("applies highlighted styling for current session", () => {
     const currentSession = { ...mockSession, isCurrent: true }
-    const { container } = render(<SessionCard session={currentSession} />)
+    const { container } = render(<SessionCard session={currentSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
     const card = container.querySelector(".border-primary")
     expect(card).toBeInTheDocument()
   })
 
   it("applies normal styling for non-current session", () => {
-    const { container } = render(<SessionCard session={mockSession} />)
+    const { container } = render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
     const card = container.querySelector(".border-border")
     expect(card).toBeInTheDocument()
@@ -72,7 +74,7 @@ describe("SessionCard", () => {
         ...mockSession,
         deviceInfo: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
       }
-      render(<SessionCard session={chromeSession} />)
+      render(<SessionCard session={chromeSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/Chrome on/)).toBeInTheDocument()
     })
@@ -82,7 +84,7 @@ describe("SessionCard", () => {
         ...mockSession,
         deviceInfo: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Firefox/120.0",
       }
-      render(<SessionCard session={firefoxSession} />)
+      render(<SessionCard session={firefoxSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/Firefox on/)).toBeInTheDocument()
     })
@@ -92,7 +94,7 @@ describe("SessionCard", () => {
         ...mockSession,
         deviceInfo: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15",
       }
-      render(<SessionCard session={safariSession} />)
+      render(<SessionCard session={safariSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/Safari on/)).toBeInTheDocument()
     })
@@ -102,7 +104,7 @@ describe("SessionCard", () => {
         ...mockSession,
         deviceInfo: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/120.0.0.0",
       }
-      render(<SessionCard session={edgeSession} />)
+      render(<SessionCard session={edgeSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/Edge on/)).toBeInTheDocument()
     })
@@ -114,7 +116,7 @@ describe("SessionCard", () => {
         ...mockSession,
         deviceInfo: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/120.0.0.0",
       }
-      render(<SessionCard session={macSession} />)
+      render(<SessionCard session={macSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/on macOS/)).toBeInTheDocument()
     })
@@ -124,7 +126,7 @@ describe("SessionCard", () => {
         ...mockSession,
         deviceInfo: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
       }
-      render(<SessionCard session={windowsSession} />)
+      render(<SessionCard session={windowsSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/on Windows/)).toBeInTheDocument()
     })
@@ -134,7 +136,7 @@ describe("SessionCard", () => {
         ...mockSession,
         deviceInfo: "Mozilla/5.0 (X11; Linux x86_64) Chrome/120.0.0.0",
       }
-      render(<SessionCard session={linuxSession} />)
+      render(<SessionCard session={linuxSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/on Linux/)).toBeInTheDocument()
     })
@@ -144,7 +146,7 @@ describe("SessionCard", () => {
         ...mockSession,
         deviceInfo: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/604.1",
       }
-      render(<SessionCard session={iosSession} />)
+      render(<SessionCard session={iosSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/on iOS/)).toBeInTheDocument()
     })
@@ -154,7 +156,7 @@ describe("SessionCard", () => {
         ...mockSession,
         deviceInfo: "Mozilla/5.0 (Linux; Android 13) Chrome/120.0.0.0",
       }
-      render(<SessionCard session={androidSession} />)
+      render(<SessionCard session={androidSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/on Android/)).toBeInTheDocument()
     })
@@ -163,30 +165,106 @@ describe("SessionCard", () => {
   describe("Edge cases", () => {
     it("handles null deviceInfo", () => {
       const nullDeviceSession = { ...mockSession, deviceInfo: null }
-      render(<SessionCard session={nullDeviceSession} />)
+      render(<SessionCard session={nullDeviceSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText("Unknown Browser on Unknown OS")).toBeInTheDocument()
     })
 
     it("handles null ipAddress", () => {
       const nullIpSession = { ...mockSession, ipAddress: null }
-      render(<SessionCard session={nullIpSession} />)
+      render(<SessionCard session={nullIpSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/IP Address: Unknown IP/)).toBeInTheDocument()
     })
 
     it("handles non-IPv4 IP address (returns as-is)", () => {
       const ipv6Session = { ...mockSession, ipAddress: "2001:0db8:85a3::8a2e:0370:7334" }
-      render(<SessionCard session={ipv6Session} />)
+      render(<SessionCard session={ipv6Session} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/IP Address: 2001:0db8:85a3::8a2e:0370:7334/)).toBeInTheDocument()
     })
 
     it("handles invalid IP address format", () => {
       const invalidIpSession = { ...mockSession, ipAddress: "invalid-ip" }
-      render(<SessionCard session={invalidIpSession} />)
+      render(<SessionCard session={invalidIpSession} onRevoke={mockOnRevoke} isRevoking={false} />)
 
       expect(screen.getByText(/IP Address: invalid-ip/)).toBeInTheDocument()
+    })
+  })
+
+  describe("Revoke functionality", () => {
+    beforeEach(() => {
+      mockOnRevoke.mockClear()
+      // Mock window.confirm
+      vi.stubGlobal("confirm", vi.fn(() => true))
+    })
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it("shows revoke button for non-current session", () => {
+      render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
+
+      expect(screen.getByRole("button", { name: /Revoke/i })).toBeInTheDocument()
+    })
+
+    it("does not show revoke button for current session", () => {
+      const currentSession = { ...mockSession, isCurrent: true }
+      render(<SessionCard session={currentSession} onRevoke={mockOnRevoke} isRevoking={false} />)
+
+      expect(screen.queryByRole("button", { name: /Revoke/i })).not.toBeInTheDocument()
+    })
+
+    it("shows confirmation dialog when revoke button is clicked", () => {
+      const confirmSpy = vi.fn(() => true)
+      vi.stubGlobal("confirm", confirmSpy)
+
+      render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
+
+      const revokeButton = screen.getByRole("button", { name: /Revoke/i })
+      fireEvent.click(revokeButton)
+
+      expect(confirmSpy).toHaveBeenCalledWith("Revoke this session? You'll be logged out on that device.")
+    })
+
+    it("calls onRevoke with session ID when confirmed", () => {
+      render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
+
+      const revokeButton = screen.getByRole("button", { name: /Revoke/i })
+      fireEvent.click(revokeButton)
+
+      expect(mockOnRevoke).toHaveBeenCalledWith("session-1")
+    })
+
+    it("does not call onRevoke when user cancels confirmation", () => {
+      vi.stubGlobal("confirm", vi.fn(() => false))
+
+      render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
+
+      const revokeButton = screen.getByRole("button", { name: /Revoke/i })
+      fireEvent.click(revokeButton)
+
+      expect(mockOnRevoke).not.toHaveBeenCalled()
+    })
+
+    it("disables revoke button when isRevoking is true", () => {
+      render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={true} />)
+
+      const revokeButton = screen.getByRole("button", { name: /Revoking/i })
+      expect(revokeButton).toBeDisabled()
+    })
+
+    it("shows 'Revoking...' text when isRevoking is true", () => {
+      render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={true} />)
+
+      expect(screen.getByText("Revoking...")).toBeInTheDocument()
+    })
+
+    it("shows 'Revoke' text when isRevoking is false", () => {
+      render(<SessionCard session={mockSession} onRevoke={mockOnRevoke} isRevoking={false} />)
+
+      expect(screen.getByText("Revoke")).toBeInTheDocument()
     })
   })
 })
