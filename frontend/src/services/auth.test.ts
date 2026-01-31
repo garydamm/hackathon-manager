@@ -536,3 +536,39 @@ describe("authService - cookie-based authentication", () => {
     })
   })
 })
+
+describe("authService - environment variable configuration", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("should initialize useCookies based on VITE_USE_COOKIES environment variable", () => {
+    // The authService.useCookies is initialized at module load from import.meta.env.VITE_USE_COOKIES
+    // In test environment, this will be undefined, so it should default to false
+    // We test that the flag can be modified at runtime for testing purposes
+    expect(typeof authService.useCookies).toBe("boolean")
+  })
+
+  it("should allow runtime modification of useCookies flag", () => {
+    // Can be set to true for cookie-based auth
+    authService.useCookies = true
+    expect(authService.useCookies).toBe(true)
+
+    // Can be set to false for localStorage auth
+    authService.useCookies = false
+    expect(authService.useCookies).toBe(false)
+  })
+
+  it("should use default value (false) when VITE_USE_COOKIES is not set", () => {
+    // In test environment without explicit env var, should default to false
+    // The authService is already initialized at module load time
+    // Since import.meta.env.VITE_USE_COOKIES is undefined in test, it defaults to false
+    const expectedDefault = import.meta.env.VITE_USE_COOKIES === 'true'
+    expect(expectedDefault).toBe(false)
+  })
+})

@@ -115,6 +115,39 @@ npm run dev
 
 The frontend will be available at `http://localhost:5173`
 
+#### Token Storage Configuration
+
+The frontend supports two methods for storing authentication tokens:
+
+1. **localStorage (default)** - Tokens stored in browser localStorage
+2. **HttpOnly Cookies (recommended)** - Tokens stored in secure, HttpOnly cookies
+
+To configure the storage method, create a `.env` file in the `frontend` directory:
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env and set VITE_USE_COOKIES
+# For localStorage (default):
+VITE_USE_COOKIES=false
+
+# For HttpOnly cookies (recommended for production):
+VITE_USE_COOKIES=true
+```
+
+**Cookie-based authentication benefits:**
+- Protection against XSS attacks (tokens not accessible from JavaScript)
+- CSRF protection via SameSite=Strict attribute
+- Automatic token transmission with requests (no manual header management)
+
+**Migration path:**
+1. Both storage methods are supported simultaneously (no breaking changes)
+2. Set `VITE_USE_COOKIES=true` in your environment to enable cookies
+3. New logins will use cookie-based authentication
+4. Existing users on localStorage will continue working (gradual migration)
+5. Backend logs which storage method each client is using (check logs for adoption metrics)
+
 Run the end-to-end tests:
 
 ```bash

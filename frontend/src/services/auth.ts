@@ -9,7 +9,8 @@ const REMEMBER_ME_KEY = "rememberMe"
 
 export const authService = {
   // Flag to control whether to use cookies or localStorage for tokens
-  useCookies: false,
+  // Reads from VITE_USE_COOKIES environment variable (default: false)
+  useCookies: import.meta.env.VITE_USE_COOKIES === 'true',
 
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     const url = this.useCookies

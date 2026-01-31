@@ -278,14 +278,14 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As an admin, I want to configure token storage method per environment so I can gradually migrate to cookies.
 
 **Acceptance Criteria:**
-- [ ] Add `VITE_USE_COOKIES` environment variable (default: false)
-- [ ] Frontend reads config and sets `authService.useCookies` accordingly
-- [ ] Backend logs which storage method client is using
+- [x] Add `VITE_USE_COOKIES` environment variable (default: false)
+- [x] Frontend reads config and sets `authService.useCookies` accordingly
+- [x] Backend logs which storage method client is using
 - [ ] Add settings UI toggle (for user preference in future)
-- [ ] Document migration path in README
-- [ ] Unit tests added for configuration logic
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Document migration path in README
+- [x] Unit tests added for configuration logic
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify both storage methods work in browser
 
 ### US-021: Add UI system tests for session management

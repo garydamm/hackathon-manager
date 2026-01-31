@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.LoggerFactory
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,6 +21,7 @@ class AuthController(
     private val authService: AuthService,
     private val userService: UserService
 ) {
+    private val logger = LoggerFactory.getLogger(AuthController::class.java)
 
     @PostMapping("/register")
     fun register(
@@ -30,7 +32,10 @@ class AuthController(
         val authResponse = authService.register(request)
 
         if (useCookies) {
+            logger.info("User ${request.email} registered using cookie-based authentication")
             setAuthCookies(authResponse, response, request.rememberMe)
+        } else {
+            logger.info("User ${request.email} registered using localStorage authentication")
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(authResponse)
@@ -45,7 +50,10 @@ class AuthController(
         val authResponse = authService.login(request)
 
         if (useCookies) {
+            logger.info("User ${request.email} logged in using cookie-based authentication")
             setAuthCookies(authResponse, response, request.rememberMe)
+        } else {
+            logger.info("User ${request.email} logged in using localStorage authentication")
         }
 
         return ResponseEntity.ok(authResponse)
@@ -60,8 +68,11 @@ class AuthController(
         val authResponse = authService.refreshToken(request)
 
         if (useCookies) {
+            logger.debug("Token refreshed using cookie-based authentication")
             // When refreshing, assume same session length as original (24h default)
             setAuthCookies(authResponse, response, rememberMe = false)
+        } else {
+            logger.debug("Token refreshed using localStorage authentication")
         }
 
         return ResponseEntity.ok(authResponse)
