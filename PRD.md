@@ -292,15 +292,15 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a developer, I need end-to-end tests for the complete session management flow to ensure all features work together.
 
 **Acceptance Criteria:**
-- [ ] UI system test: Login with "Remember me" → Verify 7-day token issued
-- [ ] UI system test: Proactive refresh → Verify token refreshes before expiration
-- [ ] UI system test: Activity tracking → Perform action → Verify session extends
-- [ ] UI system test: Session countdown → Wait for warning → Verify countdown appears
-- [ ] UI system test: Navigate to sessions page → Verify current session listed
-- [ ] UI system test: Create second session → Revoke first → Verify removed
-- [ ] UI system test: Login with cookies → Verify tokens not in localStorage
-- [ ] UI system tests pass
-- [ ] Typecheck passes
+- [x] UI system test: Login with "Remember me" → Verify 7-day token issued
+- [x] UI system test: Proactive refresh → Verify token refreshes before expiration
+- [x] UI system test: Activity tracking → Perform action → Verify session extends
+- [x] UI system test: Session countdown → Wait for warning → Verify countdown appears
+- [x] UI system test: Navigate to sessions page → Verify current session listed
+- [x] UI system test: Create second session → Revoke first → Verify removed
+- [x] UI system test: Login with cookies → Verify tokens not in localStorage
+- [x] UI system tests pass
+- [x] Typecheck passes
 
 ## Non-Goals
 
