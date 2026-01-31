@@ -143,3 +143,33 @@ Learnings for future iterations:
 - Activity timestamp is reset to null on clearActivityTracking() for clean test state
 
 ---
+
+## Iteration 6 - Backend endpoint to extend session on activity (US-006)
+- Created POST /api/auth/extend-session endpoint that extends user sessions
+- Endpoint requires authentication using @PreAuthorize("isAuthenticated()") annotation
+- Implemented rate limiting (max 1 extend per minute per user) using in-memory ConcurrentHashMap
+- Issues new access + refresh tokens with full duration (same as refresh endpoint)
+- Returns AuthResponse format consistent with login/register/refresh endpoints
+- Added 4 comprehensive unit tests covering success, unauthorized, rate limit, and not found cases
+
+Files changed:
+- Modified: `src/main/kotlin/com/hackathon/manager/service/AuthService.kt` (added extendSession method with rate limiting)
+- Modified: `src/main/kotlin/com/hackathon/manager/controller/AuthController.kt` (added extend-session endpoint)
+- Modified: `src/test/kotlin/com/hackathon/manager/controller/AuthControllerTest.kt` (added 4 unit tests + createUserPrincipal helper)
+- Modified: `PRD.md` (marked US-006 as complete)
+
+Learnings for future iterations:
+- @PreAuthorize annotation allows specific endpoints under /api/auth/** to require authentication
+- @AuthenticationPrincipal extracts the current user from SecurityContext automatically
+- Use ConcurrentHashMap for thread-safe in-memory rate limiting in Spring Boot
+- HttpStatus.TOO_MANY_REQUESTS (429) is the correct status for rate limit errors
+- Testing authenticated endpoints requires .with(user(createUserPrincipal())) not @WithMockUser
+- @WithMockUser creates generic Spring user, not our custom UserPrincipal type
+- Pattern: Create createUserPrincipal() helper in tests for reusable mock user creation
+- Import SecurityMockMvcRequestPostProcessors.user to use .with(user()) in tests
+- Rate limiting calculates time difference using Duration.between(lastTime, now).seconds
+- The endpoint doesn't need a request body since user ID comes from SecurityContext
+- Existing refresh token logic can be reused for extend-session (generate new tokens)
+- Always check existing test patterns before writing new tests (consistency is key)
+
+---
