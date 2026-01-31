@@ -515,6 +515,39 @@ Learnings for future iterations:
 
 ---
 
+## Iteration 17 - Backend cookie-based authentication middleware (US-017)
+- Implemented cookie-based authentication support in JwtAuthenticationFilter
+- Filter now checks Authorization header first, then falls back to accessToken cookie
+- Updated getJwtFromRequest() method to read from cookies when header is not present
+- Cookie security configured: HttpOnly, Secure (HTTPS only), SameSite=Strict (to be used in US-018)
+- Created comprehensive JwtAuthenticationFilterTest with 8 test cases
+- Tests cover: header auth, cookie auth, header priority, no token, invalid token, other cookies, empty cookie, exception handling
+- All 296 controller/service/filter tests pass
+- Typecheck passes
+
+Files changed:
+- Modified: `src/main/kotlin/com/hackathon/manager/security/JwtAuthenticationFilter.kt` (added cookie fallback logic)
+- Created: `src/test/kotlin/com/hackathon/manager/security/JwtAuthenticationFilterTest.kt` (8 comprehensive tests)
+- Modified: `PRD.md` (marked US-017 as complete)
+
+Learnings for future iterations:
+- JwtAuthenticationFilter extends OncePerRequestFilter and can check multiple token sources
+- Cookie access in servlet: request.cookies returns array of Cookie objects
+- Cookie finding: cookies.find { it.name == "cookieName" }?.value for safe access
+- Filter tests should use MockHttpServletRequest and MockHttpServletResponse from Spring
+- Call doFilter() (public) in tests, not doFilterInternal() (protected)
+- MockHttpServletRequest.setCookies() accepts vararg of Cookie objects
+- MockFilterChain can be used instead of mocking FilterChain with Mockito
+- SecurityContext must be cleared in @BeforeEach to avoid test pollution
+- Pattern: Check Authorization header first (standard), then cookie fallback (progressive enhancement)
+- The filter gracefully handles: null cookies array, missing cookies, empty cookie values
+- Token validation happens after extraction, regardless of source (header or cookie)
+- Exception handling in filter ensures filterChain.doFilter() is always called (prevents blocking)
+- US-017 provides backend support for cookie auth - US-018 will add cookie setting in auth endpoints
+- Total test count: 296 passing tests (288 from previous + 8 new filter tests)
+
+---
+
 
 ## Iteration 16 - Add revoke session functionality (US-016)
 - Implemented complete session revocation feature for remote device logout
