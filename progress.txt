@@ -592,3 +592,39 @@ Learnings for future iterations:
 
 ---
 
+
+## Iteration 18 - Update auth endpoints to support cookies (US-018)
+- Added useCookies query parameter (default: false) to login, register, and refresh endpoints
+- Implemented cookie setting when useCookies=true with proper security attributes
+- Cookies configured: HttpOnly=true, Secure=true, SameSite=Strict, path=/
+- Cookie max-age dynamically set based on rememberMe flag:
+  - rememberMe=false: access token 24h, refresh token 7d
+  - rememberMe=true: access token 7d, refresh token 30d
+- Added DELETE /api/auth/logout endpoint that clears both cookies
+- Response body still includes tokens for backward compatibility
+- Created 8 comprehensive unit tests covering all cookie scenarios
+- All 304 controller/service unit tests pass
+- Typecheck passes
+
+Files changed:
+- Modified: `src/main/kotlin/com/hackathon/manager/controller/AuthController.kt` (added useCookies param, cookie helpers, logout endpoint)
+- Modified: `src/test/kotlin/com/hackathon/manager/controller/AuthControllerTest.kt` (added 8 cookie-based auth tests)
+- Modified: `PRD.md` (marked US-018 as complete)
+
+Learnings for future iterations:
+- HttpServletResponse can be injected directly into controller methods without annotations
+- Cookie.setAttribute("SameSite", "Strict") sets SameSite attribute in Kotlin/Spring
+- Clearing cookies: set maxAge=0 and value="" (browser removes cookie)
+- Cookie security best practices: HttpOnly prevents XSS, Secure requires HTTPS, SameSite prevents CSRF
+- Query parameters with @RequestParam(required=false, defaultValue="false") provide safe defaults
+- Cookie max-age is in seconds (not milliseconds like token expiration)
+- All controller tests in this project use @WithMockUser annotation even for public endpoints
+- Pattern: Accept HttpServletResponse as method parameter, add cookies via response.addCookie()
+- Token still returned in response body ensures backward compatibility (clients can choose storage)
+- The logout endpoint doesn't require body/params - just clears cookies and returns 204 No Content
+- Helper methods (setAuthCookies, clearAuthCookies) keep controller methods clean and DRY
+- Cookie duration should match JWT token expiration for consistency
+- US-017 (cookie reading in filter) + US-018 (cookie setting in endpoints) = complete cookie auth flow
+- Next step (US-019) will add frontend support for cookie-based authentication
+---
+

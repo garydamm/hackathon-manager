@@ -265,14 +265,14 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a developer, I need the frontend API client to support cookie-based authentication alongside localStorage.
 
 **Acceptance Criteria:**
-- [ ] Add `useCookies` flag to authService
-- [ ] When `useCookies=true`, send `useCookies=true` param to auth endpoints
-- [ ] Don't store tokens in localStorage when using cookies
-- [ ] Still read user object to localStorage (not sensitive)
-- [ ] Cookies automatically sent by browser with requests
-- [ ] Unit tests added for cookie-based client
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Add `useCookies` flag to authService
+- [x] When `useCookies=true`, send `useCookies=true` param to auth endpoints
+- [x] Don't store tokens in localStorage when using cookies
+- [x] Still read user object to localStorage (not sensitive)
+- [x] Cookies automatically sent by browser with requests
+- [x] Unit tests added for cookie-based client
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-020: Add configuration to toggle between storage methods
 **Description:** As an admin, I want to configure token storage method per environment so I can gradually migrate to cookies.

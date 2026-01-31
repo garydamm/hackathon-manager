@@ -8,40 +8,73 @@ const USER_KEY = "user"
 const REMEMBER_ME_KEY = "rememberMe"
 
 export const authService = {
+  // Flag to control whether to use cookies or localStorage for tokens
+  useCookies: false,
+
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>("/auth/login", credentials, {
+    const url = this.useCookies
+      ? "/auth/login?useCookies=true"
+      : "/auth/login"
+
+    const response = await api.post<AuthResponse>(url, credentials, {
       skipAuth: true,
     })
     this.setSession(response, credentials.rememberMe)
-    this.startRefreshTimer()
+    // Pass token from response to start timer (even in cookie mode, response includes token)
+    this.startRefreshTimerWithToken(response.accessToken, credentials.rememberMe)
     return response
   },
 
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>("/auth/register", data, {
+    const url = this.useCookies
+      ? "/auth/register?useCookies=true"
+      : "/auth/register"
+
+    const response = await api.post<AuthResponse>(url, data, {
       skipAuth: true,
     })
     this.setSession(response)
-    this.startRefreshTimer()
+    // Pass token from response to start timer (even in cookie mode, response includes token)
+    this.startRefreshTimerWithToken(response.accessToken)
     return response
   },
 
   async refreshToken(): Promise<AuthResponse | null> {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
-    if (!refreshToken) return null
+    // When using cookies, refreshToken is sent automatically via cookie
+    // When using localStorage, we need to send it in the request body
+    if (this.useCookies) {
+      try {
+        const url = "/auth/refresh?useCookies=true"
+        const response = await api.post<AuthResponse>(
+          url,
+          { refreshToken: "" }, // Backend will read from cookie
+          { skipAuth: true }
+        )
+        this.setSession(response)
+        // Pass token from response to start timer
+        this.startRefreshTimerWithToken(response.accessToken)
+        return response
+      } catch {
+        this.clearSession()
+        return null
+      }
+    } else {
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
+      if (!refreshToken) return null
 
-    try {
-      const response = await api.post<AuthResponse>(
-        "/auth/refresh",
-        { refreshToken },
-        { skipAuth: true }
-      )
-      this.setSession(response)
-      this.startRefreshTimer()
-      return response
-    } catch {
-      this.clearSession()
-      return null
+      try {
+        const response = await api.post<AuthResponse>(
+          "/auth/refresh",
+          { refreshToken },
+          { skipAuth: true }
+        )
+        this.setSession(response)
+        this.startRefreshTimer()
+        return response
+      } catch {
+        this.clearSession()
+        return null
+      }
     }
   },
 
@@ -49,7 +82,8 @@ export const authService = {
     try {
       const response = await api.post<AuthResponse>("/auth/extend-session")
       this.setSession(response)
-      this.startRefreshTimer()
+      // Pass token from response to start timer
+      this.startRefreshTimerWithToken(response.accessToken)
       return response
     } catch (error) {
       console.error("Failed to extend session:", error)
@@ -91,14 +125,30 @@ export const authService = {
     return response
   },
 
-  logout(): void {
+  async logout(): Promise<void> {
     refreshTimer.clear()
+
+    // If using cookies, call backend logout endpoint to clear cookies
+    if (this.useCookies) {
+      try {
+        await api.delete("/auth/logout")
+      } catch (error) {
+        console.error("Failed to call logout endpoint:", error)
+      }
+    }
+
     this.clearSession()
   },
 
   setSession(authResponse: AuthResponse, rememberMe?: boolean): void {
-    localStorage.setItem(ACCESS_TOKEN_KEY, authResponse.accessToken)
-    localStorage.setItem(REFRESH_TOKEN_KEY, authResponse.refreshToken)
+    // When using cookies, don't store tokens in localStorage
+    // Browser automatically manages cookies
+    if (!this.useCookies) {
+      localStorage.setItem(ACCESS_TOKEN_KEY, authResponse.accessToken)
+      localStorage.setItem(REFRESH_TOKEN_KEY, authResponse.refreshToken)
+    }
+
+    // Always store user object (not sensitive) and rememberMe preference
     localStorage.setItem(USER_KEY, JSON.stringify(authResponse.user))
 
     // Store rememberMe preference if provided (during login)
@@ -115,6 +165,12 @@ export const authService = {
   },
 
   getAccessToken(): string | null {
+    // When using cookies, tokens are in HttpOnly cookies (not accessible from JS)
+    // Return null so API client doesn't add Authorization header
+    // Browser will automatically send cookie with requests
+    if (this.useCookies) {
+      return null
+    }
     return localStorage.getItem(ACCESS_TOKEN_KEY)
   },
 
@@ -129,6 +185,11 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
+    // When using cookies, check if user object exists (tokens are in HttpOnly cookies)
+    // When using localStorage, check if access token exists
+    if (this.useCookies) {
+      return !!this.getUser()
+    }
     return !!this.getAccessToken()
   },
 
@@ -149,6 +210,17 @@ export const authService = {
     }
 
     const isRememberMe = this.getRememberMe()
+    refreshTimer.start(accessToken, async () => {
+      await this.refreshToken()
+    }, isRememberMe)
+  },
+
+  /**
+   * Starts the refresh timer with a specific token (used in cookie mode)
+   * In cookie mode, tokens aren't in localStorage but are still returned in response body
+   */
+  startRefreshTimerWithToken(accessToken: string, rememberMe?: boolean): void {
+    const isRememberMe = rememberMe !== undefined ? rememberMe : this.getRememberMe()
     refreshTimer.start(accessToken, async () => {
       await this.refreshToken()
     }, isRememberMe)

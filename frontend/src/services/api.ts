@@ -54,6 +54,7 @@ class ApiClient {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ refreshToken }),
+        credentials: "include", // Enable cookies to be sent with requests
       })
 
       if (!response.ok) {
@@ -98,6 +99,7 @@ class ApiClient {
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
+      credentials: "include", // Enable cookies to be sent with requests
     })
 
     // Handle 401 Unauthorized - attempt token refresh and retry
@@ -112,6 +114,7 @@ class ApiClient {
               const retryResponse = await fetch(url, {
                 ...fetchOptions,
                 headers: retryHeaders,
+                credentials: "include", // Enable cookies to be sent with requests
               })
               if (retryResponse.ok) {
                 const data = retryResponse.status === 204 ? {} : await retryResponse.json()
