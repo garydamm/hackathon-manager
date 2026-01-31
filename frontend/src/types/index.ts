@@ -397,3 +397,13 @@ export interface Participant {
   teamName?: string | null
   isTeamLeader: boolean
 }
+
+// Session types
+export interface SessionResponse {
+  id: string
+  deviceInfo: string | null
+  ipAddress: string | null
+  lastActivityAt: string
+  createdAt: string
+  isCurrent: boolean
+}

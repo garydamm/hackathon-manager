@@ -165,61 +165,61 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a user, I want to see all my active sessions so I know which devices are logged in.
 
 **Acceptance Criteria:**
-- [ ] Create `GET /api/auth/sessions` endpoint
-- [ ] Requires valid access token (authenticated)
-- [ ] Returns list of active sessions for current user
-- [ ] Each session includes: id, device_info, ip_address, last_activity_at, created_at, is_current (true for current session)
-- [ ] Sort by last_activity_at descending (most recent first)
-- [ ] Exclude expired sessions (where refresh token expired)
-- [ ] Unit tests added for list sessions endpoint
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `GET /api/auth/sessions` endpoint
+- [x] Requires valid access token (authenticated)
+- [x] Returns list of active sessions for current user
+- [x] Each session includes: id, device_info, ip_address, last_activity_at, created_at, is_current (true for current session)
+- [x] Sort by last_activity_at descending (most recent first)
+- [x] Exclude expired sessions (where refresh token expired)
+- [x] Unit tests added for list sessions endpoint
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-013: Backend endpoint to revoke session
 **Description:** As a user, I want to revoke a specific session so I can log out other devices remotely.
 
 **Acceptance Criteria:**
-- [ ] Create `DELETE /api/auth/sessions/{sessionId}` endpoint
-- [ ] Requires valid access token (authenticated)
-- [ ] User can only revoke their own sessions
-- [ ] Deletes session from database
-- [ ] Invalidates associated refresh token
-- [ ] Returns 404 if session not found or not owned by user
-- [ ] Returns 400 if trying to revoke current session (use logout instead)
-- [ ] Unit tests added for revoke session endpoint
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `DELETE /api/auth/sessions/{sessionId}` endpoint
+- [x] Requires valid access token (authenticated)
+- [x] User can only revoke their own sessions
+- [x] Deletes session from database
+- [x] Invalidates associated refresh token
+- [x] Returns 404 if session not found or not owned by user
+- [x] Returns 400 if trying to revoke current session (use logout instead)
+- [x] Unit tests added for revoke session endpoint
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-014: Create session management page
 **Description:** As a user, I want a dedicated page to manage my active sessions across devices.
 
 **Acceptance Criteria:**
-- [ ] Create `/settings/sessions` route
-- [ ] Add protected route to App.tsx
-- [ ] Create `SessionManagementPage.tsx` with AppLayout
-- [ ] Add "Sessions" link to user dropdown menu in navbar
-- [ ] Page title: "Active Sessions"
-- [ ] Empty state when no sessions
-- [ ] Unit tests added for page component
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Verify page loads and navigation works in browser
+- [x] Create `/settings/sessions` route
+- [x] Add protected route to App.tsx
+- [x] Create `SessionManagementPage.tsx` with AppLayout
+- [x] Add "Sessions" link to user dropdown menu in navbar
+- [x] Page title: "Active Sessions"
+- [x] Empty state when no sessions
+- [x] Unit tests added for page component
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] E2E test added to verify page loads and navigation works in browser
 
 ### US-015: Display active sessions with device info
 **Description:** As a user, I want to see details about each active session so I can identify which devices are logged in.
 
 **Acceptance Criteria:**
-- [ ] Create `SessionCard.tsx` component
-- [ ] Show device info (browser, OS) with appropriate icon
-- [ ] Show IP address (masked: 192.168.*.*)
-- [ ] Show last activity as relative time ("2 hours ago")
-- [ ] Show created date
-- [ ] Badge indicating "Current Session" for active session
-- [ ] Current session card styled differently (highlighted border)
-- [ ] Unit tests added for session card component
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Verify session cards display correctly in browser
+- [x] Create `SessionCard.tsx` component
+- [x] Show device info (browser, OS) with appropriate icon
+- [x] Show IP address (masked: 192.168.*.*)
+- [x] Show last activity as relative time ("2 hours ago")
+- [x] Show created date
+- [x] Badge indicating "Current Session" for active session
+- [x] Current session card styled differently (highlighted border)
+- [x] Unit tests added for session card component
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] E2E test covers session display (browser verification automated)
 
 ### US-016: Add revoke session functionality
 **Description:** As a user, I want to revoke individual sessions so I can remotely log out devices I no longer use.

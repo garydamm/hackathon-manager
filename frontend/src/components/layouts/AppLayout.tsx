@@ -1,8 +1,15 @@
 import { Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Zap, LogOut, User } from "lucide-react"
+import { Zap, LogOut, User, Monitor, ChevronDown } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -31,16 +38,30 @@ export function AppLayout({ children }: AppLayoutProps) {
             </Link>
 
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span>
-                  {user?.firstName} {user?.lastName}
-                </span>
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <User className="h-4 w-4" />
+                    <span>
+                      {user?.firstName} {user?.lastName}
+                    </span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings/sessions" className="cursor-pointer">
+                      <Monitor className="h-4 w-4 mr-2" />
+                      Sessions
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

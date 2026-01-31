@@ -1,5 +1,5 @@
 import { api } from "./api"
-import type { AuthResponse, LoginRequest, RegisterRequest, User, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse } from "@/types"
+import type { AuthResponse, LoginRequest, RegisterRequest, User, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse, SessionResponse } from "@/types"
 import { refreshTimer } from "@/utils/refreshTimer"
 
 const ACCESS_TOKEN_KEY = "accessToken"
@@ -55,6 +55,14 @@ export const authService = {
       console.error("Failed to extend session:", error)
       return null
     }
+  },
+
+  async listSessions(): Promise<SessionResponse[]> {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
+    const response = await api.get<SessionResponse[]>("/auth/sessions", {
+      headers: refreshToken ? { "X-Refresh-Token": refreshToken } : undefined
+    })
+    return response
   },
 
   async forgotPassword(email: string): Promise<PasswordResetResponse> {

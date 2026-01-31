@@ -46,3 +46,12 @@ data class RefreshTokenRequest(
     @field:NotBlank(message = "Refresh token is required")
     val refreshToken: String
 )
+
+data class SessionResponse(
+    val id: String,
+    val deviceInfo: String?,
+    val ipAddress: String?,
+    val lastActivityAt: String,
+    val createdAt: String,
+    val isCurrent: Boolean
+)

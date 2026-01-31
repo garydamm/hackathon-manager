@@ -4,6 +4,7 @@ import com.hackathon.manager.dto.auth.*
 import com.hackathon.manager.entity.User
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.repository.UserRepository
+import com.hackathon.manager.repository.UserSessionRepository
 import com.hackathon.manager.security.JwtTokenProvider
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
@@ -12,13 +13,16 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.security.MessageDigest
 import java.time.Instant
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class AuthService(
     private val userRepository: UserRepository,
+    private val userSessionRepository: UserSessionRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtTokenProvider: JwtTokenProvider,
     private val authenticationManager: AuthenticationManager
@@ -125,5 +129,54 @@ class AuthService(
             refreshToken = refreshToken,
             user = UserResponse.fromEntity(user)
         )
+    }
+
+    fun listActiveSessions(userId: UUID, currentRefreshToken: String?): List<SessionResponse> {
+        // Get all sessions for user
+        val sessions = userSessionRepository.findByUserId(userId)
+
+        // Hash the current refresh token to identify which session is current
+        val currentTokenHash = currentRefreshToken?.let { hashToken(it) }
+
+        // Map sessions to response DTOs, sorted by last activity (most recent first)
+        return sessions
+            .sortedByDescending { it.lastActivityAt }
+            .map { session ->
+                SessionResponse(
+                    id = session.id.toString(),
+                    deviceInfo = session.deviceInfo,
+                    ipAddress = session.ipAddress,
+                    lastActivityAt = session.lastActivityAt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                    createdAt = session.createdAt!!.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                    isCurrent = session.refreshTokenHash == currentTokenHash
+                )
+            }
+    }
+
+    @Transactional
+    fun revokeSession(sessionId: UUID, userId: UUID, currentRefreshToken: String?) {
+        // Find the session
+        val session = userSessionRepository.findById(sessionId)
+            .orElseThrow { ApiException("Session not found", HttpStatus.NOT_FOUND) }
+
+        // Verify session belongs to the user
+        if (session.user.id != userId) {
+            throw ApiException("Session not found", HttpStatus.NOT_FOUND)
+        }
+
+        // Prevent revoking current session (use logout instead)
+        val currentTokenHash = currentRefreshToken?.let { hashToken(it) }
+        if (session.refreshTokenHash == currentTokenHash) {
+            throw ApiException("Cannot revoke current session. Use logout instead.", HttpStatus.BAD_REQUEST)
+        }
+
+        // Delete the session (invalidates the refresh token)
+        userSessionRepository.delete(session)
+    }
+
+    private fun hashToken(token: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(token.toByteArray())
+        return hashBytes.joinToString("") { "%02x".format(it) }
     }
 }

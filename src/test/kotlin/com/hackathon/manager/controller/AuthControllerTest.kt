@@ -10,6 +10,8 @@ import com.hackathon.manager.service.AuthService
 import com.hackathon.manager.service.UserService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -22,6 +24,7 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.OffsetDateTime
@@ -405,5 +408,139 @@ class AuthControllerTest {
                 .with(user(createUserPrincipal()))
         )
             .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `listActiveSessions should return 200 with sessions list when successful`() {
+        val sessions = listOf(
+            SessionResponse(
+                id = UUID.randomUUID().toString(),
+                deviceInfo = "Chrome on MacOS",
+                ipAddress = "192.168.1.1",
+                lastActivityAt = OffsetDateTime.now().toString(),
+                createdAt = OffsetDateTime.now().minusDays(1).toString(),
+                isCurrent = true
+            ),
+            SessionResponse(
+                id = UUID.randomUUID().toString(),
+                deviceInfo = "Firefox on Windows",
+                ipAddress = "192.168.1.2",
+                lastActivityAt = OffsetDateTime.now().minusHours(2).toString(),
+                createdAt = OffsetDateTime.now().minusDays(3).toString(),
+                isCurrent = false
+            )
+        )
+
+        whenever(authService.listActiveSessions(any(), any())).thenReturn(sessions)
+
+        mockMvc.perform(
+            get("/api/auth/sessions")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+                .header("X-Refresh-Token", "test-refresh-token")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].deviceInfo").value("Chrome on MacOS"))
+            .andExpect(jsonPath("$[0].isCurrent").value(true))
+            .andExpect(jsonPath("$[1].deviceInfo").value("Firefox on Windows"))
+            .andExpect(jsonPath("$[1].isCurrent").value(false))
+    }
+
+    @Test
+    fun `listActiveSessions should return 200 with empty list when no sessions`() {
+        whenever(authService.listActiveSessions(any(), any())).thenReturn(emptyList())
+
+        mockMvc.perform(
+            get("/api/auth/sessions")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").isArray)
+            .andExpect(jsonPath("$").isEmpty)
+    }
+
+    @Test
+    fun `listActiveSessions should return 401 when not authenticated`() {
+        mockMvc.perform(
+            get("/api/auth/sessions")
+                .with(csrf())
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `listActiveSessions should work without refresh token header`() {
+        val sessions = listOf(
+            SessionResponse(
+                id = UUID.randomUUID().toString(),
+                deviceInfo = "Chrome on MacOS",
+                ipAddress = "192.168.1.1",
+                lastActivityAt = OffsetDateTime.now().toString(),
+                createdAt = OffsetDateTime.now().minusDays(1).toString(),
+                isCurrent = false
+            )
+        )
+
+        whenever(authService.listActiveSessions(eq(testUserId), isNull())).thenReturn(sessions)
+
+        mockMvc.perform(
+            get("/api/auth/sessions")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$[0].deviceInfo").value("Chrome on MacOS"))
+            .andExpect(jsonPath("$[0].isCurrent").value(false))
+    }
+
+    @Test
+    fun `revokeSession should return 204 when successful`() {
+        val sessionId = UUID.randomUUID()
+
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/auth/sessions/$sessionId")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isNoContent)
+    }
+
+    @Test
+    fun `revokeSession should return 401 when not authenticated`() {
+        val sessionId = UUID.randomUUID()
+
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/auth/sessions/$sessionId")
+                .with(csrf())
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+
+    @Test
+    fun `revokeSession should return 400 for invalid session id format`() {
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/auth/sessions/invalid-uuid")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `revokeSession should pass refresh token header to service`() {
+        val sessionId = UUID.randomUUID()
+        val refreshToken = "test-refresh-token"
+
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/auth/sessions/$sessionId")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+                .header("X-Refresh-Token", refreshToken)
+        )
+            .andExpect(status().isNoContent)
+
+        org.mockito.kotlin.verify(authService).revokeSession(eq(sessionId), eq(testUserId), eq(refreshToken))
     }
 }

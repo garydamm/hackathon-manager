@@ -4,8 +4,10 @@ import com.hackathon.manager.dto.auth.LoginRequest
 import com.hackathon.manager.dto.auth.RefreshTokenRequest
 import com.hackathon.manager.dto.auth.RegisterRequest
 import com.hackathon.manager.entity.User
+import com.hackathon.manager.entity.UserSession
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.repository.UserRepository
+import com.hackathon.manager.repository.UserSessionRepository
 import com.hackathon.manager.security.JwtTokenProvider
 import com.hackathon.manager.security.UserPrincipal
 import org.assertj.core.api.Assertions.assertThat
@@ -21,6 +23,8 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.security.MessageDigest
+import java.time.OffsetDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
@@ -28,6 +32,9 @@ class AuthServiceTest {
 
     @Mock
     lateinit var userRepository: UserRepository
+
+    @Mock
+    lateinit var userSessionRepository: UserSessionRepository
 
     @Mock
     lateinit var passwordEncoder: PasswordEncoder
@@ -195,5 +202,244 @@ class AuthServiceTest {
         assertThatThrownBy { authService.refreshToken(request) }
             .isInstanceOf(ApiException::class.java)
             .hasMessage("User not found")
+    }
+
+    @Test
+    fun `listActiveSessions should return sessions sorted by last activity`() {
+        val session1Id = UUID.randomUUID()
+        val session2Id = UUID.randomUUID()
+        val now = OffsetDateTime.now()
+
+        val session1 = UserSession(
+            id = session1Id,
+            user = testUser,
+            refreshTokenHash = "hash1",
+            deviceInfo = "Chrome on MacOS",
+            ipAddress = "192.168.1.1",
+            lastActivityAt = now.minusHours(2),
+            createdAt = now.minusDays(1)
+        )
+
+        val session2 = UserSession(
+            id = session2Id,
+            user = testUser,
+            refreshTokenHash = "hash2",
+            deviceInfo = "Firefox on Windows",
+            ipAddress = "192.168.1.2",
+            lastActivityAt = now,
+            createdAt = now.minusDays(3)
+        )
+
+        whenever(userSessionRepository.findByUserId(testUserId)).thenReturn(listOf(session1, session2))
+
+        val result = authService.listActiveSessions(testUserId, null)
+
+        assertThat(result).hasSize(2)
+        // Should be sorted by lastActivityAt descending (most recent first)
+        assertThat(result[0].id).isEqualTo(session2Id.toString())
+        assertThat(result[0].deviceInfo).isEqualTo("Firefox on Windows")
+        assertThat(result[0].isCurrent).isFalse()
+        assertThat(result[1].id).isEqualTo(session1Id.toString())
+        assertThat(result[1].deviceInfo).isEqualTo("Chrome on MacOS")
+        assertThat(result[1].isCurrent).isFalse()
+    }
+
+    @Test
+    fun `listActiveSessions should identify current session by refresh token hash`() {
+        val currentSessionId = UUID.randomUUID()
+        val otherSessionId = UUID.randomUUID()
+        val now = OffsetDateTime.now()
+        val currentRefreshToken = "current-refresh-token"
+
+        // Hash the current token to match what the service will compute
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(currentRefreshToken.toByteArray())
+        val currentTokenHash = hashBytes.joinToString("") { "%02x".format(it) }
+
+        val currentSession = UserSession(
+            id = currentSessionId,
+            user = testUser,
+            refreshTokenHash = currentTokenHash,
+            deviceInfo = "Chrome on MacOS",
+            ipAddress = "192.168.1.1",
+            lastActivityAt = now,
+            createdAt = now.minusDays(1)
+        )
+
+        val otherSession = UserSession(
+            id = otherSessionId,
+            user = testUser,
+            refreshTokenHash = "different-hash",
+            deviceInfo = "Firefox on Windows",
+            ipAddress = "192.168.1.2",
+            lastActivityAt = now.minusHours(1),
+            createdAt = now.minusDays(2)
+        )
+
+        whenever(userSessionRepository.findByUserId(testUserId)).thenReturn(listOf(currentSession, otherSession))
+
+        val result = authService.listActiveSessions(testUserId, currentRefreshToken)
+
+        assertThat(result).hasSize(2)
+        assertThat(result[0].id).isEqualTo(currentSessionId.toString())
+        assertThat(result[0].isCurrent).isTrue()
+        assertThat(result[1].id).isEqualTo(otherSessionId.toString())
+        assertThat(result[1].isCurrent).isFalse()
+    }
+
+    @Test
+    fun `listActiveSessions should return empty list when no sessions found`() {
+        whenever(userSessionRepository.findByUserId(testUserId)).thenReturn(emptyList())
+
+        val result = authService.listActiveSessions(testUserId, null)
+
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `listActiveSessions should handle null device info and ip address`() {
+        val sessionId = UUID.randomUUID()
+        val now = OffsetDateTime.now()
+
+        val session = UserSession(
+            id = sessionId,
+            user = testUser,
+            refreshTokenHash = "hash1",
+            deviceInfo = null,
+            ipAddress = null,
+            lastActivityAt = now,
+            createdAt = now.minusDays(1)
+        )
+
+        whenever(userSessionRepository.findByUserId(testUserId)).thenReturn(listOf(session))
+
+        val result = authService.listActiveSessions(testUserId, null)
+
+        assertThat(result).hasSize(1)
+        assertThat(result[0].deviceInfo).isNull()
+        assertThat(result[0].ipAddress).isNull()
+        assertThat(result[0].isCurrent).isFalse()
+    }
+
+    @Test
+    fun `listActiveSessions should handle null refresh token parameter`() {
+        val sessionId = UUID.randomUUID()
+        val now = OffsetDateTime.now()
+
+        val session = UserSession(
+            id = sessionId,
+            user = testUser,
+            refreshTokenHash = "hash1",
+            deviceInfo = "Chrome on MacOS",
+            ipAddress = "192.168.1.1",
+            lastActivityAt = now,
+            createdAt = now.minusDays(1)
+        )
+
+        whenever(userSessionRepository.findByUserId(testUserId)).thenReturn(listOf(session))
+
+        val result = authService.listActiveSessions(testUserId, null)
+
+        assertThat(result).hasSize(1)
+        assertThat(result[0].isCurrent).isFalse()
+    }
+
+    @Test
+    fun `revokeSession should delete session successfully`() {
+        val sessionId = UUID.randomUUID()
+        val now = OffsetDateTime.now()
+
+        val session = UserSession(
+            id = sessionId,
+            user = testUser,
+            refreshTokenHash = "hash1",
+            deviceInfo = "Chrome on MacOS",
+            ipAddress = "192.168.1.1",
+            lastActivityAt = now,
+            createdAt = now.minusDays(1)
+        )
+
+        whenever(userSessionRepository.findById(sessionId)).thenReturn(Optional.of(session))
+
+        authService.revokeSession(sessionId, testUserId, null)
+
+        verify(userSessionRepository).delete(session)
+    }
+
+    @Test
+    fun `revokeSession should throw exception when session not found`() {
+        val sessionId = UUID.randomUUID()
+
+        whenever(userSessionRepository.findById(sessionId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy { authService.revokeSession(sessionId, testUserId, null) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Session not found")
+
+        verify(userSessionRepository, never()).delete(any())
+    }
+
+    @Test
+    fun `revokeSession should throw exception when session belongs to different user`() {
+        val sessionId = UUID.randomUUID()
+        val otherUserId = UUID.randomUUID()
+        val now = OffsetDateTime.now()
+
+        val otherUser = User(
+            id = otherUserId,
+            email = "other@example.com",
+            passwordHash = "hashedpassword",
+            firstName = "Other",
+            lastName = "User",
+            displayName = "OtherUser"
+        )
+
+        val session = UserSession(
+            id = sessionId,
+            user = otherUser,
+            refreshTokenHash = "hash1",
+            deviceInfo = "Chrome on MacOS",
+            ipAddress = "192.168.1.1",
+            lastActivityAt = now,
+            createdAt = now.minusDays(1)
+        )
+
+        whenever(userSessionRepository.findById(sessionId)).thenReturn(Optional.of(session))
+
+        assertThatThrownBy { authService.revokeSession(sessionId, testUserId, null) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Session not found")
+
+        verify(userSessionRepository, never()).delete(any())
+    }
+
+    @Test
+    fun `revokeSession should throw exception when trying to revoke current session`() {
+        val sessionId = UUID.randomUUID()
+        val now = OffsetDateTime.now()
+        val currentRefreshToken = "current-refresh-token"
+
+        // Hash the current token to match what the service will compute
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(currentRefreshToken.toByteArray())
+        val currentTokenHash = hashBytes.joinToString("") { "%02x".format(it) }
+
+        val currentSession = UserSession(
+            id = sessionId,
+            user = testUser,
+            refreshTokenHash = currentTokenHash,
+            deviceInfo = "Chrome on MacOS",
+            ipAddress = "192.168.1.1",
+            lastActivityAt = now,
+            createdAt = now.minusDays(1)
+        )
+
+        whenever(userSessionRepository.findById(sessionId)).thenReturn(Optional.of(currentSession))
+
+        assertThatThrownBy { authService.revokeSession(sessionId, testUserId, currentRefreshToken) }
+            .isInstanceOf(ApiException::class.java)
+            .hasMessage("Cannot revoke current session. Use logout instead.")
+
+        verify(userSessionRepository, never()).delete(any())
     }
 }

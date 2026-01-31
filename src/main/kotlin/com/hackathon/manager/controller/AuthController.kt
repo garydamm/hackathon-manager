@@ -44,6 +44,33 @@ class AuthController(
         return ResponseEntity.ok(response)
     }
 
+    @GetMapping("/sessions")
+    @PreAuthorize("isAuthenticated()")
+    fun listActiveSessions(
+        @AuthenticationPrincipal principal: UserPrincipal,
+        @RequestHeader(value = "X-Refresh-Token", required = false) refreshToken: String?
+    ): ResponseEntity<List<SessionResponse>> {
+        val sessions = authService.listActiveSessions(principal.id, refreshToken)
+        return ResponseEntity.ok(sessions)
+    }
+
+    @DeleteMapping("/sessions/{sessionId}")
+    @PreAuthorize("isAuthenticated()")
+    fun revokeSession(
+        @PathVariable sessionId: String,
+        @AuthenticationPrincipal principal: UserPrincipal,
+        @RequestHeader(value = "X-Refresh-Token", required = false) refreshToken: String?
+    ): ResponseEntity<Void> {
+        val sessionUuid = try {
+            java.util.UUID.fromString(sessionId)
+        } catch (e: IllegalArgumentException) {
+            throw ApiException("Invalid session ID format", HttpStatus.BAD_REQUEST)
+        }
+
+        authService.revokeSession(sessionUuid, principal.id, refreshToken)
+        return ResponseEntity.noContent().build()
+    }
+
     @PostMapping("/forgot-password")
     fun forgotPassword(@Valid @RequestBody request: ForgotPasswordRequest): ResponseEntity<PasswordResetResponse> {
         userService.requestPasswordReset(request.email)

@@ -16,6 +16,7 @@ import { TeamDetailPage } from "@/pages/TeamDetailPage"
 import { JudgeDashboardPage } from "@/pages/JudgeDashboard"
 import { ProjectScoringPage } from "@/pages/ProjectScoring"
 import { SchedulePage } from "@/pages/Schedule"
+import { SessionManagementPage } from "@/pages/SessionManagement"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -102,6 +103,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProjectScoringPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/sessions"
+              element={
+                <ProtectedRoute>
+                  <SessionManagementPage />
                 </ProtectedRoute>
               }
             />
