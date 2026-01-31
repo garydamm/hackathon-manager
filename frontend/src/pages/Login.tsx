@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { motion } from "framer-motion"
-import { Loader2, Mail, Lock } from "lucide-react"
+import { Loader2, Mail, Lock, Info } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { AuthLayout } from "@/components/layouts/AuthLayout"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/"
+  const sessionExpired = (location.state as { sessionExpired?: boolean })?.sessionExpired || false
 
   const {
     register,
@@ -55,6 +56,22 @@ export function LoginPage() {
       subtitle="Enter your credentials to access your account"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {sessionExpired && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 text-sm flex items-start gap-3"
+          >
+            <Info className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">Session Expired</p>
+              <p className="text-blue-800 dark:text-blue-200 mt-1">
+                Your session has expired for security reasons. Please log in again to continue.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}

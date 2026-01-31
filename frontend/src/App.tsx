@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { SessionExpiredBanner } from "@/components/SessionExpiredBanner"
 import { LoginPage } from "@/pages/Login"
 import { RegisterPage } from "@/pages/Register"
 import { ForgotPasswordPage } from "@/pages/ForgotPassword"
@@ -29,6 +30,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
+          <SessionExpiredBanner />
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />

@@ -7,15 +7,18 @@ import {
   type ReactNode,
 } from "react"
 import { authService } from "@/services/auth"
+import { setSessionExpiredCallback } from "@/services/api"
 import type { User, LoginRequest, RegisterRequest } from "@/types"
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  sessionExpired: boolean
   login: (credentials: LoginRequest) => Promise<void>
   register: (data: RegisterRequest) => Promise<void>
   logout: () => void
+  clearSessionExpiredFlag: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -23,6 +26,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [sessionExpired, setSessionExpired] = useState(false)
 
   useEffect(() => {
     const storedUser = authService.getUser()
@@ -32,19 +36,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
+  // Set up session expired callback
+  useEffect(() => {
+    setSessionExpiredCallback(() => {
+      setUser(null)
+      setSessionExpired(true)
+    })
+  }, [])
+
   const login = useCallback(async (credentials: LoginRequest) => {
     const response = await authService.login(credentials)
     setUser(response.user)
+    setSessionExpired(false)
   }, [])
 
   const register = useCallback(async (data: RegisterRequest) => {
     const response = await authService.register(data)
     setUser(response.user)
+    setSessionExpired(false)
   }, [])
 
   const logout = useCallback(() => {
     authService.logout()
     setUser(null)
+    setSessionExpired(false)
+  }, [])
+
+  const clearSessionExpiredFlag = useCallback(() => {
+    setSessionExpired(false)
   }, [])
 
   return (
@@ -53,9 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
+        sessionExpired,
         login,
         register,
         logout,
+        clearSessionExpiredFlag,
       }}
     >
       {children}
