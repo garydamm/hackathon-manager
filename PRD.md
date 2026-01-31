@@ -49,15 +49,15 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a user, I want to see how much time remains in my session so I'm never caught off guard by expiration.
 
 **Acceptance Criteria:**
-- [ ] Create `SessionCountdown.tsx` component
-- [ ] Displays remaining time in format: "Session expires in 4m 32s"
-- [ ] Updates every second
-- [ ] Uses yellow/warning styling when < 5 minutes remain
-- [ ] Hides when > 10 minutes remain (unobtrusive)
-- [ ] Shows in fixed position (top-right corner, below navbar)
-- [ ] Unit tests added for countdown component
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `SessionCountdown.tsx` component
+- [x] Displays remaining time in format: "Session expires in 4m 32s"
+- [x] Updates every second
+- [x] Uses yellow/warning styling when < 5 minutes remain
+- [x] Hides when > 10 minutes remain (unobtrusive)
+- [x] Shows in fixed position (top-right corner, below navbar)
+- [x] Unit tests added for countdown component
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-004: Display session timeout countdown notification
 **Description:** As a user, I want a prominent warning when my session is about to expire so I can save my work or extend it.
