@@ -18,6 +18,137 @@ vi.mock("@/utils/refreshTimer", () => ({
   },
 }))
 
+describe("authService - remember me preference", () => {
+  const mockAuthResponse: AuthResponse = {
+    accessToken: "test-access-token",
+    refreshToken: "test-refresh-token",
+    tokenType: "Bearer",
+    user: {
+      id: "user-123",
+      email: "test@example.com",
+      firstName: "Test",
+      lastName: "User",
+    },
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  describe("setSession", () => {
+    it("should store rememberMe=true in localStorage", () => {
+      authService.setSession(mockAuthResponse, true)
+
+      expect(localStorage.getItem("rememberMe")).toBe("true")
+    })
+
+    it("should store rememberMe=false in localStorage", () => {
+      authService.setSession(mockAuthResponse, false)
+
+      expect(localStorage.getItem("rememberMe")).toBe("false")
+    })
+
+    it("should not modify rememberMe when not provided", () => {
+      localStorage.setItem("rememberMe", "true")
+
+      authService.setSession(mockAuthResponse)
+
+      expect(localStorage.getItem("rememberMe")).toBe("true")
+    })
+  })
+
+  describe("login", () => {
+    it("should store rememberMe=true when logging in with rememberMe", async () => {
+      vi.mocked(api.post).mockResolvedValue(mockAuthResponse)
+
+      await authService.login({
+        email: "test@example.com",
+        password: "password123",
+        rememberMe: true,
+      })
+
+      expect(localStorage.getItem("rememberMe")).toBe("true")
+    })
+
+    it("should store rememberMe=false when logging in without rememberMe", async () => {
+      vi.mocked(api.post).mockResolvedValue(mockAuthResponse)
+
+      await authService.login({
+        email: "test@example.com",
+        password: "password123",
+        rememberMe: false,
+      })
+
+      expect(localStorage.getItem("rememberMe")).toBe("false")
+    })
+
+    it("should pass rememberMe flag to refreshTimer.start", async () => {
+      vi.mocked(api.post).mockResolvedValue(mockAuthResponse)
+      localStorage.setItem("accessToken", "test-token")
+
+      await authService.login({
+        email: "test@example.com",
+        password: "password123",
+        rememberMe: true,
+      })
+
+      // Need to get the token from localStorage for the timer
+      expect(refreshTimer.start).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(Function),
+        true
+      )
+    })
+  })
+
+  describe("getRememberMe", () => {
+    it("should return true when rememberMe is 'true'", () => {
+      localStorage.setItem("rememberMe", "true")
+
+      expect(authService.getRememberMe()).toBe(true)
+    })
+
+    it("should return false when rememberMe is 'false'", () => {
+      localStorage.setItem("rememberMe", "false")
+
+      expect(authService.getRememberMe()).toBe(false)
+    })
+
+    it("should return false when rememberMe is not set", () => {
+      expect(authService.getRememberMe()).toBe(false)
+    })
+  })
+
+  describe("clearSession", () => {
+    it("should remove rememberMe from localStorage", () => {
+      localStorage.setItem("accessToken", "token")
+      localStorage.setItem("refreshToken", "refresh")
+      localStorage.setItem("user", JSON.stringify(mockAuthResponse.user))
+      localStorage.setItem("rememberMe", "true")
+
+      authService.clearSession()
+
+      expect(localStorage.getItem("rememberMe")).toBeNull()
+    })
+  })
+
+  describe("logout", () => {
+    it("should clear rememberMe preference", () => {
+      localStorage.setItem("accessToken", "token")
+      localStorage.setItem("rememberMe", "true")
+
+      authService.logout()
+
+      expect(localStorage.getItem("rememberMe")).toBeNull()
+    })
+  })
+})
+
 describe("authService - extendSession", () => {
   const mockAuthResponse: AuthResponse = {
     accessToken: "new-access-token",

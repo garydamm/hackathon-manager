@@ -1,9 +1,11 @@
 import { getTimeUntilExpiration } from './jwt';
 
 /**
- * Time before expiration to trigger proactive refresh (5 minutes in milliseconds)
+ * Time before expiration to trigger proactive refresh
+ * 5 minutes for regular sessions, 30 minutes for remember me sessions
  */
 const REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes
+const REFRESH_BUFFER_REMEMBER_ME_MS = 30 * 60 * 1000; // 30 minutes
 
 /**
  * Callback function type for token refresh
@@ -22,8 +24,9 @@ class TokenRefreshTimer {
    * Starts the refresh timer for the given token
    * @param token - The JWT access token
    * @param onRefresh - Callback function to execute when refresh is needed
+   * @param isRememberMe - Whether this is a remember me session (uses longer buffer)
    */
-  start(token: string, onRefresh: RefreshCallback): void {
+  start(token: string, onRefresh: RefreshCallback, isRememberMe = false): void {
     // Clear any existing timer
     this.clear();
 
@@ -37,19 +40,23 @@ class TokenRefreshTimer {
       return;
     }
 
-    // Calculate when to refresh (5 minutes before expiration)
-    const timeUntilRefresh = timeUntilExpiration - REFRESH_BUFFER_MS;
+    // Use longer buffer for remember me sessions (30 min vs 5 min)
+    const bufferMs = isRememberMe ? REFRESH_BUFFER_REMEMBER_ME_MS : REFRESH_BUFFER_MS;
+    const bufferMinutes = isRememberMe ? 30 : 5;
+
+    // Calculate when to refresh
+    const timeUntilRefresh = timeUntilExpiration - bufferMs;
 
     if (timeUntilRefresh <= 0) {
-      // Token expires in less than 5 minutes, refresh immediately
-      console.log('[RefreshTimer] Token expires soon, refreshing immediately');
+      // Token expires soon, refresh immediately
+      console.log(`[RefreshTimer] Token expires soon (< ${bufferMinutes} min), refreshing immediately`);
       void this.executeRefresh();
       return;
     }
 
     // Schedule the refresh
     console.log(
-      `[RefreshTimer] Scheduling proactive refresh in ${Math.round(timeUntilRefresh / 1000)}s`
+      `[RefreshTimer] Scheduling proactive refresh in ${Math.round(timeUntilRefresh / 1000)}s (buffer: ${bufferMinutes} min)`
     );
 
     this.timerId = window.setTimeout(() => {
@@ -92,6 +99,15 @@ class TokenRefreshTimer {
    */
   isRunning(): boolean {
     return this.timerId !== null;
+  }
+
+  /**
+   * Gets the appropriate refresh buffer time in milliseconds
+   * @param isRememberMe - Whether this is a remember me session
+   * @returns Buffer time in milliseconds
+   */
+  getRefreshBuffer(isRememberMe = false): number {
+    return isRememberMe ? REFRESH_BUFFER_REMEMBER_ME_MS : REFRESH_BUFFER_MS;
   }
 }
 

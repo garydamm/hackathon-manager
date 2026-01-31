@@ -45,9 +45,12 @@ export function SessionCountdown() {
         return
       }
 
-      // Only show when less than 10 minutes remain
-      const TEN_MINUTES_MS = 10 * 60 * 1000
-      if (remaining > TEN_MINUTES_MS) {
+      // Adjust visibility threshold based on remember me
+      const isRememberMe = authService.getRememberMe()
+      // Show when < 10 min for regular, < 60 min for remember me
+      const visibilityThreshold = isRememberMe ? 60 * 60 * 1000 : 10 * 60 * 1000
+
+      if (remaining > visibilityThreshold) {
         setTimeRemaining(null)
         return
       }
@@ -64,14 +67,16 @@ export function SessionCountdown() {
     return () => clearInterval(intervalId)
   }, [])
 
-  // Don't render if no time remaining or > 10 minutes
+  // Don't render if no time remaining
   if (timeRemaining === null) {
     return null
   }
 
-  // Determine if warning styling should be applied (< 5 minutes)
-  const FIVE_MINUTES_MS = 5 * 60 * 1000
-  const isWarning = timeRemaining < FIVE_MINUTES_MS
+  // Determine if warning styling should be applied
+  // < 5 min for regular sessions, < 30 min for remember me sessions
+  const isRememberMe = authService.getRememberMe()
+  const warningThreshold = isRememberMe ? 30 * 60 * 1000 : 5 * 60 * 1000
+  const isWarning = timeRemaining < warningThreshold
 
   return (
     <div

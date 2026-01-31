@@ -7,7 +7,9 @@ import { getTimeUntilExpiration } from "@/utils/jwt"
 import { api } from "@/services/api"
 
 const SHOW_NOTIFICATION_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes
+const SHOW_NOTIFICATION_THRESHOLD_REMEMBER_ME_MS = 30 * 60 * 1000 // 30 minutes
 const ACTIVITY_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
+const ACTIVITY_WINDOW_REMEMBER_ME_MS = 30 * 60 * 1000 // 30 minutes
 
 function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000)
@@ -36,13 +38,22 @@ export function SessionTimeoutNotification() {
         return
       }
 
-      // Check if we should show notification (< 5 minutes remain)
-      if (remaining < SHOW_NOTIFICATION_THRESHOLD_MS) {
-        // Check if user has been active in the last 5 minutes
+      // Get remember me preference to determine thresholds
+      const isRememberMe = authService.getRememberMe()
+      const notificationThreshold = isRememberMe
+        ? SHOW_NOTIFICATION_THRESHOLD_REMEMBER_ME_MS
+        : SHOW_NOTIFICATION_THRESHOLD_MS
+      const activityWindow = isRememberMe
+        ? ACTIVITY_WINDOW_REMEMBER_ME_MS
+        : ACTIVITY_WINDOW_MS
+
+      // Check if we should show notification
+      if (remaining < notificationThreshold) {
+        // Check if user has been active recently
         const lastActivityTime = api.getLastActivityTime()
         const now = Date.now()
 
-        if (lastActivityTime && (now - lastActivityTime) < ACTIVITY_WINDOW_MS) {
+        if (lastActivityTime && (now - lastActivityTime) < activityWindow) {
           // User is active - extend session automatically instead of showing notification
           const lastAutoExtend = lastAutoExtendRef.current
 

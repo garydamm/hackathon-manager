@@ -5,13 +5,14 @@ import { refreshTimer } from "@/utils/refreshTimer"
 const ACCESS_TOKEN_KEY = "accessToken"
 const REFRESH_TOKEN_KEY = "refreshToken"
 const USER_KEY = "user"
+const REMEMBER_ME_KEY = "rememberMe"
 
 export const authService = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>("/auth/login", credentials, {
       skipAuth: true,
     })
-    this.setSession(response)
+    this.setSession(response, credentials.rememberMe)
     this.startRefreshTimer()
     return response
   },
@@ -83,16 +84,22 @@ export const authService = {
     this.clearSession()
   },
 
-  setSession(authResponse: AuthResponse): void {
+  setSession(authResponse: AuthResponse, rememberMe?: boolean): void {
     localStorage.setItem(ACCESS_TOKEN_KEY, authResponse.accessToken)
     localStorage.setItem(REFRESH_TOKEN_KEY, authResponse.refreshToken)
     localStorage.setItem(USER_KEY, JSON.stringify(authResponse.user))
+
+    // Store rememberMe preference if provided (during login)
+    if (rememberMe !== undefined) {
+      localStorage.setItem(REMEMBER_ME_KEY, String(rememberMe))
+    }
   },
 
   clearSession(): void {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
+    localStorage.removeItem(REMEMBER_ME_KEY)
   },
 
   getAccessToken(): string | null {
@@ -113,9 +120,15 @@ export const authService = {
     return !!this.getAccessToken()
   },
 
+  getRememberMe(): boolean {
+    const rememberMe = localStorage.getItem(REMEMBER_ME_KEY)
+    return rememberMe === "true"
+  },
+
   /**
    * Starts the refresh timer for the current access token
-   * Timer will trigger a refresh 5 minutes before token expiration
+   * Timer will trigger a refresh before token expiration
+   * (5 minutes for regular sessions, 30 minutes for remember me sessions)
    */
   startRefreshTimer(): void {
     const accessToken = this.getAccessToken()
@@ -123,9 +136,10 @@ export const authService = {
       return
     }
 
+    const isRememberMe = this.getRememberMe()
     refreshTimer.start(accessToken, async () => {
       await this.refreshToken()
-    })
+    }, isRememberMe)
   },
 
   /**

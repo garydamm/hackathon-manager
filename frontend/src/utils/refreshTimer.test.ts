@@ -220,6 +220,76 @@ describe('TokenRefreshTimer', () => {
     });
   });
 
+  describe('remember me functionality', () => {
+    it('should use 5 minute buffer for regular sessions', () => {
+      const token = createTokenExpiringIn(10 * 60 * 1000); // 10 minutes
+      const onRefresh = vi.fn();
+
+      refreshTimer.start(token, onRefresh, false);
+
+      // Should trigger after 5 minutes (10min - 5min buffer)
+      vi.advanceTimersByTime(5 * 60 * 1000 - 1000); // Just before
+      expect(onRefresh).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1000); // At the time
+      expect(onRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('should use 30 minute buffer for remember me sessions', () => {
+      const token = createTokenExpiringIn(60 * 60 * 1000); // 60 minutes
+      const onRefresh = vi.fn();
+
+      refreshTimer.start(token, onRefresh, true);
+
+      // Should trigger after 30 minutes (60min - 30min buffer)
+      vi.advanceTimersByTime(30 * 60 * 1000 - 1000); // Just before
+      expect(onRefresh).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1000); // At the time
+      expect(onRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('should refresh immediately if remember me token expires in < 30 min', async () => {
+      const token = createTokenExpiringIn(25 * 60 * 1000); // 25 minutes
+      const onRefresh = vi.fn().mockResolvedValue(undefined);
+
+      refreshTimer.start(token, onRefresh, true);
+
+      // Should call immediately (async)
+      await vi.runAllTimersAsync();
+      expect(onRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('should log correct buffer time for regular sessions', () => {
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const token = createTokenExpiringIn(10 * 60 * 1000);
+      const onRefresh = vi.fn();
+
+      refreshTimer.start(token, onRefresh, false);
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining('buffer: 5 min')
+      );
+    });
+
+    it('should log correct buffer time for remember me sessions', () => {
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const token = createTokenExpiringIn(60 * 60 * 1000);
+      const onRefresh = vi.fn();
+
+      refreshTimer.start(token, onRefresh, true);
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining('buffer: 30 min')
+      );
+    });
+
+    it('should return correct buffer via getRefreshBuffer', () => {
+      expect(refreshTimer.getRefreshBuffer(false)).toBe(5 * 60 * 1000);
+      expect(refreshTimer.getRefreshBuffer(true)).toBe(30 * 60 * 1000);
+    });
+  });
+
   describe('refresh timing', () => {
     it('should calculate correct refresh time for 24-hour token', () => {
       const token = createTokenExpiringIn(24 * 60 * 60 * 1000); // 24 hours
