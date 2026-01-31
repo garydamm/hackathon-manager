@@ -210,3 +210,40 @@ Learnings for future iterations:
 
 ---
 
+## Iteration 8 - Backend support for "Remember me" (7-day tokens) (US-008)
+- Added rememberMe parameter to LoginRequest and RegisterRequest DTOs (defaults to false for security)
+- Updated JwtTokenProvider.generateToken() to support rememberMe flag for 7-day access tokens
+- Updated JwtTokenProvider.generateRefreshToken() to support rememberMe flag for 30-day refresh tokens
+- Access tokens: 24 hours (default) or 7 days (remember me)
+- Refresh tokens: 7 days (default) or 30 days (remember me)
+- Token payload includes rememberMe claim for debugging
+- Updated AuthService login and register methods to pass rememberMe flag to token generation
+- Created comprehensive JwtTokenProviderTest with 8 tests covering token generation and validation
+- Added 2 new tests in AuthControllerTest for login/register with rememberMe=true
+- Fixed existing AuthServiceTest to work with updated method signatures (added rememberMe parameter)
+- All tests pass and typecheck passes
+
+Files changed:
+- Modified: `src/main/kotlin/com/hackathon/manager/dto/auth/AuthDtos.kt` (added rememberMe to LoginRequest and RegisterRequest)
+- Modified: `src/main/kotlin/com/hackathon/manager/security/JwtTokenProvider.kt` (added rememberMe parameter with 7-day/30-day logic)
+- Modified: `src/main/kotlin/com/hackathon/manager/service/AuthService.kt` (pass rememberMe to token generation in login/register)
+- Modified: `src/test/kotlin/com/hackathon/manager/controller/AuthControllerTest.kt` (added 2 tests for rememberMe)
+- Created: `src/test/kotlin/com/hackathon/manager/security/JwtTokenProviderTest.kt` (8 comprehensive tests)
+- Modified: `src/test/kotlin/com/hackathon/manager/service/AuthServiceTest.kt` (fixed mocks for new signatures)
+- Modified: `PRD.md` (marked US-008 as complete)
+
+Learnings for future iterations:
+- Default parameters in Kotlin are compile-time defaults, so when changing method signatures, existing mocks need to be updated
+- When adding optional parameters to existing methods, check all test files that mock those methods
+- Use eq() matcher in Mockito to match exact parameter values (including default boolean parameters)
+- Token expiration calculation: 7 days = 7 * 24 * 60 * 60 * 1000L milliseconds
+- rememberMe defaults to false for security (users must explicitly opt-in to longer sessions)
+- JWT claims can be verified in tests by parsing the token with the same key used to sign it
+- Pattern: Use Keys.hmacShaKeyFor() in tests to create secret key for parsing tokens
+- Allow 1-minute tolerance when testing token expiration times to avoid flaky tests due to timing
+- The rememberMe claim in token payload helps with debugging (can inspect token to see if it's a long session)
+- Backend now supports remember me - next step is frontend UI to expose this feature to users
+- Repository tests require PostgreSQL running - focus on unit tests for service/controller logic
+
+---
+
