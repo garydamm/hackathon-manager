@@ -515,3 +515,47 @@ Learnings for future iterations:
 
 ---
 
+
+## Iteration 16 - Add revoke session functionality (US-016)
+- Implemented complete session revocation feature for remote device logout
+- Added revokeSession() method to authService (DELETE /api/auth/sessions/{id})
+- Updated SessionCard component with "Revoke" button (hidden for current session)
+- Added window.confirm() for user confirmation before revoking
+- Created notification banner system for success/error feedback (matches project style with framer-motion)
+- SessionManagementPage handles revoke state, removes session from list on success
+- Shows loading state ("Revoking...") while API request is in progress
+- Added 8 comprehensive SessionCard tests (total 29 tests)
+- Added 6 comprehensive SessionManagementPage tests (total 19 tests)
+- All 167 frontend unit tests pass
+- TypeScript typecheck passes
+
+Files changed:
+- Modified: `frontend/src/services/auth.ts` (added revokeSession method)
+- Modified: `frontend/src/components/SessionCard.tsx` (added revoke button, confirmation, props)
+- Modified: `frontend/src/components/SessionCard.test.tsx` (added 8 revoke tests, updated all existing tests)
+- Modified: `frontend/src/pages/SessionManagement.tsx` (added revoke handler, notification banner, state management)
+- Modified: `frontend/src/pages/SessionManagement.test.tsx` (added 6 revoke tests, mocked AnimatePresence)
+- Modified: `PRD.md` (marked US-016 mostly complete, browser verification pending)
+
+Learnings for future iterations:
+- window.confirm() is simple and works well for confirmation dialogs without adding dependencies
+- Notification banner pattern: Use framer-motion with AnimatePresence for smooth show/hide animations
+- Banner colors: green for success (bg-green-500), red for error (bg-red-500)
+- Auto-dismiss pattern: setTimeout after 5 seconds for non-critical notifications
+- Mock AnimatePresence in tests as pass-through component: `AnimatePresence: ({ children }: any) => <>{children}</>`
+- Update all existing test calls when changing component props (use sed for bulk updates)
+- Test confirmation dialogs: vi.stubGlobal("confirm", vi.fn(() => true/false))
+- Test loading states: Mock delayed async operations with `new Promise((resolve) => setTimeout(resolve, 100))`
+- Pattern: Remove item from list optimistically after successful API call (no refetch needed)
+- Disable button while action is in progress to prevent duplicate requests
+- SessionCard now has 3 props: session, onRevoke, isRevoking (parent controls revoke state)
+- Parent component (SessionManagementPage) manages revoke state per session ID
+- Notification banner positioned at fixed top-16 (below navbar) with z-50 for visibility
+- CheckCircle2 and XCircle icons from lucide-react work well for success/error indicators
+- Testing revoke flow: mock authService.revokeSession, verify call with session ID, check state updates
+- The revoke button uses "destructive" variant and Trash2 icon for clear destructive action indicator
+- Total frontend tests: 167 passing (29 SessionCard + 19 SessionManagement + others)
+- US-016 complete except for browser verification (all functional requirements met)
+
+---
+
