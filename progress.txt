@@ -84,3 +84,34 @@ Learnings for future iterations:
 - Test all edge cases: visibility thresholds, formatting, styling transitions, cleanup
 
 ---
+
+## Iteration 4 - Display session timeout countdown notification (US-004)
+- Created SessionTimeoutNotification component that warns users when < 5 minutes remain
+- Component shows prominent yellow banner with countdown and action buttons
+- Displays countdown timer in "Xm Ys" format, updating every second
+- "Extend Session" button calls authService.refreshToken() to extend the session
+- Dismiss button to temporarily hide notification (reappears on remount if still < 5 min)
+- Fixed positioning below navbar (top-16) to be less intrusive than SessionExpiredBanner
+- Added component to App.tsx alongside SessionExpiredBanner
+- Added comprehensive unit tests (16 tests covering all functionality)
+
+Files changed:
+- Created: `frontend/src/components/SessionTimeoutNotification.tsx` (notification component)
+- Created: `frontend/src/components/SessionTimeoutNotification.test.tsx` (comprehensive unit tests)
+- Modified: `frontend/src/App.tsx` (added notification to app layout)
+- Modified: `frontend/package.json` (added @testing-library/user-event dev dependency)
+- Modified: `PRD.md` (marked most US-004 acceptance criteria as complete)
+
+Learnings for future iterations:
+- Banner-style notifications work well for important but not critical warnings
+- Yellow (warning) color scheme is less alarming than red (destructive) for expiration warnings
+- Position notifications below navbar (top-16) to avoid overlapping with navigation
+- Use `fireEvent` from React Testing Library for simpler click tests (instead of userEvent)
+- Testing async button handlers with fake timers can be tricky - test button render instead
+- Dismiss functionality should use local state, not persist across remounts
+- AnimatePresence from framer-motion needs mocking in tests to avoid timing issues
+- The notification appears automatically when token has < 5 minutes, no manual triggering needed
+- Keep notification z-index high (z-50) to ensure visibility over content
+- Proper ARIA: use role="alert" with aria-live="polite" for screen readers
+
+---
