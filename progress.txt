@@ -115,3 +115,31 @@ Learnings for future iterations:
 - Proper ARIA: use role="alert" with aria-live="polite" for screen readers
 
 ---
+
+## Iteration 5 - Add activity tracking to API client (US-005)
+- Implemented activity tracking in ApiClient to monitor meaningful user activity
+- Tracks timestamp for POST, PUT, DELETE, PATCH requests (excludes GET requests)
+- Activity timestamp stored in memory (not localStorage) as required
+- Added patch() method to ApiClient for PATCH request support
+- Exposed getLastActivityTime() method to retrieve last activity timestamp
+- Added clearActivityTracking() method for test isolation
+- Comprehensive unit tests (10 tests covering all scenarios)
+
+Files changed:
+- Modified: `frontend/src/services/api.ts` (added activity tracking logic)
+- Created: `frontend/src/services/api.test.ts` (comprehensive unit tests)
+- Modified: `frontend/src/components/SessionTimeoutNotification.test.tsx` (fixed unused import)
+- Modified: `PRD.md` (marked US-005 as complete)
+
+Learnings for future iterations:
+- Activity tracking should happen BEFORE the fetch call to capture intent even if request fails
+- Use `globalThis.fetch` instead of `global.fetch` for TypeScript compatibility
+- Test isolation is critical for singleton instances - added clearActivityTracking() method
+- The api.test.ts file needed to clear activity state in beforeEach() hook
+- Activity tracking excludes GET requests per requirements (viewing ≠ active work)
+- TypeScript strict mode requires all imports to be used (removed unused `waitFor`)
+- Pattern: Track activity at the request() level to cover all HTTP methods uniformly
+- The patch() method was added to complete REST method coverage
+- Activity timestamp is reset to null on clearActivityTracking() for clean test state
+
+---
