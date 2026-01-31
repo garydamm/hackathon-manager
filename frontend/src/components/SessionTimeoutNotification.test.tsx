@@ -10,6 +10,7 @@ vi.mock("@/services/auth", () => ({
     getAccessToken: vi.fn(),
     refreshToken: vi.fn(),
     extendSession: vi.fn(),
+    getRememberMe: vi.fn(() => false), // Default to false (regular session)
   },
 }))
 

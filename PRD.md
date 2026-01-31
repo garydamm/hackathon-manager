@@ -141,13 +141,13 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a developer, I need to store the remember me preference so the token refresh logic uses the correct duration.
 
 **Acceptance Criteria:**
-- [ ] Store `rememberMe` flag in localStorage after successful login
-- [ ] Read flag when calculating refresh timer duration
-- [ ] Adjust countdown thresholds for 7-day sessions (warn at 30 min, not 5 min)
-- [ ] Clear flag on logout
-- [ ] Unit tests added for preference storage logic
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Store `rememberMe` flag in localStorage after successful login
+- [x] Read flag when calculating refresh timer duration
+- [x] Adjust countdown thresholds for 7-day sessions (warn at 30 min, not 5 min)
+- [x] Clear flag on logout
+- [x] Unit tests added for preference storage logic
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-011: Add sessions table for device tracking
 **Description:** As a developer, I need to track active sessions per user so users can see and manage their logged-in devices.

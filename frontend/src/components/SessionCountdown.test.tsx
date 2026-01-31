@@ -8,6 +8,7 @@ import * as jwtUtils from '@/utils/jwt';
 vi.mock('@/services/auth', () => ({
   authService: {
     getAccessToken: vi.fn(),
+    getRememberMe: vi.fn(() => false), // Default to false (regular session)
   },
 }));
 
