@@ -128,13 +128,13 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a user, I want a "Remember me" checkbox on the login form so I can choose longer sessions on trusted devices.
 
 **Acceptance Criteria:**
-- [ ] Add checkbox below password field: "Remember me for 7 days"
-- [ ] Checkbox defaults to unchecked (secure default)
-- [ ] Pass `rememberMe` value to login API call
-- [ ] Show helper text: "Only use on personal devices"
-- [ ] Unit tests added for checkbox component
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Add checkbox below password field: "Remember me for 7 days"
+- [x] Checkbox defaults to unchecked (secure default)
+- [x] Pass `rememberMe` value to login API call
+- [x] Show helper text: "Only use on personal devices"
+- [x] Unit tests added for checkbox component
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify checkbox appears and passes value in browser
 
 ### US-010: Store and use remember me preference
