@@ -4,3 +4,27 @@
 (Patterns discovered during implementation)
 
 ---
+
+## Iteration 1 - Add JWT decoding utility (US-001)
+- Implemented JWT token decoding utility in `frontend/src/utils/jwt.ts`
+- Created helper functions: `decodeToken()`, `getTokenExpiration()`, `isTokenExpired()`, `getTimeUntilExpiration()`
+- Set up Vitest testing infrastructure for the frontend
+- Added comprehensive unit tests (18 tests covering all edge cases)
+
+Files changed:
+- Created: `frontend/src/utils/jwt.ts` (JWT decoding utility)
+- Created: `frontend/src/utils/jwt.test.ts` (comprehensive unit tests)
+- Created: `frontend/vitest.config.ts` (Vitest configuration)
+- Created: `frontend/src/test/setup.ts` (test setup with jest-dom)
+- Modified: `frontend/package.json` (added Vitest dependencies and test scripts)
+- Modified: `PRD.md` (marked US-001 as complete)
+
+Learnings for future iterations:
+- The project had no unit testing infrastructure, so Vitest was added
+- Frontend uses TypeScript strict mode - all code must pass typecheck
+- JWT tokens use URL-safe base64 encoding (- and _ instead of + and /)
+- Use fixed timestamps in tests to avoid rounding issues with Date.now()
+- Tests should be comprehensive: test both happy path and error cases
+- Pattern: Create utility in `src/utils/`, tests in same directory with `.test.ts` suffix
+
+---
