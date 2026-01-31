@@ -240,13 +240,13 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a developer, I need to support HttpOnly cookies for token storage so tokens are protected from XSS attacks.
 
 **Acceptance Criteria:**
-- [ ] Create `JwtCookieFilter` that reads tokens from cookies as fallback
-- [ ] Check `Authorization` header first, then `accessToken` cookie
-- [ ] Configure cookie security: HttpOnly, Secure (HTTPS only), SameSite=Strict
-- [ ] Cookie path: `/` (all routes)
-- [ ] Unit tests added for cookie authentication filter
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `JwtCookieFilter` that reads tokens from cookies as fallback
+- [x] Check `Authorization` header first, then `accessToken` cookie
+- [x] Configure cookie security: HttpOnly, Secure (HTTPS only), SameSite=Strict
+- [x] Cookie path: `/` (all routes)
+- [x] Unit tests added for cookie authentication filter
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-018: Update auth endpoints to support cookies
 **Description:** As a developer, I need auth endpoints to set HttpOnly cookies so frontend can use cookie-based auth.

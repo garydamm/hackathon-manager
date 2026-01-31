@@ -48,10 +48,21 @@ class JwtAuthenticationFilter(
     }
 
     private fun getJwtFromRequest(request: HttpServletRequest): String? {
+        // First, check Authorization header
         val bearerToken = request.getHeader("Authorization")
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7)
         }
+
+        // Fallback to accessToken cookie
+        val cookies = request.cookies
+        if (cookies != null) {
+            val accessTokenCookie = cookies.find { it.name == "accessToken" }
+            if (accessTokenCookie != null && StringUtils.hasText(accessTokenCookie.value)) {
+                return accessTokenCookie.value
+            }
+        }
+
         return null
     }
 }
