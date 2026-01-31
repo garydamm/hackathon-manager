@@ -44,6 +44,18 @@ export const authService = {
     }
   },
 
+  async extendSession(): Promise<AuthResponse | null> {
+    try {
+      const response = await api.post<AuthResponse>("/auth/extend-session")
+      this.setSession(response)
+      this.startRefreshTimer()
+      return response
+    } catch (error) {
+      console.error("Failed to extend session:", error)
+      return null
+    }
+  },
+
   async forgotPassword(email: string): Promise<PasswordResetResponse> {
     const response = await api.post<PasswordResetResponse>(
       "/auth/forgot-password",

@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Clock, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import { authService } from "@/services/auth"
 import { getTimeUntilExpiration } from "@/utils/jwt"
+import { api } from "@/services/api"
 
 const SHOW_NOTIFICATION_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes
+const ACTIVITY_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
 
 function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000)
@@ -18,6 +20,7 @@ export function SessionTimeoutNotification() {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
   const [isExtending, setIsExtending] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
+  const lastAutoExtendRef = useRef<number | null>(null)
 
   useEffect(() => {
     const updateTimeRemaining = () => {
@@ -33,8 +36,38 @@ export function SessionTimeoutNotification() {
         return
       }
 
-      // Only show notification if < 5 minutes remain
+      // Check if we should show notification (< 5 minutes remain)
       if (remaining < SHOW_NOTIFICATION_THRESHOLD_MS) {
+        // Check if user has been active in the last 5 minutes
+        const lastActivityTime = api.getLastActivityTime()
+        const now = Date.now()
+
+        if (lastActivityTime && (now - lastActivityTime) < ACTIVITY_WINDOW_MS) {
+          // User is active - extend session automatically instead of showing notification
+          const lastAutoExtend = lastAutoExtendRef.current
+
+          // Only extend once per activity period (avoid spam)
+          if (!lastAutoExtend || (now - lastAutoExtend) > 60000) { // 1 minute cooldown
+            console.log("[SessionTimeoutNotification] User active, auto-extending session")
+            lastAutoExtendRef.current = now
+
+            // Call extendSession asynchronously without blocking the interval
+            authService.extendSession().then((result) => {
+              if (result) {
+                console.log("[SessionTimeoutNotification] Session extended successfully due to activity")
+                setTimeRemaining(null) // Hide notification
+              } else {
+                console.error("[SessionTimeoutNotification] Auto-extend failed, showing notification")
+                setTimeRemaining(remaining) // Show notification
+              }
+            })
+
+            // Return early to avoid showing notification while extending
+            return
+          }
+        }
+
+        // Show notification if not auto-extended
         setTimeRemaining(remaining)
       } else {
         setTimeRemaining(null)

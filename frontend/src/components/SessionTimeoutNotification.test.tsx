@@ -2,12 +2,21 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, act, fireEvent } from "@testing-library/react"
 import { SessionTimeoutNotification } from "./SessionTimeoutNotification"
 import { authService } from "@/services/auth"
+import { api } from "@/services/api"
 
 // Mock authService
 vi.mock("@/services/auth", () => ({
   authService: {
     getAccessToken: vi.fn(),
     refreshToken: vi.fn(),
+    extendSession: vi.fn(),
+  },
+}))
+
+// Mock api
+vi.mock("@/services/api", () => ({
+  api: {
+    getLastActivityTime: vi.fn(),
   },
 }))
 
@@ -260,6 +269,183 @@ describe("SessionTimeoutNotification", () => {
 
       // Should not throw any errors
       expect(true).toBe(true)
+    })
+  })
+
+  describe("Activity-based session extension", () => {
+    beforeEach(() => {
+      // Use real timers for these tests since we're dealing with promises
+      vi.useRealTimers()
+      // Reset mocks for activity tests
+      vi.mocked(api.getLastActivityTime).mockReturnValue(null)
+      vi.mocked(authService.extendSession).mockResolvedValue({
+        accessToken: "new-token",
+        refreshToken: "new-refresh",
+        tokenType: "Bearer",
+        user: { id: "user-123", email: "test@example.com", firstName: "Test", lastName: "User" },
+      })
+    })
+
+    afterEach(() => {
+      // Restore fake timers for other tests
+      vi.useFakeTimers()
+    })
+
+    it("should auto-extend session when user was active within 5 minutes", async () => {
+      const token = createMockToken(4 * 60 * 1000) // 4 minutes remaining
+      vi.mocked(authService.getAccessToken).mockReturnValue(token)
+
+      // User was active 2 minutes ago
+      const now = Date.now()
+      vi.mocked(api.getLastActivityTime).mockReturnValue(now - 2 * 60 * 1000)
+
+      render(<SessionTimeoutNotification />)
+
+      // Wait for the extend session promise to be called and resolved
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      // Should have called extend session
+      expect(authService.extendSession).toHaveBeenCalled()
+
+      // Notification should not be shown
+      expect(
+        screen.queryByText(/Session expiring soon/i)
+      ).not.toBeInTheDocument()
+    })
+
+    it("should show notification when user was NOT active within 5 minutes", async () => {
+      const token = createMockToken(4 * 60 * 1000) // 4 minutes remaining
+      vi.mocked(authService.getAccessToken).mockReturnValue(token)
+
+      // User was active 6 minutes ago (outside activity window)
+      const now = Date.now()
+      vi.mocked(api.getLastActivityTime).mockReturnValue(now - 6 * 60 * 1000)
+
+      render(<SessionTimeoutNotification />)
+
+      // Wait a moment for component to render
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      // Should show notification instead of auto-extending
+      expect(screen.getByText(/Session expiring soon/i)).toBeInTheDocument()
+      expect(authService.extendSession).not.toHaveBeenCalled()
+    })
+
+    it("should show notification when no activity has been tracked", async () => {
+      const token = createMockToken(4 * 60 * 1000) // 4 minutes remaining
+      vi.mocked(authService.getAccessToken).mockReturnValue(token)
+
+      // No activity tracked
+      vi.mocked(api.getLastActivityTime).mockReturnValue(null)
+
+      render(<SessionTimeoutNotification />)
+
+      // Wait a moment for component to render
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      // Should show notification
+      expect(screen.getByText(/Session expiring soon/i)).toBeInTheDocument()
+      expect(authService.extendSession).not.toHaveBeenCalled()
+    })
+
+    it("should only auto-extend once per minute (rate limiting)", async () => {
+      const token = createMockToken(4 * 60 * 1000) // 4 minutes remaining
+      vi.mocked(authService.getAccessToken).mockReturnValue(token)
+
+      // User is active
+      const now = Date.now()
+      vi.mocked(api.getLastActivityTime).mockReturnValue(now - 1 * 60 * 1000)
+
+      render(<SessionTimeoutNotification />)
+
+      // Wait for initial extend
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      // Should extend on first check
+      expect(authService.extendSession).toHaveBeenCalledTimes(1)
+
+      // Wait 30 seconds (less than 1 minute cooldown) - interval will trigger but shouldn't extend
+      await new Promise(resolve => setTimeout(resolve, 1100)) // Just over 1 second
+
+      // Should not extend again (cooldown not expired)
+      expect(authService.extendSession).toHaveBeenCalledTimes(1)
+
+      // Wait another 60 seconds (total > 1 minute) - interval will trigger and should extend
+      await new Promise(resolve => setTimeout(resolve, 60 * 1000 + 100))
+
+      // Now should allow another extend
+      expect(authService.extendSession).toHaveBeenCalledTimes(2)
+    }, 70000)
+
+    it("should show notification if auto-extend fails", async () => {
+      const token = createMockToken(4 * 60 * 1000) // 4 minutes remaining
+      vi.mocked(authService.getAccessToken).mockReturnValue(token)
+
+      // User is active
+      const now = Date.now()
+      vi.mocked(api.getLastActivityTime).mockReturnValue(now - 1 * 60 * 1000)
+
+      // Mock extend to fail
+      vi.mocked(authService.extendSession).mockResolvedValue(null)
+
+      render(<SessionTimeoutNotification />)
+
+      // Wait for promise to resolve
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      // Should have attempted to extend
+      expect(authService.extendSession).toHaveBeenCalled()
+
+      // Should show notification because extend failed
+      expect(screen.getByText(/Session expiring soon/i)).toBeInTheDocument()
+    })
+
+    it("should log when auto-extending session", async () => {
+      const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+      const token = createMockToken(4 * 60 * 1000) // 4 minutes remaining
+      vi.mocked(authService.getAccessToken).mockReturnValue(token)
+
+      // User is active
+      const now = Date.now()
+      vi.mocked(api.getLastActivityTime).mockReturnValue(now - 1 * 60 * 1000)
+
+      render(<SessionTimeoutNotification />)
+
+      // Wait for promise to resolve
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        "[SessionTimeoutNotification] User active, auto-extending session"
+      )
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        "[SessionTimeoutNotification] Session extended successfully due to activity"
+      )
+
+      consoleLogSpy.mockRestore()
+    })
+
+    it("should log error when auto-extend fails", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+      const token = createMockToken(4 * 60 * 1000) // 4 minutes remaining
+      vi.mocked(authService.getAccessToken).mockReturnValue(token)
+
+      // User is active
+      const now = Date.now()
+      vi.mocked(api.getLastActivityTime).mockReturnValue(now - 1 * 60 * 1000)
+
+      // Mock extend to fail
+      vi.mocked(authService.extendSession).mockResolvedValue(null)
+
+      render(<SessionTimeoutNotification />)
+
+      // Wait for promise to resolve
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[SessionTimeoutNotification] Auto-extend failed, showing notification"
+      )
+
+      consoleErrorSpy.mockRestore()
     })
   })
 })

@@ -102,14 +102,14 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a user, I want my session to extend automatically when I perform actions so I never see expiration warnings during active use.
 
 **Acceptance Criteria:**
-- [ ] Check if last activity was within 5 minutes when countdown would show
-- [ ] If active, call `/api/auth/extend-session` instead of showing countdown
-- [ ] Update refresh timer after successful extension
-- [ ] Only extend once per activity period (avoid spam)
-- [ ] Console log when activity-based extension occurs
-- [ ] Unit tests added for activity extension logic
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Check if last activity was within 5 minutes when countdown would show
+- [x] If active, call `/api/auth/extend-session` instead of showing countdown
+- [x] Update refresh timer after successful extension
+- [x] Only extend once per activity period (avoid spam)
+- [x] Console log when activity-based extension occurs
+- [x] Unit tests added for activity extension logic
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify session extends during active use in browser
 
 ### US-008: Backend support for "Remember me" (7-day tokens)
