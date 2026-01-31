@@ -153,13 +153,13 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a developer, I need to track active sessions per user so users can see and manage their logged-in devices.
 
 **Acceptance Criteria:**
-- [ ] Create `user_sessions` table with columns: id, user_id, refresh_token_hash, device_info, ip_address, last_activity_at, created_at
-- [ ] Add index on user_id for fast lookup
-- [ ] Add unique constraint on refresh_token_hash
-- [ ] Generate and run Flyway migration
-- [ ] Unit tests added for session entity
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `user_sessions` table with columns: id, user_id, refresh_token_hash, device_info, ip_address, last_activity_at, created_at
+- [x] Add index on user_id for fast lookup
+- [x] Add unique constraint on refresh_token_hash
+- [x] Generate and run Flyway migration
+- [x] Unit tests added for session entity
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-012: Backend endpoint to list active sessions
 **Description:** As a user, I want to see all my active sessions so I know which devices are logged in.

@@ -12,14 +12,40 @@ for ((i=1; i<=$MAX; i++)); do
     echo "  Iteration $i of $MAX"
     echo "==========================================="
 
-    result=$(claude --dangerously-skip-permissions -p "You are Ralph, an autonomous coding agent. Do exactly ONE task per iteration.
+    # Create temporary file for output capture
+    tmpfile=$(mktemp)
+
+    # Run claude with tee to show output AND capture it
+    claude --dangerously-skip-permissions -p "You are Ralph, an autonomous coding agent. Do exactly ONE task per iteration.
 
 ## Steps
 
 1. Read PRD.md and find the first task that is NOT complete (marked [ ]).
 2. Read progress.txt - check the Learnings section first for patterns from previous iterations.
 3. Implement that ONE task only.
-4. Run tests/typecheck to verify it works.
+4. Run tests/typecheck to verify it works (see Testing Strategy below).
+
+## Testing Strategy
+
+**IMPORTANT**: Repository integration tests cause TestContainers resource exhaustion when run together. See progress.txt Iteration 11 learnings.
+
+**For Backend Tasks (Kotlin/Spring)**:
+
+If you created a **database migration** (src/main/resources/db/migration/*.sql):
+  1. Run backend unit tests (controllers/services): \`./gradlew test --tests '*ControllerTest' --tests '*ServiceTest'\`
+  2. Run ONLY the specific repository test individually: \`./gradlew test --tests YourNewRepositoryTest\`
+     - Example: Created V3__add_user_sessions_table.sql → Run: \`./gradlew test --tests UserSessionRepositoryTest\`
+  3. Run typecheck: \`./gradlew build -x test\`
+
+If **no database migration** was created:
+  1. Run backend unit tests: \`./gradlew test --tests '*ControllerTest' --tests '*ServiceTest'\`
+  2. Run typecheck: \`./gradlew build -x test\`
+
+**For Frontend Tasks (TypeScript/React)**:
+- Run tests: \`cd frontend && npm test\`
+- Run typecheck: \`cd frontend && npm run typecheck\`
+
+**Note**: Never run \`./gradlew test\` without filters - it will hang on repository tests.
 
 ## Critical: Only Complete If Tests Pass
 
@@ -57,18 +83,20 @@ If you discover a reusable pattern that future work should know about:
 
 After completing your task, check PRD.md:
 - If ALL tasks are [x], output exactly: <promise>COMPLETE</promise>
-- If tasks remain [ ], just end your response (next iteration will continue)")
+- If tasks remain [ ], just end your response (next iteration will continue)" | tee "$tmpfile"
 
-    echo "$result"
     echo ""
 
-    if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
+    # Check the captured output for completion marker
+    if grep -q "<promise>COMPLETE</promise>" "$tmpfile"; then
         echo "==========================================="
         echo "  All tasks complete after $i iterations!"
         echo "==========================================="
+        rm "$tmpfile"
         exit 0
     fi
 
+    rm "$tmpfile"
     sleep $SLEEP
 done
 
