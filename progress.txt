@@ -28,3 +28,29 @@ Learnings for future iterations:
 - Pattern: Create utility in `src/utils/`, tests in same directory with `.test.ts` suffix
 
 ---
+
+## Iteration 2 - Implement proactive token refresh timer (US-002)
+- Created TokenRefreshTimer class in `frontend/src/utils/refreshTimer.ts`
+- Timer automatically refreshes tokens 5 minutes before expiration
+- Integrated refresh timer with authService (starts on login/register/refresh, clears on logout)
+- Added `initializeRefreshTimer()` to restart timer on app load
+- Added comprehensive unit tests (17 tests covering all scenarios)
+
+Files changed:
+- Created: `frontend/src/utils/refreshTimer.ts` (refresh timer implementation)
+- Created: `frontend/src/utils/refreshTimer.test.ts` (comprehensive unit tests)
+- Modified: `frontend/src/services/auth.ts` (integrated refresh timer)
+- Modified: `PRD.md` (marked US-002 acceptance criteria as complete)
+
+Learnings for future iterations:
+- Timer uses singleton pattern with a single global instance
+- Timer must clear itself after execution (set timerId to null in finally block)
+- Use fake timers in tests (vi.useFakeTimers()) for reliable timing tests
+- Async callbacks in tests require await vi.runAllTimersAsync() to complete
+- Console logging for debugging is helpful for timer operations
+- REFRESH_BUFFER_MS is 5 minutes (300 seconds) as per requirements
+- Timer handles edge cases: immediate refresh if < 5 min remaining, invalid tokens
+- authService now has startRefreshTimer() and initializeRefreshTimer() methods
+- Next iteration should call initializeRefreshTimer() on app load (e.g., in App.tsx or main.tsx)
+
+---

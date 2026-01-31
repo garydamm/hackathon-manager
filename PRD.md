@@ -35,14 +35,14 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a user, I want my session to refresh automatically before expiration so I'm never interrupted while working.
 
 **Acceptance Criteria:**
-- [ ] Timer checks token expiration on app load and after each refresh
-- [ ] Automatically refreshes token 5 minutes (300 seconds) before expiration
-- [ ] Timer clears when user logs out
-- [ ] Timer resets after successful manual refresh
-- [ ] Console log when proactive refresh occurs (for debugging)
-- [ ] Unit tests added for refresh timer logic
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Timer checks token expiration on app load and after each refresh
+- [x] Automatically refreshes token 5 minutes (300 seconds) before expiration
+- [x] Timer clears when user logs out
+- [x] Timer resets after successful manual refresh
+- [x] Console log when proactive refresh occurs (for debugging)
+- [x] Unit tests added for refresh timer logic
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify automatic refresh works in browser (leave tab open for 23 hours 55 min)
 
 ### US-003: Create session countdown UI component

@@ -1,5 +1,6 @@
 import { api } from "./api"
 import type { AuthResponse, LoginRequest, RegisterRequest, User, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse } from "@/types"
+import { refreshTimer } from "@/utils/refreshTimer"
 
 const ACCESS_TOKEN_KEY = "accessToken"
 const REFRESH_TOKEN_KEY = "refreshToken"
@@ -11,6 +12,7 @@ export const authService = {
       skipAuth: true,
     })
     this.setSession(response)
+    this.startRefreshTimer()
     return response
   },
 
@@ -19,6 +21,7 @@ export const authService = {
       skipAuth: true,
     })
     this.setSession(response)
+    this.startRefreshTimer()
     return response
   },
 
@@ -33,6 +36,7 @@ export const authService = {
         { skipAuth: true }
       )
       this.setSession(response)
+      this.startRefreshTimer()
       return response
     } catch {
       this.clearSession()
@@ -63,6 +67,7 @@ export const authService = {
   },
 
   logout(): void {
+    refreshTimer.clear()
     this.clearSession()
   },
 
@@ -94,5 +99,30 @@ export const authService = {
 
   isAuthenticated(): boolean {
     return !!this.getAccessToken()
+  },
+
+  /**
+   * Starts the refresh timer for the current access token
+   * Timer will trigger a refresh 5 minutes before token expiration
+   */
+  startRefreshTimer(): void {
+    const accessToken = this.getAccessToken()
+    if (!accessToken) {
+      return
+    }
+
+    refreshTimer.start(accessToken, async () => {
+      await this.refreshToken()
+    })
+  },
+
+  /**
+   * Initialize refresh timer on app load if user is authenticated
+   * Should be called when app starts
+   */
+  initializeRefreshTimer(): void {
+    if (this.isAuthenticated()) {
+      this.startRefreshTimer()
+    }
   },
 }
