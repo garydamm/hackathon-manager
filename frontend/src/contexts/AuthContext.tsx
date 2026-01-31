@@ -32,6 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = authService.getUser()
     if (storedUser) {
       setUser(storedUser)
+      // Initialize refresh timer if user is already logged in
+      authService.initializeRefreshTimer()
     }
     setIsLoading(false)
   }, [])
