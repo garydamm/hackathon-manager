@@ -543,4 +543,240 @@ class AuthControllerTest {
 
         org.mockito.kotlin.verify(authService).revokeSession(eq(sessionId), eq(testUserId), eq(refreshToken))
     }
+
+    // Cookie-based authentication tests
+    @Test
+    @WithMockUser
+    fun `login should set cookies when useCookies is true`() {
+        val loginRequest = LoginRequest(email = "test@example.com", password = "password123", rememberMe = false)
+        val authResponse = AuthResponse(
+            accessToken = "access-token",
+            refreshToken = "refresh-token",
+            user = UserResponse(
+                id = testUserId,
+                email = "test@example.com",
+                firstName = "Test",
+                lastName = "User",
+                displayName = "Test User",
+                avatarUrl = null,
+                bio = null,
+                skills = null,
+                githubUrl = null,
+                linkedinUrl = null,
+                portfolioUrl = null,
+                createdAt = null
+            )
+        )
+        whenever(authService.login(any())).thenReturn(authResponse)
+
+        mockMvc.perform(
+            post("/api/auth/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("useCookies", "true")
+                .content(objectMapper.writeValueAsString(loginRequest))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.accessToken").value("access-token"))
+            .andExpect(jsonPath("$.refreshToken").value("refresh-token"))
+            .andExpect(cookie().exists("accessToken"))
+            .andExpect(cookie().value("accessToken", "access-token"))
+            .andExpect(cookie().httpOnly("accessToken", true))
+            .andExpect(cookie().secure("accessToken", true))
+            .andExpect(cookie().path("accessToken", "/"))
+            .andExpect(cookie().maxAge("accessToken", 24 * 60 * 60)) // 24 hours
+            .andExpect(cookie().exists("refreshToken"))
+            .andExpect(cookie().value("refreshToken", "refresh-token"))
+            .andExpect(cookie().httpOnly("refreshToken", true))
+            .andExpect(cookie().secure("refreshToken", true))
+            .andExpect(cookie().path("refreshToken", "/"))
+            .andExpect(cookie().maxAge("refreshToken", 7 * 24 * 60 * 60)) // 7 days
+    }
+
+    @Test
+    @WithMockUser
+    fun `login should not set cookies when useCookies is false`() {
+        val loginRequest = LoginRequest(email = "test@example.com", password = "password123", rememberMe = false)
+        val authResponse = AuthResponse(
+            accessToken = "access-token",
+            refreshToken = "refresh-token",
+            user = UserResponse(
+                id = testUserId,
+                email = "test@example.com",
+                firstName = "Test",
+                lastName = "User",
+                displayName = "Test User",
+                avatarUrl = null,
+                bio = null,
+                skills = null,
+                githubUrl = null,
+                linkedinUrl = null,
+                portfolioUrl = null,
+                createdAt = null
+            )
+        )
+        whenever(authService.login(any())).thenReturn(authResponse)
+
+        mockMvc.perform(
+            post("/api/auth/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("useCookies", "false")
+                .content(objectMapper.writeValueAsString(loginRequest))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.accessToken").value("access-token"))
+            .andExpect(jsonPath("$.refreshToken").value("refresh-token"))
+            .andExpect(cookie().doesNotExist("accessToken"))
+            .andExpect(cookie().doesNotExist("refreshToken"))
+    }
+
+    @Test
+    @WithMockUser
+    fun `login with rememberMe should set longer-lived cookies`() {
+        val loginRequest = LoginRequest(email = "test@example.com", password = "password123", rememberMe = true)
+        val authResponse = AuthResponse(
+            accessToken = "access-token",
+            refreshToken = "refresh-token",
+            user = UserResponse(
+                id = testUserId,
+                email = "test@example.com",
+                firstName = "Test",
+                lastName = "User",
+                displayName = "Test User",
+                avatarUrl = null,
+                bio = null,
+                skills = null,
+                githubUrl = null,
+                linkedinUrl = null,
+                portfolioUrl = null,
+                createdAt = null
+            )
+        )
+        whenever(authService.login(any())).thenReturn(authResponse)
+
+        mockMvc.perform(
+            post("/api/auth/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("useCookies", "true")
+                .content(objectMapper.writeValueAsString(loginRequest))
+        )
+            .andExpect(status().isOk)
+            .andExpect(cookie().exists("accessToken"))
+            .andExpect(cookie().maxAge("accessToken", 7 * 24 * 60 * 60)) // 7 days
+            .andExpect(cookie().exists("refreshToken"))
+            .andExpect(cookie().maxAge("refreshToken", 30 * 24 * 60 * 60)) // 30 days
+    }
+
+    @Test
+    @WithMockUser
+    fun `register should set cookies when useCookies is true`() {
+        val registerRequest = RegisterRequest(
+            email = "test@example.com",
+            password = "password123",
+            firstName = "Test",
+            lastName = "User",
+            displayName = "Test User",
+            rememberMe = false
+        )
+        val authResponse = AuthResponse(
+            accessToken = "access-token",
+            refreshToken = "refresh-token",
+            user = UserResponse(
+                id = testUserId,
+                email = "test@example.com",
+                firstName = "Test",
+                lastName = "User",
+                displayName = "Test User",
+                avatarUrl = null,
+                bio = null,
+                skills = null,
+                githubUrl = null,
+                linkedinUrl = null,
+                portfolioUrl = null,
+                createdAt = null
+            )
+        )
+        whenever(authService.register(any())).thenReturn(authResponse)
+
+        mockMvc.perform(
+            post("/api/auth/register")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("useCookies", "true")
+                .content(objectMapper.writeValueAsString(registerRequest))
+        )
+            .andExpect(status().isCreated)
+            .andExpect(cookie().exists("accessToken"))
+            .andExpect(cookie().exists("refreshToken"))
+    }
+
+    @Test
+    @WithMockUser
+    fun `refresh should set cookies when useCookies is true`() {
+        val refreshRequest = RefreshTokenRequest(refreshToken = "refresh-token")
+        val authResponse = AuthResponse(
+            accessToken = "new-access-token",
+            refreshToken = "new-refresh-token",
+            user = UserResponse(
+                id = testUserId,
+                email = "test@example.com",
+                firstName = "Test",
+                lastName = "User",
+                displayName = "Test User",
+                avatarUrl = null,
+                bio = null,
+                skills = null,
+                githubUrl = null,
+                linkedinUrl = null,
+                portfolioUrl = null,
+                createdAt = null
+            )
+        )
+        whenever(authService.refreshToken(any())).thenReturn(authResponse)
+
+        mockMvc.perform(
+            post("/api/auth/refresh")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("useCookies", "true")
+                .content(objectMapper.writeValueAsString(refreshRequest))
+        )
+            .andExpect(status().isOk)
+            .andExpect(cookie().exists("accessToken"))
+            .andExpect(cookie().exists("refreshToken"))
+    }
+
+    @Test
+    @WithMockUser
+    fun `logout should clear auth cookies`() {
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/auth/logout")
+                .with(csrf())
+        )
+            .andExpect(status().isNoContent)
+            .andExpect(cookie().exists("accessToken"))
+            .andExpect(cookie().value("accessToken", ""))
+            .andExpect(cookie().maxAge("accessToken", 0))
+            .andExpect(cookie().exists("refreshToken"))
+            .andExpect(cookie().value("refreshToken", ""))
+            .andExpect(cookie().maxAge("refreshToken", 0))
+    }
+
+    @Test
+    @WithMockUser
+    fun `logout should set cookie security attributes`() {
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/auth/logout")
+                .with(csrf())
+        )
+            .andExpect(status().isNoContent)
+            .andExpect(cookie().httpOnly("accessToken", true))
+            .andExpect(cookie().secure("accessToken", true))
+            .andExpect(cookie().path("accessToken", "/"))
+            .andExpect(cookie().httpOnly("refreshToken", true))
+            .andExpect(cookie().secure("refreshToken", true))
+            .andExpect(cookie().path("refreshToken", "/"))
+    }
 }

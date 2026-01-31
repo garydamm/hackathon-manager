@@ -252,14 +252,14 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a developer, I need auth endpoints to set HttpOnly cookies so frontend can use cookie-based auth.
 
 **Acceptance Criteria:**
-- [ ] Add `useCookies` query param to login/register/refresh endpoints (default: false)
-- [ ] When `useCookies=true`, set `accessToken` and `refreshToken` HttpOnly cookies
-- [ ] Still return tokens in response body for backward compatibility
-- [ ] Cookie max-age matches token expiration
-- [ ] Add `DELETE /api/auth/logout` endpoint that clears cookies
-- [ ] Unit tests added for cookie-based auth flow
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Add `useCookies` query param to login/register/refresh endpoints (default: false)
+- [x] When `useCookies=true`, set `accessToken` and `refreshToken` HttpOnly cookies
+- [x] Still return tokens in response body for backward compatibility
+- [x] Cookie max-age matches token expiration
+- [x] Add `DELETE /api/auth/logout` endpoint that clears cookies
+- [x] Unit tests added for cookie-based auth flow
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-019: Frontend support for cookie-based auth
 **Description:** As a developer, I need the frontend API client to support cookie-based authentication alongside localStorage.

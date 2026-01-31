@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletResponse
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,21 +22,49 @@ class AuthController(
 ) {
 
     @PostMapping("/register")
-    fun register(@Valid @RequestBody request: RegisterRequest): ResponseEntity<AuthResponse> {
-        val response = authService.register(request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(response)
+    fun register(
+        @Valid @RequestBody request: RegisterRequest,
+        @RequestParam(required = false, defaultValue = "false") useCookies: Boolean,
+        response: HttpServletResponse
+    ): ResponseEntity<AuthResponse> {
+        val authResponse = authService.register(request)
+
+        if (useCookies) {
+            setAuthCookies(authResponse, response, request.rememberMe)
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(authResponse)
     }
 
     @PostMapping("/login")
-    fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<AuthResponse> {
-        val response = authService.login(request)
-        return ResponseEntity.ok(response)
+    fun login(
+        @Valid @RequestBody request: LoginRequest,
+        @RequestParam(required = false, defaultValue = "false") useCookies: Boolean,
+        response: HttpServletResponse
+    ): ResponseEntity<AuthResponse> {
+        val authResponse = authService.login(request)
+
+        if (useCookies) {
+            setAuthCookies(authResponse, response, request.rememberMe)
+        }
+
+        return ResponseEntity.ok(authResponse)
     }
 
     @PostMapping("/refresh")
-    fun refreshToken(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<AuthResponse> {
-        val response = authService.refreshToken(request)
-        return ResponseEntity.ok(response)
+    fun refreshToken(
+        @Valid @RequestBody request: RefreshTokenRequest,
+        @RequestParam(required = false, defaultValue = "false") useCookies: Boolean,
+        response: HttpServletResponse
+    ): ResponseEntity<AuthResponse> {
+        val authResponse = authService.refreshToken(request)
+
+        if (useCookies) {
+            // When refreshing, assume same session length as original (24h default)
+            setAuthCookies(authResponse, response, rememberMe = false)
+        }
+
+        return ResponseEntity.ok(authResponse)
     }
 
     @PostMapping("/extend-session")
@@ -91,5 +121,66 @@ class AuthController(
         return ResponseEntity.ok(PasswordResetResponse(
             message = "Your password has been successfully reset. You can now log in with your new password."
         ))
+    }
+
+    @DeleteMapping("/logout")
+    fun logout(response: HttpServletResponse): ResponseEntity<Void> {
+        clearAuthCookies(response)
+        return ResponseEntity.noContent().build()
+    }
+
+    /**
+     * Sets HttpOnly authentication cookies in the response.
+     * Cookie max-age is calculated based on rememberMe flag:
+     * - rememberMe=true: 7 days (access token) and 30 days (refresh token)
+     * - rememberMe=false: 24 hours (access token) and 7 days (refresh token)
+     */
+    private fun setAuthCookies(authResponse: AuthResponse, response: HttpServletResponse, rememberMe: Boolean) {
+        // Access token cookie
+        val accessMaxAge = if (rememberMe) 7 * 24 * 60 * 60 else 24 * 60 * 60 // 7 days or 24 hours
+        val accessCookie = Cookie("accessToken", authResponse.accessToken).apply {
+            isHttpOnly = true
+            secure = true // HTTPS only
+            path = "/"
+            maxAge = accessMaxAge
+            setAttribute("SameSite", "Strict")
+        }
+
+        // Refresh token cookie
+        val refreshMaxAge = if (rememberMe) 30 * 24 * 60 * 60 else 7 * 24 * 60 * 60 // 30 days or 7 days
+        val refreshCookie = Cookie("refreshToken", authResponse.refreshToken).apply {
+            isHttpOnly = true
+            secure = true // HTTPS only
+            path = "/"
+            maxAge = refreshMaxAge
+            setAttribute("SameSite", "Strict")
+        }
+
+        response.addCookie(accessCookie)
+        response.addCookie(refreshCookie)
+    }
+
+    /**
+     * Clears authentication cookies by setting their max-age to 0.
+     */
+    private fun clearAuthCookies(response: HttpServletResponse) {
+        val accessCookie = Cookie("accessToken", "").apply {
+            isHttpOnly = true
+            secure = true
+            path = "/"
+            maxAge = 0
+            setAttribute("SameSite", "Strict")
+        }
+
+        val refreshCookie = Cookie("refreshToken", "").apply {
+            isHttpOnly = true
+            secure = true
+            path = "/"
+            maxAge = 0
+            setAttribute("SameSite", "Strict")
+        }
+
+        response.addCookie(accessCookie)
+        response.addCookie(refreshCookie)
     }
 }
