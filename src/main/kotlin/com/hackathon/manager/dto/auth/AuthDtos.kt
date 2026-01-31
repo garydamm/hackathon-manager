@@ -10,7 +10,9 @@ data class LoginRequest(
     val email: String,
 
     @field:NotBlank(message = "Password is required")
-    val password: String
+    val password: String,
+
+    val rememberMe: Boolean = false
 )
 
 data class RegisterRequest(
@@ -28,7 +30,9 @@ data class RegisterRequest(
     @field:NotBlank(message = "Last name is required")
     val lastName: String,
 
-    val displayName: String? = null
+    val displayName: String? = null,
+
+    val rememberMe: Boolean = false
 )
 
 data class AuthResponse(

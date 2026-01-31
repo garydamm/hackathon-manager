@@ -144,6 +144,50 @@ class AuthControllerTest {
 
     @Test
     @WithMockUser
+    fun `register with rememberMe true should return 201 when successful`() {
+        val request = RegisterRequest(
+            email = "new@example.com",
+            password = "password123",
+            firstName = "New",
+            lastName = "User",
+            rememberMe = true
+        )
+
+        val response = AuthResponse(
+            accessToken = "access-token-7-day",
+            refreshToken = "refresh-token-30-day",
+            user = UserResponse(
+                id = testUserId,
+                email = "new@example.com",
+                firstName = "New",
+                lastName = "User",
+                displayName = null,
+                avatarUrl = null,
+                bio = null,
+                skills = null,
+                githubUrl = null,
+                linkedinUrl = null,
+                portfolioUrl = null,
+                createdAt = OffsetDateTime.now()
+            )
+        )
+
+        whenever(authService.register(any())).thenReturn(response)
+
+        mockMvc.perform(
+            post("/api/auth/register")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+            .andExpect(status().isCreated)
+            .andExpect(jsonPath("$.accessToken").value("access-token-7-day"))
+            .andExpect(jsonPath("$.refreshToken").value("refresh-token-30-day"))
+            .andExpect(jsonPath("$.user.email").value("new@example.com"))
+    }
+
+    @Test
+    @WithMockUser
     fun `login should return 200 when successful`() {
         val request = LoginRequest(
             email = "test@example.com",
@@ -197,6 +241,48 @@ class AuthControllerTest {
                 .content(objectMapper.writeValueAsString(request))
         )
             .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    @WithMockUser
+    fun `login with rememberMe true should return 200 when successful`() {
+        val request = LoginRequest(
+            email = "test@example.com",
+            password = "password123",
+            rememberMe = true
+        )
+
+        val response = AuthResponse(
+            accessToken = "access-token-7-day",
+            refreshToken = "refresh-token-30-day",
+            user = UserResponse(
+                id = testUserId,
+                email = "test@example.com",
+                firstName = "Test",
+                lastName = "User",
+                displayName = null,
+                avatarUrl = null,
+                bio = null,
+                skills = null,
+                githubUrl = null,
+                linkedinUrl = null,
+                portfolioUrl = null,
+                createdAt = OffsetDateTime.now()
+            )
+        )
+
+        whenever(authService.login(any())).thenReturn(response)
+
+        mockMvc.perform(
+            post("/api/auth/login")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.accessToken").value("access-token-7-day"))
+            .andExpect(jsonPath("$.refreshToken").value("refresh-token-30-day"))
+            .andExpect(jsonPath("$.user.email").value("test@example.com"))
     }
 
     @Test

@@ -44,8 +44,8 @@ class AuthService(
         val savedUser = userRepository.save(user)
         val savedUserId = savedUser.id!!
 
-        val accessToken = jwtTokenProvider.generateToken(savedUserId, savedUser.email)
-        val refreshToken = jwtTokenProvider.generateRefreshToken(savedUserId)
+        val accessToken = jwtTokenProvider.generateToken(savedUserId, savedUser.email, request.rememberMe)
+        val refreshToken = jwtTokenProvider.generateRefreshToken(savedUserId, request.rememberMe)
 
         return AuthResponse(
             accessToken = accessToken,
@@ -64,8 +64,8 @@ class AuthService(
         val user = userRepository.findByEmail(request.email)
             ?: throw ApiException("User not found", HttpStatus.NOT_FOUND)
 
-        val accessToken = jwtTokenProvider.generateToken(authentication)
-        val refreshToken = jwtTokenProvider.generateRefreshToken(user.id!!)
+        val accessToken = jwtTokenProvider.generateToken(user.id!!, user.email, request.rememberMe)
+        val refreshToken = jwtTokenProvider.generateRefreshToken(user.id!!, request.rememberMe)
 
         return AuthResponse(
             accessToken = accessToken,

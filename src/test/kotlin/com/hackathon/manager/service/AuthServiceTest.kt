@@ -79,9 +79,9 @@ class AuthServiceTest {
                 displayName = user.displayName
             )
         }
-        whenever(jwtTokenProvider.generateToken(eq(testUserId), eq("new@example.com")))
+        whenever(jwtTokenProvider.generateToken(eq(testUserId), eq("new@example.com"), eq(false)))
             .thenReturn("access-token")
-        whenever(jwtTokenProvider.generateRefreshToken(testUserId))
+        whenever(jwtTokenProvider.generateRefreshToken(testUserId, false))
             .thenReturn("refresh-token")
 
         val result = authService.register(request)
@@ -126,8 +126,8 @@ class AuthServiceTest {
         whenever(authenticationManager.authenticate(any<UsernamePasswordAuthenticationToken>()))
             .thenReturn(authentication)
         whenever(userRepository.findByEmail("test@example.com")).thenReturn(testUser)
-        whenever(jwtTokenProvider.generateToken(authentication)).thenReturn("access-token")
-        whenever(jwtTokenProvider.generateRefreshToken(testUserId)).thenReturn("refresh-token")
+        whenever(jwtTokenProvider.generateToken(testUserId, "test@example.com", false)).thenReturn("access-token")
+        whenever(jwtTokenProvider.generateRefreshToken(testUserId, false)).thenReturn("refresh-token")
 
         val result = authService.login(request)
 
@@ -161,9 +161,9 @@ class AuthServiceTest {
         whenever(jwtTokenProvider.validateToken("valid-refresh-token")).thenReturn(true)
         whenever(jwtTokenProvider.getUserIdFromToken("valid-refresh-token")).thenReturn(testUserId)
         whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
-        whenever(jwtTokenProvider.generateToken(testUserId, "test@example.com"))
+        whenever(jwtTokenProvider.generateToken(testUserId, "test@example.com", false))
             .thenReturn("new-access-token")
-        whenever(jwtTokenProvider.generateRefreshToken(testUserId))
+        whenever(jwtTokenProvider.generateRefreshToken(testUserId, false))
             .thenReturn("new-refresh-token")
 
         val result = authService.refreshToken(request)

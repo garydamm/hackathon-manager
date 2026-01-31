@@ -116,13 +116,13 @@ Currently, users experience session expiration after 24 hours with no warning, l
 **Description:** As a user, I want a "Remember me" option during login so I don't have to log in every day on my personal device.
 
 **Acceptance Criteria:**
-- [ ] Add `rememberMe?: boolean` parameter to login endpoint
-- [ ] When `rememberMe=true`, issue tokens with 7-day expiration (vs 24 hours)
-- [ ] Refresh tokens also get 30-day expiration when remember me enabled
-- [ ] Token payload includes `rememberMe` claim for debugging
-- [ ] Unit tests added for remember me token generation
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Add `rememberMe?: boolean` parameter to login endpoint
+- [x] When `rememberMe=true`, issue tokens with 7-day expiration (vs 24 hours)
+- [x] Refresh tokens also get 30-day expiration when remember me enabled
+- [x] Token payload includes `rememberMe` claim for debugging
+- [x] Unit tests added for remember me token generation
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-009: Add "Remember me" checkbox to login form
 **Description:** As a user, I want a "Remember me" checkbox on the login form so I can choose longer sessions on trusted devices.

@@ -173,3 +173,40 @@ Learnings for future iterations:
 - Always check existing test patterns before writing new tests (consistency is key)
 
 ---
+
+## Iteration 7 - Integrate activity-based session extension (US-007)
+- Added extendSession() method to authService that calls POST /api/auth/extend-session
+- Modified SessionTimeoutNotification to check for user activity before showing countdown
+- Implemented automatic session extension when user was active within last 5 minutes
+- Added 1-minute cooldown to prevent spamming the extend endpoint
+- Session extends automatically when user performs meaningful actions (POST/PUT/DELETE/PATCH)
+- Created comprehensive unit tests for activity extension logic (8 new tests)
+- Created authService unit tests for extendSession method (8 tests)
+- All tests pass and typecheck passes
+
+Files changed:
+- Modified: `frontend/src/services/auth.ts` (added extendSession method)
+- Modified: `frontend/src/components/SessionTimeoutNotification.tsx` (activity-based extension)
+- Created: `frontend/src/services/auth.test.ts` (extendSession unit tests)
+- Modified: `frontend/src/components/SessionTimeoutNotification.test.tsx` (7 new activity tests)
+- Modified: `PRD.md` (marked US-007 as complete)
+
+Learnings for future iterations:
+- When testing async operations with fake timers, promises don't resolve until microtask queue is flushed
+- Use vi.useRealTimers() in specific test suites when dealing with promises and intervals
+- Avoid vi.runAllTimersAsync() with setInterval as it can cause infinite loops (runs 10000+ timers)
+- Use Promise timeout approach: `await new Promise(resolve => setTimeout(resolve, 10))` for real timers
+- Testing components that mix intervals and promises requires careful timer management
+- Activity-based extension prevents notification spam by checking last activity before showing countdown
+- Store auto-extend timestamp in useRef to persist across re-renders without triggering effects
+- Call async functions in non-async interval callbacks using .then() instead of await
+- Return early from interval callback after starting async operation to avoid race conditions
+- Console logging is crucial for debugging activity-based extension in production
+- Rate limiting on frontend (1 min cooldown) complements backend rate limiting (1 extend/min)
+- Pattern: Check activity window BEFORE showing warning, not after user sees it
+- The extendSession method mirrors refreshToken pattern: call API, setSession, startRefreshTimer
+- Activity tracking via api.getLastActivityTime() integrates seamlessly with countdown logic
+- Real timer tests need longer timeouts (e.g., 70000ms for 61-second test)
+
+---
+

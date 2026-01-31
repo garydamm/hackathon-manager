@@ -37,26 +37,38 @@ class JwtTokenProvider(private val jwtConfig: JwtConfig) {
         return generateToken(userPrincipal.id, userPrincipal.email)
     }
 
-    fun generateToken(userId: UUID, email: String): String {
+    fun generateToken(userId: UUID, email: String, rememberMe: Boolean = false): String {
         val now = Date()
-        val expiryDate = Date(now.time + jwtConfig.expirationMs)
+        val expirationMs = if (rememberMe) {
+            7 * 24 * 60 * 60 * 1000L  // 7 days
+        } else {
+            jwtConfig.expirationMs  // 24 hours (default)
+        }
+        val expiryDate = Date(now.time + expirationMs)
 
         return Jwts.builder()
             .subject(userId.toString())
             .claim("email", email)
+            .claim("rememberMe", rememberMe)
             .issuedAt(now)
             .expiration(expiryDate)
             .signWith(key, algorithm)
             .compact()
     }
 
-    fun generateRefreshToken(userId: UUID): String {
+    fun generateRefreshToken(userId: UUID, rememberMe: Boolean = false): String {
         val now = Date()
-        val expiryDate = Date(now.time + jwtConfig.refreshExpirationMs)
+        val expirationMs = if (rememberMe) {
+            30 * 24 * 60 * 60 * 1000L  // 30 days
+        } else {
+            jwtConfig.refreshExpirationMs  // 7 days (default)
+        }
+        val expiryDate = Date(now.time + expirationMs)
 
         return Jwts.builder()
             .subject(userId.toString())
             .claim("type", "refresh")
+            .claim("rememberMe", rememberMe)
             .issuedAt(now)
             .expiration(expiryDate)
             .signWith(key, algorithm)
