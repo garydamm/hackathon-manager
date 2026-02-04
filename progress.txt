@@ -24,3 +24,48 @@
   - Backend controller/service tests run successfully with `./gradlew test --tests '*ControllerTest' --tests '*ServiceTest'`
   - Typecheck passes with `./gradlew build -x test`
 ---
+
+## Iteration 23 - Add backend endpoint to demote organizer to participant (US-002)
+- Implemented DELETE /api/hackathons/{hackathonId}/organizers/{userId} endpoint in HackathonController
+- Implemented HackathonService.demoteOrganizer() method with all required business rule validations
+- Added comprehensive unit tests covering all validation cases
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/controller/HackathonController.kt
+  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt
+  - src/test/kotlin/com/hackathon/manager/service/HackathonServiceTest.kt
+  - PRD.md (marked US-002 complete)
+- Learnings for future iterations:
+  - DELETE endpoints with path variables don't need request body DTOs
+  - Access hackathon.createdBy.id to check if target is the creator
+  - Validation order matters: check self-removal before checking creator removal to maintain clear error messages
+  - Use NotFoundException for "user is not an organizer" (not ValidationException) since it indicates the resource doesn't exist in the expected state
+  - Test coverage included: success case, auth failures, self-removal, creator removal, user not found, user not an organizer
+  - All backend tests pass and typecheck succeeds
+---
+
+## Iteration 24 - Add organizer management UI to OrganizersSection (US-003)
+- Updated OrganizersSection component with full management functionality
+- Added promote and demote API methods to hackathonService
+- Added createdBy field to HackathonResponse DTO for creator identification
+- Updated Participant type to include id field needed for promotion
+- Files changed:
+  - frontend/src/components/OrganizersSection.tsx (complete rewrite with management UI)
+  - frontend/src/pages/HackathonDetail.tsx (pass canEdit and hackathon props)
+  - frontend/src/services/hackathons.ts (added promoteToOrganizer and demoteOrganizer methods)
+  - frontend/src/types/index.ts (added id to Participant, createdBy to Hackathon)
+  - src/main/kotlin/com/hackathon/manager/dto/HackathonDtos.kt (added createdBy field)
+  - src/test/kotlin/com/hackathon/manager/controller/HackathonControllerTest.kt (updated test helper)
+  - PRD.md (marked US-003 mostly complete, browser verification remains)
+- Learnings for future iterations:
+  - Component needs both canEdit prop and hackathon object to check createdBy for business rules
+  - Use useAuth() hook to access current user for self-removal check
+  - Filter participants to exclude those already organizers using Set for O(1) lookup
+  - React Query's useMutation with onSuccess invalidates queries automatically for optimistic updates
+  - Display error messages inline with AlertCircle icon instead of toast when no toast system exists
+  - Button title attribute provides tooltip functionality without dedicated tooltip component
+  - Frontend tests: `npm test -- --run` (vitest doesn't use --watchAll flag)
+  - Frontend typecheck: `npx tsc --noEmit` (no typecheck script in package.json)
+  - Backend DTO changes require updating test helpers and copy methods
+  - When adding fields to DTOs, need to import and use existing response types (UserResponse)
+  - All tests pass (frontend 189 tests, backend unit tests) and typecheck succeeds
+---
