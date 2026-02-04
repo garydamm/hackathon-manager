@@ -34,17 +34,17 @@ Add the ability for hackathons to have multiple organizers who can collaborative
 **Description:** As an organizer, I want to remove organizer status from other organizers so I can manage the organizer team.
 
 **Acceptance Criteria:**
-- [ ] Add DELETE `/api/hackathons/{hackathonId}/organizers/{userId}` endpoint in HackathonController
-- [ ] Validates requesting user has organizer or admin role via `isUserOrganizer()`
-- [ ] Returns 403 FORBIDDEN if requester is not organizer
-- [ ] Returns 400 BAD_REQUEST if attempting to remove the original creator (created_by field)
-- [ ] Returns 400 BAD_REQUEST if attempting to remove yourself (requester userId == target userId)
-- [ ] Returns 404 NOT_FOUND if target user is not an organizer
-- [ ] Updates hackathon_users.role from 'organizer' to 'participant'
-- [ ] Returns updated list of organizers (List<OrganizerInfo>)
-- [ ] Unit tests added for HackathonService.demoteOrganizer() method and all restriction validations
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Add DELETE `/api/hackathons/{hackathonId}/organizers/{userId}` endpoint in HackathonController
+- [x] Validates requesting user has organizer or admin role via `isUserOrganizer()`
+- [x] Returns 403 FORBIDDEN if requester is not organizer
+- [x] Returns 400 BAD_REQUEST if attempting to remove the original creator (created_by field)
+- [x] Returns 400 BAD_REQUEST if attempting to remove yourself (requester userId == target userId)
+- [x] Returns 404 NOT_FOUND if target user is not an organizer
+- [x] Updates hackathon_users.role from 'organizer' to 'participant'
+- [x] Returns updated list of organizers (List<OrganizerInfo>)
+- [x] Unit tests added for HackathonService.demoteOrganizer() method and all restriction validations
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-003: Add organizer management UI to OrganizersSection
 **Description:** As an organizer viewing a hackathon in edit mode, I want to see controls to add and remove organizers directly in the OrganizersSection.

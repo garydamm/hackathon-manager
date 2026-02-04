@@ -123,4 +123,14 @@ class HackathonController(
         val organizers = hackathonService.promoteToOrganizer(id, request.userId, principal.id)
         return ResponseEntity.ok(organizers)
     }
+
+    @DeleteMapping("/{id}/organizers/{userId}")
+    fun demoteOrganizer(
+        @PathVariable id: UUID,
+        @PathVariable userId: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<List<OrganizerInfo>> {
+        val organizers = hackathonService.demoteOrganizer(id, userId, principal.id)
+        return ResponseEntity.ok(organizers)
+    }
 }

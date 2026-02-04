@@ -832,6 +832,179 @@ class HackathonServiceTest {
             .hasMessage("User is not a participant")
     }
 
+    @Test
+    fun `demoteOrganizer should demote organizer to participant successfully`() {
+        val requesterId = UUID.randomUUID()
+        val targetId = UUID.randomUUID()
+        val targetUser = User(
+            id = targetId,
+            email = "target@example.com",
+            passwordHash = "hash",
+            firstName = "Target",
+            lastName = "User"
+        )
+        val requesterUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+        val targetOrganizerUser = HackathonUser(
+            hackathon = testHackathon,
+            user = targetUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, requesterId))
+            .thenReturn(requesterUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, targetId))
+            .thenReturn(targetOrganizerUser)
+        whenever(hackathonUserRepository.save(any<HackathonUser>())).thenAnswer { it.arguments[0] }
+        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.organizer))
+            .thenReturn(listOf(requesterUser))
+
+        val result = hackathonService.demoteOrganizer(testHackathonId, targetId, requesterId)
+
+        assertThat(result).hasSize(1)
+        verify(hackathonUserRepository).save(targetOrganizerUser)
+        assertThat(targetOrganizerUser.role).isEqualTo(UserRole.participant)
+    }
+
+    @Test
+    fun `demoteOrganizer should throw UnauthorizedException when requester is not organizer`() {
+        val targetId = UUID.randomUUID()
+        val requesterId = UUID.randomUUID()
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, requesterId))
+            .thenReturn(null)
+
+        assertThatThrownBy {
+            hackathonService.demoteOrganizer(testHackathonId, targetId, requesterId)
+        }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Only organizers can demote organizers")
+    }
+
+    @Test
+    fun `demoteOrganizer should throw NotFoundException when hackathon not found`() {
+        val requesterId = UUID.randomUUID()
+        val targetId = UUID.randomUUID()
+        val requesterUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, requesterId))
+            .thenReturn(requesterUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy {
+            hackathonService.demoteOrganizer(testHackathonId, targetId, requesterId)
+        }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Hackathon not found")
+    }
+
+    @Test
+    fun `demoteOrganizer should throw ValidationException when attempting to demote self`() {
+        val requesterId = UUID.randomUUID()
+        val requesterUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, requesterId))
+            .thenReturn(requesterUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+
+        assertThatThrownBy {
+            hackathonService.demoteOrganizer(testHackathonId, requesterId, requesterId)
+        }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("Cannot demote yourself")
+    }
+
+    @Test
+    fun `demoteOrganizer should throw ValidationException when attempting to demote creator`() {
+        val requesterId = UUID.randomUUID()
+        val creatorId = testUser.id!!
+        val requesterUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, requesterId))
+            .thenReturn(requesterUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+
+        assertThatThrownBy {
+            hackathonService.demoteOrganizer(testHackathonId, creatorId, requesterId)
+        }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("Cannot demote the hackathon creator")
+    }
+
+    @Test
+    fun `demoteOrganizer should throw NotFoundException when user not in hackathon`() {
+        val requesterId = UUID.randomUUID()
+        val targetId = UUID.randomUUID()
+        val requesterUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, requesterId))
+            .thenReturn(requesterUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, targetId))
+            .thenReturn(null)
+
+        assertThatThrownBy {
+            hackathonService.demoteOrganizer(testHackathonId, targetId, requesterId)
+        }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("User not found in this hackathon")
+    }
+
+    @Test
+    fun `demoteOrganizer should throw NotFoundException when user is not an organizer`() {
+        val requesterId = UUID.randomUUID()
+        val targetId = UUID.randomUUID()
+        val targetUser = User(
+            id = targetId,
+            email = "target@example.com",
+            passwordHash = "hash",
+            firstName = "Target",
+            lastName = "User"
+        )
+        val requesterUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+        val targetParticipantUser = HackathonUser(
+            hackathon = testHackathon,
+            user = targetUser,
+            role = UserRole.participant
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, requesterId))
+            .thenReturn(requesterUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, targetId))
+            .thenReturn(targetParticipantUser)
+
+        assertThatThrownBy {
+            hackathonService.demoteOrganizer(testHackathonId, targetId, requesterId)
+        }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("User is not an organizer")
+    }
+
     private fun Hackathon.copy(
         id: UUID? = this.id,
         name: String = this.name,

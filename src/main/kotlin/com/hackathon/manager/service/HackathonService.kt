@@ -298,4 +298,50 @@ class HackathonService(
         // Return updated list of organizers
         return getHackathonOrganizers(hackathonId)
     }
+
+    /**
+     * Demote an organizer to participant.
+     * Only existing organizers can demote other organizers.
+     * Business rules enforced:
+     * - Cannot demote the original creator (createdBy)
+     * - Cannot demote yourself
+     * - Target user must be an organizer
+     */
+    @Transactional
+    fun demoteOrganizer(hackathonId: UUID, userId: UUID, requesterId: UUID): List<com.hackathon.manager.dto.OrganizerInfo> {
+        // Verify requester has organizer or admin role
+        if (!isUserOrganizer(hackathonId, requesterId)) {
+            throw UnauthorizedException("Only organizers can demote organizers")
+        }
+
+        // Verify hackathon exists and get the creator
+        val hackathon = hackathonRepository.findById(hackathonId)
+            .orElseThrow { NotFoundException("Hackathon not found") }
+
+        // Verify target user is not attempting to demote themselves
+        if (userId == requesterId) {
+            throw ValidationException("Cannot demote yourself")
+        }
+
+        // Verify target user is not the creator
+        if (hackathon.createdBy.id == userId) {
+            throw ValidationException("Cannot demote the hackathon creator")
+        }
+
+        // Verify target user exists in hackathon_users
+        val hackathonUser = hackathonUserRepository.findByHackathonIdAndUserId(hackathonId, userId)
+            ?: throw NotFoundException("User not found in this hackathon")
+
+        // Verify target user is an organizer
+        if (hackathonUser.role != UserRole.organizer) {
+            throw NotFoundException("User is not an organizer")
+        }
+
+        // Update role to participant
+        hackathonUser.role = UserRole.participant
+        hackathonUserRepository.save(hackathonUser)
+
+        // Return updated list of organizers
+        return getHackathonOrganizers(hackathonId)
+    }
 }

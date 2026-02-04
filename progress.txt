@@ -4,3 +4,23 @@
 (Patterns discovered during implementation)
 
 ---
+
+## Iteration 22 - Add backend endpoint to promote participant to organizer (US-001)
+- Implemented POST /api/hackathons/{hackathonId}/organizers endpoint in HackathonController
+- Added PromoteOrganizerRequest DTO with UUID validation
+- Implemented HackathonService.promoteToOrganizer() method with full validation
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/controller/HackathonController.kt
+  - src/main/kotlin/com/hackathon/manager/dto/HackathonDtos.kt
+  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt
+  - src/test/kotlin/com/hackathon/manager/service/HackathonServiceTest.kt
+  - PRD.md (marked US-001 complete)
+- Learnings for future iterations:
+  - Follow existing exception patterns: UnauthorizedException for auth failures, NotFoundException for missing resources, ValidationException for business rule violations
+  - Use @Valid annotation on request bodies to trigger Jakarta validation
+  - Service methods should check authorization first (isUserOrganizer), then validate hackathon exists, then validate target user state
+  - Return the updated list of resources after mutations for better UX
+  - Test coverage should include: success case, authorization failures, not found cases, and validation failures
+  - Backend controller/service tests run successfully with `./gradlew test --tests '*ControllerTest' --tests '*ServiceTest'`
+  - Typecheck passes with `./gradlew build -x test`
+---
