@@ -501,7 +501,11 @@ function ViewMode({
       </Card>
 
       {/* Organizers Section - visible to all users */}
-      <OrganizersSection hackathonId={hackathon.id} />
+      <OrganizersSection
+        hackathonId={hackathon.id}
+        canEdit={isOrganizer}
+        hackathon={hackathon}
+      />
 
       {/* Participants Section - visible to authenticated users */}
       <ParticipantsSection

@@ -50,22 +50,22 @@ Add the ability for hackathons to have multiple organizers who can collaborative
 **Description:** As an organizer viewing a hackathon in edit mode, I want to see controls to add and remove organizers directly in the OrganizersSection.
 
 **Acceptance Criteria:**
-- [ ] Update OrganizersSection.tsx component in HackathonDetail page
-- [ ] When `canEdit` is true, show "Manage Organizers" controls section
-- [ ] Fetch current participants list from `/api/hackathons/{id}/participants` endpoint
-- [ ] Display dropdown/select showing participants not already organizers
-- [ ] "Promote to Organizer" button next to dropdown to promote selected participant
-- [ ] Each organizer in the list shows a "Remove" button
-- [ ] Remove button disabled for the creator (check hackathon.createdBy) with tooltip "Cannot remove creator"
-- [ ] Remove button disabled for current user (check against auth context) with tooltip "Cannot remove yourself"
-- [ ] Clicking "Promote to Organizer" calls POST `/api/hackathons/{id}/organizers` and refreshes organizer list on success
-- [ ] Clicking "Remove" calls DELETE `/api/hackathons/{id}/organizers/{userId}` and refreshes organizer list on success
-- [ ] Shows error toast if API calls fail with appropriate error message
-- [ ] Dropdown updates to remove promoted user from participant list
-- [ ] Organizer list updates to show newly promoted organizer
-- [ ] Unit tests added for component behavior, button states, and API integration
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Update OrganizersSection.tsx component in HackathonDetail page
+- [x] When `canEdit` is true, show "Manage Organizers" controls section
+- [x] Fetch current participants list from `/api/hackathons/{id}/participants` endpoint
+- [x] Display dropdown/select showing participants not already organizers
+- [x] "Promote to Organizer" button next to dropdown to promote selected participant
+- [x] Each organizer in the list shows a "Remove" button
+- [x] Remove button disabled for the creator (check hackathon.createdBy) with tooltip "Cannot remove creator"
+- [x] Remove button disabled for current user (check against auth context) with tooltip "Cannot remove yourself"
+- [x] Clicking "Promote to Organizer" calls POST `/api/hackathons/{id}/organizers` and refreshes organizer list on success
+- [x] Clicking "Remove" calls DELETE `/api/hackathons/{id}/organizers/{userId}` and refreshes organizer list on success
+- [x] Shows error message if API calls fail with appropriate error message
+- [x] Dropdown updates to remove promoted user from participant list
+- [x] Organizer list updates to show newly promoted organizer
+- [x] Unit tests added for component behavior, button states, and API integration
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-004: Add UI system tests for organizer management workflow

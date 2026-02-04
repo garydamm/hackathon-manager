@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.hackathon.manager.dto.CreateHackathonRequest
 import com.hackathon.manager.dto.HackathonResponse
 import com.hackathon.manager.dto.UpdateHackathonRequest
+import com.hackathon.manager.dto.auth.UserResponse
 import com.hackathon.manager.entity.enums.HackathonStatus
 import com.hackathon.manager.entity.enums.UserRole
 import com.hackathon.manager.exception.ApiException
@@ -60,6 +61,21 @@ class HackathonControllerTest {
         isActive = true
     )
 
+    private fun createTestUserResponse(id: UUID = testUserId) = UserResponse(
+        id = id,
+        email = "test@example.com",
+        firstName = "Test",
+        lastName = "User",
+        displayName = null,
+        avatarUrl = null,
+        bio = null,
+        skills = null,
+        githubUrl = null,
+        linkedinUrl = null,
+        portfolioUrl = null,
+        createdAt = OffsetDateTime.now()
+    )
+
     private fun createHackathonResponse(
         id: UUID = testHackathonId,
         status: HackathonStatus = HackathonStatus.registration_open
@@ -85,6 +101,7 @@ class HackathonControllerTest {
         minTeamSize = 1,
         maxParticipants = 100,
         participantCount = 50,
+        createdBy = createTestUserResponse(),
         createdAt = OffsetDateTime.now(),
         userRole = null
     )
@@ -348,6 +365,7 @@ class HackathonControllerTest {
         minTeamSize: Int = this.minTeamSize,
         maxParticipants: Int? = this.maxParticipants,
         participantCount: Int? = this.participantCount,
+        createdBy: UserResponse = this.createdBy,
         createdAt: OffsetDateTime? = this.createdAt,
         userRole: UserRole? = this.userRole
     ) = HackathonResponse(
@@ -372,6 +390,7 @@ class HackathonControllerTest {
         minTeamSize = minTeamSize,
         maxParticipants = maxParticipants,
         participantCount = participantCount,
+        createdBy = createdBy,
         createdAt = createdAt,
         userRole = userRole
     )

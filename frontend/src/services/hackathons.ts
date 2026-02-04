@@ -41,4 +41,12 @@ export const hackathonService = {
   async getParticipants(hackathonId: string): Promise<Participant[]> {
     return api.get<Participant[]>(`/hackathons/${hackathonId}/participants`)
   },
+
+  async promoteToOrganizer(hackathonId: string, userId: string): Promise<OrganizerInfo[]> {
+    return api.post<OrganizerInfo[]>(`/hackathons/${hackathonId}/organizers`, { userId })
+  },
+
+  async demoteOrganizer(hackathonId: string, userId: string): Promise<OrganizerInfo[]> {
+    return api.delete<OrganizerInfo[]>(`/hackathons/${hackathonId}/organizers/${userId}`)
+  },
 }

@@ -81,6 +81,7 @@ export interface Hackathon {
   minTeamSize: number
   maxParticipants?: number | null
   participantCount?: number | null
+  createdBy: User
   createdAt?: string | null
   userRole?: UserRole | null
 }
@@ -391,6 +392,7 @@ export interface OrganizerInfo {
 
 // Participant types
 export interface Participant {
+  id: string
   name: string
   email: string
   registeredAt: string

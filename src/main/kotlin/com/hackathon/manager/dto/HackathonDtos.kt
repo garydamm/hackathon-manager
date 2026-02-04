@@ -1,5 +1,6 @@
 package com.hackathon.manager.dto
 
+import com.hackathon.manager.dto.auth.UserResponse
 import com.hackathon.manager.entity.Hackathon
 import com.hackathon.manager.entity.enums.HackathonStatus
 import com.hackathon.manager.entity.enums.UserRole
@@ -30,6 +31,7 @@ data class HackathonResponse(
     val minTeamSize: Int,
     val maxParticipants: Int?,
     val participantCount: Int?,
+    val createdBy: UserResponse,
     val createdAt: OffsetDateTime?,
     val userRole: UserRole? = null
 ) {
@@ -61,6 +63,7 @@ data class HackathonResponse(
                 minTeamSize = hackathon.minTeamSize,
                 maxParticipants = hackathon.maxParticipants,
                 participantCount = participantCount,
+                createdBy = UserResponse.fromEntity(hackathon.createdBy),
                 createdAt = hackathon.createdAt,
                 userRole = userRole
             )
