@@ -707,6 +707,131 @@ class HackathonServiceTest {
         verify(teamMemberRepository, never()).findByHackathonId(any())
     }
 
+    @Test
+    fun `promoteToOrganizer should promote participant to organizer successfully`() {
+        val organizerId = UUID.randomUUID()
+        val participantId = UUID.randomUUID()
+        val participant = User(
+            id = participantId,
+            email = "participant@example.com",
+            passwordHash = "hash",
+            firstName = "Participant",
+            lastName = "User"
+        )
+        val organizerUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+        val participantUser = HackathonUser(
+            hackathon = testHackathon,
+            user = participant,
+            role = UserRole.participant
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, organizerId))
+            .thenReturn(organizerUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, participantId))
+            .thenReturn(participantUser)
+        whenever(hackathonUserRepository.save(any<HackathonUser>())).thenAnswer { it.arguments[0] }
+        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.organizer))
+            .thenReturn(listOf(organizerUser, participantUser))
+
+        val result = hackathonService.promoteToOrganizer(testHackathonId, participantId, organizerId)
+
+        assertThat(result).hasSize(2)
+        verify(hackathonUserRepository).save(participantUser)
+        assertThat(participantUser.role).isEqualTo(UserRole.organizer)
+    }
+
+    @Test
+    fun `promoteToOrganizer should throw UnauthorizedException when requester is not organizer`() {
+        val participantId = UUID.randomUUID()
+        val requesterId = UUID.randomUUID()
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, requesterId))
+            .thenReturn(null)
+
+        assertThatThrownBy {
+            hackathonService.promoteToOrganizer(testHackathonId, participantId, requesterId)
+        }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Only organizers can promote participants")
+    }
+
+    @Test
+    fun `promoteToOrganizer should throw NotFoundException when hackathon not found`() {
+        val organizerId = UUID.randomUUID()
+        val participantId = UUID.randomUUID()
+        val organizerUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, organizerId))
+            .thenReturn(organizerUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy {
+            hackathonService.promoteToOrganizer(testHackathonId, participantId, organizerId)
+        }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Hackathon not found")
+    }
+
+    @Test
+    fun `promoteToOrganizer should throw NotFoundException when user not in hackathon`() {
+        val organizerId = UUID.randomUUID()
+        val participantId = UUID.randomUUID()
+        val organizerUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, organizerId))
+            .thenReturn(organizerUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, participantId))
+            .thenReturn(null)
+
+        assertThatThrownBy {
+            hackathonService.promoteToOrganizer(testHackathonId, participantId, organizerId)
+        }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("User not found in this hackathon")
+    }
+
+    @Test
+    fun `promoteToOrganizer should throw ValidationException when user is not a participant`() {
+        val organizerId = UUID.randomUUID()
+        val userId = UUID.randomUUID()
+        val organizerUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+        val judgeUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.judge
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, organizerId))
+            .thenReturn(organizerUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, userId))
+            .thenReturn(judgeUser)
+
+        assertThatThrownBy {
+            hackathonService.promoteToOrganizer(testHackathonId, userId, organizerId)
+        }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("User is not a participant")
+    }
+
     private fun Hackathon.copy(
         id: UUID? = this.id,
         name: String = this.name,

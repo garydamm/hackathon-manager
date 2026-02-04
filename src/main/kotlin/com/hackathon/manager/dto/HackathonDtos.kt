@@ -128,3 +128,8 @@ data class OrganizerInfo(
     val displayName: String?,
     val avatarUrl: String?
 )
+
+data class PromoteOrganizerRequest(
+    @field:NotNull(message = "User ID is required")
+    val userId: UUID
+)

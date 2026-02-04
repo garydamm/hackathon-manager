@@ -4,6 +4,7 @@ import com.hackathon.manager.dto.CreateHackathonRequest
 import com.hackathon.manager.dto.HackathonResponse
 import com.hackathon.manager.dto.OrganizerInfo
 import com.hackathon.manager.dto.ParticipantResponse
+import com.hackathon.manager.dto.PromoteOrganizerRequest
 import com.hackathon.manager.dto.UpdateHackathonRequest
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.security.UserPrincipal
@@ -111,5 +112,15 @@ class HackathonController(
         }
         val participants = hackathonService.getHackathonParticipants(id)
         return ResponseEntity.ok(participants)
+    }
+
+    @PostMapping("/{id}/organizers")
+    fun promoteToOrganizer(
+        @PathVariable id: UUID,
+        @Valid @RequestBody request: PromoteOrganizerRequest,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<List<OrganizerInfo>> {
+        val organizers = hackathonService.promoteToOrganizer(id, request.userId, principal.id)
+        return ResponseEntity.ok(organizers)
     }
 }

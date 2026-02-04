@@ -265,4 +265,37 @@ class HackathonService(
     private fun getParticipantCount(hackathonId: UUID): Int {
         return hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.participant).size
     }
+
+    /**
+     * Promote a participant to organizer.
+     * Only existing organizers can promote participants.
+     * The target user must be a registered participant.
+     */
+    @Transactional
+    fun promoteToOrganizer(hackathonId: UUID, userId: UUID, requesterId: UUID): List<com.hackathon.manager.dto.OrganizerInfo> {
+        // Verify requester has organizer or admin role
+        if (!isUserOrganizer(hackathonId, requesterId)) {
+            throw UnauthorizedException("Only organizers can promote participants")
+        }
+
+        // Verify hackathon exists
+        hackathonRepository.findById(hackathonId)
+            .orElseThrow { NotFoundException("Hackathon not found") }
+
+        // Verify target user exists in hackathon_users
+        val hackathonUser = hackathonUserRepository.findByHackathonIdAndUserId(hackathonId, userId)
+            ?: throw NotFoundException("User not found in this hackathon")
+
+        // Verify target user is a participant
+        if (hackathonUser.role != UserRole.participant) {
+            throw ValidationException("User is not a participant")
+        }
+
+        // Update role to organizer
+        hackathonUser.role = UserRole.organizer
+        hackathonUserRepository.save(hackathonUser)
+
+        // Return updated list of organizers
+        return getHackathonOrganizers(hackathonId)
+    }
 }

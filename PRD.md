@@ -1,368 +1,132 @@
-# PRD: Advanced Session Management System
+# PRD: Multiple Hackathon Organizers Management
 
 ## Introduction
 
-Enhance the hackathon manager's authentication system with proactive session management, activity tracking, and multiple device support. This comprehensive overhaul addresses both user experience (preventing unexpected session expiration) and security (device management, secure token storage) to create an enterprise-grade session management system.
-
-Currently, users experience session expiration after 24 hours with no warning, leading to disruption when tokens expire during active use. This PRD implements intelligent session management that anticipates expiration, warns users, extends sessions based on activity, and provides visibility into active sessions across devices.
+Add the ability for hackathons to have multiple organizers who can collaboratively manage the event. The infrastructure (database schema and role system) already exists via the `hackathon_users` junction table, but there's currently no UI or API to add/remove organizers after hackathon creation. This feature will allow existing organizers to promote registered participants to organizer status and demote organizers back to participants.
 
 ## Goals
 
-- Eliminate unexpected session expiration through proactive token refresh
-- Warn users 5 minutes before session expires with clear countdown
-- Automatically extend sessions when users are actively working
-- Provide "Remember me" option for 7-day sessions
-- Enable users to view and revoke active sessions across devices
-- Improve security with HttpOnly cookie support (gradual migration)
-- Maintain backward compatibility during cookie migration
-- Decode and validate JWTs on frontend for better UX
+- Enable organizers to promote registered participants to organizer role
+- Enable organizers to demote other organizers back to participant role
+- Enforce business rules to prevent system lock-out (can't remove creator, can't remove yourself)
+- Provide clear UI in the OrganizersSection for managing the organizer team
+- Maintain at least one organizer at all times (creator cannot be removed)
 
 ## User Stories
 
-### US-001: Add JWT decoding utility
-**Description:** As a developer, I need to decode JWT tokens on the frontend so I can extract expiration time and other claims without making API calls.
+### US-001: Add backend endpoint to promote participant to organizer
+**Description:** As an organizer, I want to promote a registered participant to organizer so they can help manage the hackathon.
 
 **Acceptance Criteria:**
-- [x] Create `frontend/src/utils/jwt.ts` with `decodeToken()` function
-- [x] Function safely decodes JWT and returns payload (exp, iat, sub, email)
-- [x] Handle invalid tokens gracefully (return null)
-- [x] Function extracts expiration timestamp in milliseconds
-- [x] Unit tests added for JWT decoding utility
+- [x] Add POST `/api/hackathons/{hackathonId}/organizers` endpoint in HackathonController
+- [x] Request body accepts `{ userId: string }`
+- [x] Validates requesting user has organizer or admin role via `isUserOrganizer()`
+- [x] Validates target user exists in hackathon_users with participant role
+- [x] Returns 403 FORBIDDEN if requester is not organizer
+- [x] Returns 404 NOT_FOUND if target user not found or not a participant
+- [x] Updates hackathon_users.role from 'participant' to 'organizer'
+- [x] Returns updated list of organizers (List<OrganizerInfo>)
+- [x] Unit tests added for HackathonService.promoteToOrganizer() method and validation
 - [x] Unit tests pass
 - [x] Typecheck passes
 
-### US-002: Implement proactive token refresh timer
-**Description:** As a user, I want my session to refresh automatically before expiration so I'm never interrupted while working.
+### US-002: Add backend endpoint to demote organizer to participant
+**Description:** As an organizer, I want to remove organizer status from other organizers so I can manage the organizer team.
 
 **Acceptance Criteria:**
-- [x] Timer checks token expiration on app load and after each refresh
-- [x] Automatically refreshes token 5 minutes (300 seconds) before expiration
-- [x] Timer clears when user logs out
-- [x] Timer resets after successful manual refresh
-- [x] Console log when proactive refresh occurs (for debugging)
-- [x] Unit tests added for refresh timer logic
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [ ] Verify automatic refresh works in browser (leave tab open for 23 hours 55 min)
+- [ ] Add DELETE `/api/hackathons/{hackathonId}/organizers/{userId}` endpoint in HackathonController
+- [ ] Validates requesting user has organizer or admin role via `isUserOrganizer()`
+- [ ] Returns 403 FORBIDDEN if requester is not organizer
+- [ ] Returns 400 BAD_REQUEST if attempting to remove the original creator (created_by field)
+- [ ] Returns 400 BAD_REQUEST if attempting to remove yourself (requester userId == target userId)
+- [ ] Returns 404 NOT_FOUND if target user is not an organizer
+- [ ] Updates hackathon_users.role from 'organizer' to 'participant'
+- [ ] Returns updated list of organizers (List<OrganizerInfo>)
+- [ ] Unit tests added for HackathonService.demoteOrganizer() method and all restriction validations
+- [ ] Unit tests pass
+- [ ] Typecheck passes
 
-### US-003: Create session countdown UI component
-**Description:** As a user, I want to see how much time remains in my session so I'm never caught off guard by expiration.
-
-**Acceptance Criteria:**
-- [x] Create `SessionCountdown.tsx` component
-- [x] Displays remaining time in format: "Session expires in 4m 32s"
-- [x] Updates every second
-- [x] Uses yellow/warning styling when < 5 minutes remain
-- [x] Hides when > 10 minutes remain (unobtrusive)
-- [x] Shows in fixed position (top-right corner, below navbar)
-- [x] Unit tests added for countdown component
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-004: Display session timeout countdown notification
-**Description:** As a user, I want a prominent warning when my session is about to expire so I can save my work or extend it.
+### US-003: Add organizer management UI to OrganizersSection
+**Description:** As an organizer viewing a hackathon in edit mode, I want to see controls to add and remove organizers directly in the OrganizersSection.
 
 **Acceptance Criteria:**
-- [x] Notification appears when < 5 minutes remain
-- [x] Shows countdown with "Extend Session" button
-- [x] Clicking "Extend Session" triggers token refresh
-- [x] Notification dismisses after successful refresh
-- [x] Uses toast/banner style (less intrusive than current expired banner)
-- [x] Unit tests added for notification logic
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [ ] Verify notification appears and extend button works in browser
+- [ ] Update OrganizersSection.tsx component in HackathonDetail page
+- [ ] When `canEdit` is true, show "Manage Organizers" controls section
+- [ ] Fetch current participants list from `/api/hackathons/{id}/participants` endpoint
+- [ ] Display dropdown/select showing participants not already organizers
+- [ ] "Promote to Organizer" button next to dropdown to promote selected participant
+- [ ] Each organizer in the list shows a "Remove" button
+- [ ] Remove button disabled for the creator (check hackathon.createdBy) with tooltip "Cannot remove creator"
+- [ ] Remove button disabled for current user (check against auth context) with tooltip "Cannot remove yourself"
+- [ ] Clicking "Promote to Organizer" calls POST `/api/hackathons/{id}/organizers` and refreshes organizer list on success
+- [ ] Clicking "Remove" calls DELETE `/api/hackathons/{id}/organizers/{userId}` and refreshes organizer list on success
+- [ ] Shows error toast if API calls fail with appropriate error message
+- [ ] Dropdown updates to remove promoted user from participant list
+- [ ] Organizer list updates to show newly promoted organizer
+- [ ] Unit tests added for component behavior, button states, and API integration
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-005: Add activity tracking to API client
-**Description:** As a developer, I need to track user activity so sessions can be extended automatically when users are actively working.
-
-**Acceptance Criteria:**
-- [x] Track timestamp of last "meaningful" API call (POST, PUT, DELETE, PATCH)
-- [x] Exclude GET requests from activity tracking (viewing isn't active work)
-- [x] Store last activity timestamp in memory (not localStorage)
-- [x] Expose `getLastActivityTime()` function
-- [x] Unit tests added for activity tracking
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-006: Backend endpoint to extend session on activity
-**Description:** As a user, I want my session to automatically extend when I'm actively working so I don't have to manually extend it.
+### US-004: Add UI system tests for organizer management workflow
+**Description:** As a developer, I need end-to-end tests for the organizer management feature to ensure the complete workflow functions correctly.
 
 **Acceptance Criteria:**
-- [x] Create `POST /api/auth/extend-session` endpoint
-- [x] Requires valid access token (authenticated)
-- [x] Issues new access + refresh tokens with full duration
-- [x] Returns same response format as `/auth/refresh`
-- [x] Rate limit: max 1 extend per minute per user
-- [x] Unit tests added for extend session endpoint
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-007: Integrate activity-based session extension
-**Description:** As a user, I want my session to extend automatically when I perform actions so I never see expiration warnings during active use.
-
-**Acceptance Criteria:**
-- [x] Check if last activity was within 5 minutes when countdown would show
-- [x] If active, call `/api/auth/extend-session` instead of showing countdown
-- [x] Update refresh timer after successful extension
-- [x] Only extend once per activity period (avoid spam)
-- [x] Console log when activity-based extension occurs
-- [x] Unit tests added for activity extension logic
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [ ] Verify session extends during active use in browser
-
-### US-008: Backend support for "Remember me" (7-day tokens)
-**Description:** As a user, I want a "Remember me" option during login so I don't have to log in every day on my personal device.
-
-**Acceptance Criteria:**
-- [x] Add `rememberMe?: boolean` parameter to login endpoint
-- [x] When `rememberMe=true`, issue tokens with 7-day expiration (vs 24 hours)
-- [x] Refresh tokens also get 30-day expiration when remember me enabled
-- [x] Token payload includes `rememberMe` claim for debugging
-- [x] Unit tests added for remember me token generation
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-009: Add "Remember me" checkbox to login form
-**Description:** As a user, I want a "Remember me" checkbox on the login form so I can choose longer sessions on trusted devices.
-
-**Acceptance Criteria:**
-- [x] Add checkbox below password field: "Remember me for 7 days"
-- [x] Checkbox defaults to unchecked (secure default)
-- [x] Pass `rememberMe` value to login API call
-- [x] Show helper text: "Only use on personal devices"
-- [x] Unit tests added for checkbox component
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [ ] Verify checkbox appears and passes value in browser
-
-### US-010: Store and use remember me preference
-**Description:** As a developer, I need to store the remember me preference so the token refresh logic uses the correct duration.
-
-**Acceptance Criteria:**
-- [x] Store `rememberMe` flag in localStorage after successful login
-- [x] Read flag when calculating refresh timer duration
-- [x] Adjust countdown thresholds for 7-day sessions (warn at 30 min, not 5 min)
-- [x] Clear flag on logout
-- [x] Unit tests added for preference storage logic
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-011: Add sessions table for device tracking
-**Description:** As a developer, I need to track active sessions per user so users can see and manage their logged-in devices.
-
-**Acceptance Criteria:**
-- [x] Create `user_sessions` table with columns: id, user_id, refresh_token_hash, device_info, ip_address, last_activity_at, created_at
-- [x] Add index on user_id for fast lookup
-- [x] Add unique constraint on refresh_token_hash
-- [x] Generate and run Flyway migration
-- [x] Unit tests added for session entity
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-012: Backend endpoint to list active sessions
-**Description:** As a user, I want to see all my active sessions so I know which devices are logged in.
-
-**Acceptance Criteria:**
-- [x] Create `GET /api/auth/sessions` endpoint
-- [x] Requires valid access token (authenticated)
-- [x] Returns list of active sessions for current user
-- [x] Each session includes: id, device_info, ip_address, last_activity_at, created_at, is_current (true for current session)
-- [x] Sort by last_activity_at descending (most recent first)
-- [x] Exclude expired sessions (where refresh token expired)
-- [x] Unit tests added for list sessions endpoint
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-013: Backend endpoint to revoke session
-**Description:** As a user, I want to revoke a specific session so I can log out other devices remotely.
-
-**Acceptance Criteria:**
-- [x] Create `DELETE /api/auth/sessions/{sessionId}` endpoint
-- [x] Requires valid access token (authenticated)
-- [x] User can only revoke their own sessions
-- [x] Deletes session from database
-- [x] Invalidates associated refresh token
-- [x] Returns 404 if session not found or not owned by user
-- [x] Returns 400 if trying to revoke current session (use logout instead)
-- [x] Unit tests added for revoke session endpoint
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-014: Create session management page
-**Description:** As a user, I want a dedicated page to manage my active sessions across devices.
-
-**Acceptance Criteria:**
-- [x] Create `/settings/sessions` route
-- [x] Add protected route to App.tsx
-- [x] Create `SessionManagementPage.tsx` with AppLayout
-- [x] Add "Sessions" link to user dropdown menu in navbar
-- [x] Page title: "Active Sessions"
-- [x] Empty state when no sessions
-- [x] Unit tests added for page component
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [x] E2E test added to verify page loads and navigation works in browser
-
-### US-015: Display active sessions with device info
-**Description:** As a user, I want to see details about each active session so I can identify which devices are logged in.
-
-**Acceptance Criteria:**
-- [x] Create `SessionCard.tsx` component
-- [x] Show device info (browser, OS) with appropriate icon
-- [x] Show IP address (masked: 192.168.*.*)
-- [x] Show last activity as relative time ("2 hours ago")
-- [x] Show created date
-- [x] Badge indicating "Current Session" for active session
-- [x] Current session card styled differently (highlighted border)
-- [x] Unit tests added for session card component
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [x] E2E test covers session display (browser verification automated)
-
-### US-016: Add revoke session functionality
-**Description:** As a user, I want to revoke individual sessions so I can remotely log out devices I no longer use.
-
-**Acceptance Criteria:**
-- [x] Add "Revoke" button to each session card (except current)
-- [x] Show confirmation dialog: "Revoke this session? You'll be logged out on that device."
-- [x] Call `DELETE /api/auth/sessions/{id}` on confirm
-- [x] Remove session from list on success
-- [x] Show success toast: "Session revoked successfully"
-- [x] Show error toast if revoke fails
-- [x] Unit tests added for revoke functionality
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [ ] Verify revoke button works in browser
-
-### US-017: Backend cookie-based authentication middleware
-**Description:** As a developer, I need to support HttpOnly cookies for token storage so tokens are protected from XSS attacks.
-
-**Acceptance Criteria:**
-- [x] Create `JwtCookieFilter` that reads tokens from cookies as fallback
-- [x] Check `Authorization` header first, then `accessToken` cookie
-- [x] Configure cookie security: HttpOnly, Secure (HTTPS only), SameSite=Strict
-- [x] Cookie path: `/` (all routes)
-- [x] Unit tests added for cookie authentication filter
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-018: Update auth endpoints to support cookies
-**Description:** As a developer, I need auth endpoints to set HttpOnly cookies so frontend can use cookie-based auth.
-
-**Acceptance Criteria:**
-- [x] Add `useCookies` query param to login/register/refresh endpoints (default: false)
-- [x] When `useCookies=true`, set `accessToken` and `refreshToken` HttpOnly cookies
-- [x] Still return tokens in response body for backward compatibility
-- [x] Cookie max-age matches token expiration
-- [x] Add `DELETE /api/auth/logout` endpoint that clears cookies
-- [x] Unit tests added for cookie-based auth flow
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-019: Frontend support for cookie-based auth
-**Description:** As a developer, I need the frontend API client to support cookie-based authentication alongside localStorage.
-
-**Acceptance Criteria:**
-- [x] Add `useCookies` flag to authService
-- [x] When `useCookies=true`, send `useCookies=true` param to auth endpoints
-- [x] Don't store tokens in localStorage when using cookies
-- [x] Still read user object to localStorage (not sensitive)
-- [x] Cookies automatically sent by browser with requests
-- [x] Unit tests added for cookie-based client
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-020: Add configuration to toggle between storage methods
-**Description:** As an admin, I want to configure token storage method per environment so I can gradually migrate to cookies.
-
-**Acceptance Criteria:**
-- [x] Add `VITE_USE_COOKIES` environment variable (default: false)
-- [x] Frontend reads config and sets `authService.useCookies` accordingly
-- [x] Backend logs which storage method client is using
-- [ ] Add settings UI toggle (for user preference in future)
-- [x] Document migration path in README
-- [x] Unit tests added for configuration logic
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [ ] Verify both storage methods work in browser
-
-### US-021: Add UI system tests for session management
-**Description:** As a developer, I need end-to-end tests for the complete session management flow to ensure all features work together.
-
-**Acceptance Criteria:**
-- [x] UI system test: Login with "Remember me" → Verify 7-day token issued
-- [x] UI system test: Proactive refresh → Verify token refreshes before expiration
-- [x] UI system test: Activity tracking → Perform action → Verify session extends
-- [x] UI system test: Session countdown → Wait for warning → Verify countdown appears
-- [x] UI system test: Navigate to sessions page → Verify current session listed
-- [x] UI system test: Create second session → Revoke first → Verify removed
-- [x] UI system test: Login with cookies → Verify tokens not in localStorage
-- [x] UI system tests pass
-- [x] Typecheck passes
+- [ ] UI system test: Login as user1 → Create hackathon → Login as user2 → Register for hackathon → Login as user1 → Promote user2 to organizer → Verify user2 appears in organizers list
+- [ ] UI system test: Attempt to remove self → Verify "Remove" button is disabled with tooltip
+- [ ] UI system test: Attempt to remove creator → Verify "Remove" button is disabled with tooltip
+- [ ] UI system test: Demote non-creator organizer → Verify removed from organizers list and appears in participants list
+- [ ] UI system tests pass
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- Automatic logout on inactivity (detecting true inactivity is complex)
-- Biometric authentication or 2FA (out of scope)
-- Session history/audit log (only current active sessions)
-- Geolocation-based security (blocking logins from new locations)
-- Push notifications for new device logins
-- Limiting maximum concurrent sessions per user
-- Single sign-on (SSO) or OAuth integration
-- Remember me default to "checked" (security risk)
-- Removing localStorage support entirely (gradual migration only)
+- No invitation/approval system - organizers can directly promote participants
+- No email notifications when promoted/demoted
+- No role hierarchy (all organizers have equal permissions)
+- No separate "admin" vs "organizer" permission distinctions for this feature
+- No ability to add organizers who haven't registered as participants first
+- No ability to remove the original creator under any circumstances
+- No batch promote/demote operations
+- No audit log of organizer changes (future enhancement)
 
 ## Technical Considerations
 
-### Existing Components to Reuse
-- Current `SessionExpiredBanner` for reference
-- Existing `authService` and `api` client architecture
-- Current JWT token provider and authentication filter
-- Existing toast notification system
+**Existing Infrastructure (Already Built):**
+- `hackathon_users` table with role field supporting multiple organizers
+- `HackathonService.isUserOrganizer()` authorization method
+- `HackathonService.getHackathonOrganizers()` retrieval method
+- `GET /api/hackathons/{id}/organizers` endpoint already exists
+- `GET /api/hackathons/{id}/participants` endpoint already exists
+- Frontend `OrganizersSection` component displays organizers
+- `Hackathon.created_by` field tracks the original creator
+- `UserRole` enum with values: participant, organizer, judge, admin
 
-### Known Constraints
+**Implementation Notes:**
 - Backend uses Spring Boot with Kotlin
-- Frontend uses React with TypeScript + Vite
-- Database is PostgreSQL with Flyway migrations
-- JWT tokens use HS256 signing
-- Current token expiration: access=24h, refresh=7d
+- Follow existing controller pattern with `@AuthenticationPrincipal principal: UserPrincipal`
+- Add new service methods to `HackathonService.kt`:
+  - `promoteToOrganizer(hackathonId: UUID, userId: UUID, requesterId: UUID): List<OrganizerInfo>`
+  - `demoteOrganizer(hackathonId: UUID, userId: UUID, requesterId: UUID): List<OrganizerInfo>`
+- Backend validation should check `hackathons.created_by` to enforce creator protection rule
+- Frontend should integrate into existing OrganizersSection component in `HackathonDetail.tsx`
+- Use existing error handling patterns (ApiException with appropriate HTTP status codes)
+- Reuse existing React Query patterns for data fetching and mutations
+- Use existing toast notification system for success/error messages
 
-### Performance Considerations
-- Proactive refresh timer uses single global interval (not per-component)
-- Activity tracking uses debouncing to avoid excessive storage writes
-- Session list endpoint should be cached (5 minute stale time)
-- Cookie size: tokens ~200 bytes, well under 4KB limit
+**Business Rules to Enforce:**
+1. Original creator (created_by) can never be demoted
+2. Any organizer can promote participants to organizers
+3. Any organizer can demote other organizers (except creator and themselves)
+4. An organizer cannot demote themselves
+5. Must always have at least one organizer (automatically satisfied by rule 1)
+6. Can only promote users who are already registered participants
+7. Can only demote users who are currently organizers
 
-### Security Considerations
-- HttpOnly cookies prevent XSS token theft
-- SameSite=Strict prevents CSRF attacks
-- Rate limiting on extend-session endpoint prevents abuse
-- Refresh token hashing in database (never store plaintext)
-- IP address masking in UI for privacy
-- Current session can't be revoked (prevent lockout)
-
-### Migration Strategy
-- Support both localStorage and cookies simultaneously
-- Environment variable to toggle default storage method
-- Users on localStorage continue working (no breaking change)
-- New users can opt into cookies via config
-- Future: add UI toggle for user preference
-
-### Testing Strategy
-- Unit tests for all business logic (timers, activity tracking, JWT decoding)
-- Integration tests for backend endpoints
-- UI system tests for complete user flows using Playwright
-- Manual testing for countdown timing and token refresh
-- Cross-browser testing for cookie support
-
-## Success Metrics
-
-- Zero unexpected session expirations for active users
-- Session countdown appears before expiration (100% of cases)
-- Proactive refresh completes successfully (>99% success rate)
-- Users can identify and revoke suspicious sessions
-- "Remember me" adoption rate tracked
-- Cookie adoption rate tracked per environment
-- Reduced support tickets related to session expiration
+**UI/UX Considerations:**
+- Management controls only visible when `canEdit` is true (user is organizer)
+- Use disabled buttons with tooltips for restricted actions (better UX than hiding)
+- Optimistic UI updates for better perceived performance
+- Clear error messages when operations fail
+- Dropdown should show participant names in format: "FirstName LastName (email)"
+- Empty state message when no participants available to promote
