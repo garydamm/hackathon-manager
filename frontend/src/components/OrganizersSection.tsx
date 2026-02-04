@@ -203,6 +203,7 @@ export function OrganizersSection({ hackathonId, canEdit = false, hackathon }: O
                   value={selectedParticipantId}
                   onChange={(e) => setSelectedParticipantId(e.target.value)}
                   className="flex-1 h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                  aria-label="Select participant to promote"
                 >
                   <option value="">Select a participant...</option>
                   {availableParticipants.map((participant) => (
