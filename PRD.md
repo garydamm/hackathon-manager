@@ -66,13 +66,13 @@ Add the ability to archive hackathons so they are hidden from the public dashboa
 **Description:** As an organizer, I need backend endpoints to archive and unarchive hackathons so I can manage their visibility.
 
 **Acceptance Criteria:**
-- [ ] Create server action to archive a hackathon (sets `archived = true`)
-- [ ] Create server action to unarchive a hackathon (sets `archived = false`)
-- [ ] Actions verify user is an organizer of the hackathon
-- [ ] Actions return success/error status
-- [ ] Unit tests added for archive/unarchive logic and permissions
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create server action to archive a hackathon (sets `archived = true`)
+- [x] Create server action to unarchive a hackathon (sets `archived = false`)
+- [x] Actions verify user is an organizer of the hackathon
+- [x] Actions return success/error status
+- [x] Unit tests added for archive/unarchive logic and permissions
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-006: Add archive/unarchive UI controls in hackathon settings
 **Description:** As an organizer, I want to archive or unarchive a hackathon from the settings page so I can control its visibility.

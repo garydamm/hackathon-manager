@@ -1111,6 +1111,191 @@ class HackathonServiceTest {
             .hasMessage("Authentication required to view archived hackathons")
     }
 
+    @Test
+    fun `archiveHackathon should archive hackathon successfully when user is organizer`() {
+        val organizerId = UUID.randomUUID()
+        val organizerUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+        val participants = List(3) {
+            HackathonUser(
+                hackathon = testHackathon,
+                user = testUser,
+                role = UserRole.participant
+            )
+        }
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, organizerId))
+            .thenReturn(organizerUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonRepository.save(any<Hackathon>())).thenAnswer { it.arguments[0] }
+        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
+            .thenReturn(participants)
+
+        val result = hackathonService.archiveHackathon(testHackathonId, organizerId)
+
+        assertThat(result.archived).isTrue()
+        assertThat(result.participantCount).isEqualTo(3)
+        assertThat(result.userRole).isEqualTo(UserRole.organizer)
+        assertThat(testHackathon.archived).isTrue()
+        verify(hackathonRepository).save(testHackathon)
+    }
+
+    @Test
+    fun `archiveHackathon should throw UnauthorizedException when user is not organizer`() {
+        val userId = UUID.randomUUID()
+        val participantUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.participant
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, userId))
+            .thenReturn(participantUser)
+
+        assertThatThrownBy {
+            hackathonService.archiveHackathon(testHackathonId, userId)
+        }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Only organizers can archive hackathons")
+
+        verify(hackathonRepository, never()).save(any())
+    }
+
+    @Test
+    fun `archiveHackathon should throw NotFoundException when hackathon not found`() {
+        val organizerId = UUID.randomUUID()
+        val organizerUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, organizerId))
+            .thenReturn(organizerUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy {
+            hackathonService.archiveHackathon(testHackathonId, organizerId)
+        }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Hackathon not found")
+
+        verify(hackathonRepository, never()).save(any())
+    }
+
+    @Test
+    fun `unarchiveHackathon should unarchive hackathon successfully when user is organizer`() {
+        val organizerId = UUID.randomUUID()
+        val archivedHackathon = Hackathon(
+            id = testHackathonId,
+            name = "Test Hackathon",
+            slug = "test-hackathon",
+            description = "A test hackathon",
+            status = HackathonStatus.draft,
+            archived = true,
+            startsAt = OffsetDateTime.now().plusDays(7),
+            endsAt = OffsetDateTime.now().plusDays(9),
+            createdBy = testUser
+        )
+        val organizerUser = HackathonUser(
+            hackathon = archivedHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+        val participants = List(5) {
+            HackathonUser(
+                hackathon = archivedHackathon,
+                user = testUser,
+                role = UserRole.participant
+            )
+        }
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, organizerId))
+            .thenReturn(organizerUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(archivedHackathon))
+        whenever(hackathonRepository.save(any<Hackathon>())).thenAnswer { it.arguments[0] }
+        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
+            .thenReturn(participants)
+
+        val result = hackathonService.unarchiveHackathon(testHackathonId, organizerId)
+
+        assertThat(result.archived).isFalse()
+        assertThat(result.participantCount).isEqualTo(5)
+        assertThat(result.userRole).isEqualTo(UserRole.organizer)
+        assertThat(archivedHackathon.archived).isFalse()
+        verify(hackathonRepository).save(archivedHackathon)
+    }
+
+    @Test
+    fun `unarchiveHackathon should throw UnauthorizedException when user is not organizer`() {
+        val userId = UUID.randomUUID()
+        val participantUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.participant
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, userId))
+            .thenReturn(participantUser)
+
+        assertThatThrownBy {
+            hackathonService.unarchiveHackathon(testHackathonId, userId)
+        }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Only organizers can unarchive hackathons")
+
+        verify(hackathonRepository, never()).save(any())
+    }
+
+    @Test
+    fun `unarchiveHackathon should throw NotFoundException when hackathon not found`() {
+        val organizerId = UUID.randomUUID()
+        val organizerUser = HackathonUser(
+            hackathon = testHackathon,
+            user = testUser,
+            role = UserRole.organizer
+        )
+
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, organizerId))
+            .thenReturn(organizerUser)
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy {
+            hackathonService.unarchiveHackathon(testHackathonId, organizerId)
+        }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Hackathon not found")
+
+        verify(hackathonRepository, never()).save(any())
+    }
+
+    @Test
+    fun `registerForHackathon should block registration for archived hackathon`() {
+        val archivedHackathon = Hackathon(
+            id = testHackathonId,
+            name = "Test Hackathon",
+            slug = "test-hackathon",
+            status = HackathonStatus.registration_open,
+            archived = true,
+            startsAt = OffsetDateTime.now().plusDays(7),
+            endsAt = OffsetDateTime.now().plusDays(9),
+            createdBy = testUser
+        )
+
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(archivedHackathon))
+
+        assertThatThrownBy {
+            hackathonService.registerForHackathon(testHackathonId, testUserId)
+        }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("Cannot register for an archived hackathon")
+
+        verify(hackathonUserRepository, never()).save(any())
+    }
+
     private fun Hackathon.copy(
         id: UUID? = this.id,
         name: String = this.name,

@@ -360,4 +360,54 @@ class HackathonService(
         // Return updated list of organizers
         return getHackathonOrganizers(hackathonId)
     }
+
+    /**
+     * Archive a hackathon.
+     * Only organizers can archive hackathons.
+     * Archived hackathons are hidden from the dashboard but accessible via direct URL with authentication.
+     */
+    @Transactional
+    fun archiveHackathon(hackathonId: UUID, requesterId: UUID): HackathonResponse {
+        // Verify requester has organizer or admin role
+        if (!isUserOrganizer(hackathonId, requesterId)) {
+            throw UnauthorizedException("Only organizers can archive hackathons")
+        }
+
+        // Verify hackathon exists
+        val hackathon = hackathonRepository.findById(hackathonId)
+            .orElseThrow { NotFoundException("Hackathon not found") }
+
+        // Set archived to true
+        hackathon.archived = true
+        val savedHackathon = hackathonRepository.save(hackathon)
+
+        val participantCount = getParticipantCount(hackathonId)
+        val userRole = getUserRoleInHackathon(hackathonId, requesterId)
+        return HackathonResponse.fromEntity(savedHackathon, participantCount, userRole)
+    }
+
+    /**
+     * Unarchive a hackathon.
+     * Only organizers can unarchive hackathons.
+     * Unarchived hackathons become visible on the dashboard again.
+     */
+    @Transactional
+    fun unarchiveHackathon(hackathonId: UUID, requesterId: UUID): HackathonResponse {
+        // Verify requester has organizer or admin role
+        if (!isUserOrganizer(hackathonId, requesterId)) {
+            throw UnauthorizedException("Only organizers can unarchive hackathons")
+        }
+
+        // Verify hackathon exists
+        val hackathon = hackathonRepository.findById(hackathonId)
+            .orElseThrow { NotFoundException("Hackathon not found") }
+
+        // Set archived to false
+        hackathon.archived = false
+        val savedHackathon = hackathonRepository.save(hackathon)
+
+        val participantCount = getParticipantCount(hackathonId)
+        val userRole = getUserRoleInHackathon(hackathonId, requesterId)
+        return HackathonResponse.fromEntity(savedHackathon, participantCount, userRole)
+    }
 }

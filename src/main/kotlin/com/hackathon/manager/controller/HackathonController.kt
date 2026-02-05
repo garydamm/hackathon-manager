@@ -133,4 +133,22 @@ class HackathonController(
         val organizers = hackathonService.demoteOrganizer(id, userId, principal.id)
         return ResponseEntity.ok(organizers)
     }
+
+    @PostMapping("/{id}/archive")
+    fun archiveHackathon(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<HackathonResponse> {
+        val hackathon = hackathonService.archiveHackathon(id, principal.id)
+        return ResponseEntity.ok(hackathon)
+    }
+
+    @PostMapping("/{id}/unarchive")
+    fun unarchiveHackathon(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<HackathonResponse> {
+        val hackathon = hackathonService.unarchiveHackathon(id, principal.id)
+        return ResponseEntity.ok(hackathon)
+    }
 }
