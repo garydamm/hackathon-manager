@@ -305,4 +305,33 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val foundProject = projectRepository.findById(projectId!!)
         assertThat(foundProject).isEmpty
     }
+
+    @Test
+    fun `archivedAt field should be nullable and persist correctly`() {
+        // Create project without archivedAt (should default to null)
+        val project = Project(
+            team = testTeam,
+            hackathon = testHackathon,
+            name = "Test Project"
+        )
+        entityManager.persist(project)
+        entityManager.flush()
+
+        val projectId = project.id!!
+        assertThat(project.archivedAt).isNull()
+
+        // Set archivedAt timestamp
+        val archiveTime = OffsetDateTime.now()
+        project.archivedAt = archiveTime
+        entityManager.flush()
+        entityManager.clear()
+
+        // Verify archivedAt was persisted
+        val found = projectRepository.findById(projectId)
+        assertThat(found).isPresent
+        assertThat(found.get().archivedAt).isNotNull()
+        // Compare as instants to handle timezone differences
+        assertThat(found.get().archivedAt!!.toInstant())
+            .isEqualTo(archiveTime.toInstant())
+    }
 }

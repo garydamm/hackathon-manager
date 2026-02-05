@@ -60,6 +60,9 @@ class Project(
     @Column(name = "submitted_at")
     var submittedAt: OffsetDateTime? = null,
 
+    @Column(name = "archived_at")
+    var archivedAt: OffsetDateTime? = null,
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     val createdAt: OffsetDateTime? = null,
