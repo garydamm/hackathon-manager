@@ -30,11 +30,11 @@ Add the ability to archive hackathons so they are hidden from the public dashboa
 **Description:** As a user, I want to see only active hackathons on the dashboard so I'm not overwhelmed by old events.
 
 **Acceptance Criteria:**
-- [ ] Update dashboard query to exclude hackathons where `archived = true`
-- [ ] Verify dashboard only shows active hackathons
-- [ ] Unit tests added for filtering logic
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Update dashboard query to exclude hackathons where `archived = true`
+- [x] Verify dashboard only shows active hackathons
+- [x] Unit tests added for filtering logic
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-003: Add authentication check for archived hackathon access
