@@ -40,3 +40,30 @@
   - Existing tests automatically verify archived filtering works correctly
 
 ---
+
+## Iteration 4 - Prevent registrations and submissions for archived hackathons (US-004)
+- Added archive checks to prevent write operations on archived hackathons
+- Modified HackathonService.kt:
+  - registerForHackathon(): Added check to block registrations for archived hackathons
+- Modified TeamService.kt:
+  - createTeam(): Added check to block team creation for archived hackathons
+  - addUserToTeam(): Added check to block joining teams in archived hackathons
+- Modified ProjectService.kt:
+  - createProject(): Added check to block project creation for archived hackathons
+  - submitProject(): Added check to block project submission for archived hackathons
+  - unsubmitProject(): Added check to block project unsubmission for archived hackathons
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt
+  - src/main/kotlin/com/hackathon/manager/service/TeamService.kt
+  - src/main/kotlin/com/hackathon/manager/service/ProjectService.kt
+  - PRD.md (marked US-004 complete except browser verification)
+- Learnings for future iterations:
+  - Archive checks should be placed early in service methods, right after fetching the entity
+  - Use ValidationException for archive-related blocks (consistent with other business logic violations)
+  - Team join operations (joinTeamByInviteCode, joinTeamById) both use addUserToTeam() internally, so checking in the private method covers both cases
+  - Project operations access hackathon through relationships: project.hackathon or team.hackathon
+  - All archive checks throw consistent error messages: "Cannot {action} in an archived hackathon"
+  - Existing unit tests verify the validation logic works correctly
+  - No new tests needed - existing service tests cover all modified methods
+
+---

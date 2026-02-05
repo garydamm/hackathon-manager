@@ -51,6 +51,10 @@ class ProjectService(
         val team = teamRepository.findById(request.teamId)
             .orElseThrow { NotFoundException("Team not found") }
 
+        if (team.hackathon.archived) {
+            throw ValidationException("Cannot create a project in an archived hackathon")
+        }
+
         if (!teamMemberRepository.existsByTeamIdAndUserId(request.teamId, userId)) {
             throw UnauthorizedException("Must be a team member to create a project")
         }
@@ -108,6 +112,10 @@ class ProjectService(
         val project = projectRepository.findById(id)
             .orElseThrow { NotFoundException("Project not found") }
 
+        if (project.hackathon.archived) {
+            throw ValidationException("Cannot submit a project in an archived hackathon")
+        }
+
         if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
             throw UnauthorizedException("Must be a team member to submit the project")
         }
@@ -127,6 +135,10 @@ class ProjectService(
     fun unsubmitProject(id: UUID, userId: UUID): ProjectResponse {
         val project = projectRepository.findById(id)
             .orElseThrow { NotFoundException("Project not found") }
+
+        if (project.hackathon.archived) {
+            throw ValidationException("Cannot unsubmit a project in an archived hackathon")
+        }
 
         if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
             throw UnauthorizedException("Must be a team member to unsubmit the project")

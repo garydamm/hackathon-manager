@@ -53,13 +53,13 @@ Add the ability to archive hackathons so they are hidden from the public dashboa
 **Description:** As an organizer, I want archived hackathons to be read-only so no new data is added after archiving.
 
 **Acceptance Criteria:**
-- [ ] Block new participant registrations for archived hackathons (return error or show message)
-- [ ] Block new team creation for archived hackathons
-- [ ] Block new submissions for archived hackathons
-- [ ] Show appropriate "This hackathon is archived" message when actions are blocked
-- [ ] Unit tests added for blocking logic
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Block new participant registrations for archived hackathons (return error or show message)
+- [x] Block new team creation for archived hackathons
+- [x] Block new submissions for archived hackathons
+- [x] Show appropriate "This hackathon is archived" message when actions are blocked
+- [x] Unit tests added for blocking logic
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-005: Add archive/unarchive actions to backend

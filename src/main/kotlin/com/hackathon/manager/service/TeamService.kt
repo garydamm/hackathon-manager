@@ -45,6 +45,10 @@ class TeamService(
         val hackathon = hackathonRepository.findById(request.hackathonId)
             .orElseThrow { NotFoundException("Hackathon not found") }
 
+        if (hackathon.archived) {
+            throw ValidationException("Cannot create a team in an archived hackathon")
+        }
+
         if (!hackathonUserRepository.existsByHackathonIdAndUserId(request.hackathonId, creatorId)) {
             throw UnauthorizedException("Must be registered for the hackathon to create a team")
         }
@@ -133,6 +137,10 @@ class TeamService(
     }
 
     private fun addUserToTeam(team: Team, userId: UUID): TeamResponse {
+        if (team.hackathon.archived) {
+            throw ValidationException("Cannot join a team in an archived hackathon")
+        }
+
         if (!hackathonUserRepository.existsByHackathonIdAndUserId(team.hackathon.id!!, userId)) {
             throw UnauthorizedException("Must be registered for the hackathon to join a team")
         }

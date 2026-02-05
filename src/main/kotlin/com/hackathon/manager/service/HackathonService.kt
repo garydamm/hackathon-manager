@@ -151,6 +151,10 @@ class HackathonService(
         val hackathon = hackathonRepository.findById(hackathonId)
             .orElseThrow { NotFoundException("Hackathon not found") }
 
+        if (hackathon.archived) {
+            throw ValidationException("Cannot register for an archived hackathon")
+        }
+
         if (hackathon.status != HackathonStatus.registration_open) {
             throw ValidationException("Registration is not open")
         }
