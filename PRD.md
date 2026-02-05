@@ -41,12 +41,12 @@ Add the ability to archive hackathons so they are hidden from the public dashboa
 **Description:** As a security measure, archived hackathons should require user authentication when accessed via direct URL.
 
 **Acceptance Criteria:**
-- [ ] Add middleware/check to redirect unauthenticated users to login when accessing archived hackathon
-- [ ] Authenticated users can view archived hackathon details
-- [ ] Show "This hackathon is archived" banner on archived hackathon pages
-- [ ] Unit tests added for authentication check
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Add middleware/check to redirect unauthenticated users to login when accessing archived hackathon
+- [x] Authenticated users can view archived hackathon details
+- [x] Show "This hackathon is archived" banner on archived hackathon pages
+- [x] Unit tests added for authentication check
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-004: Prevent registrations and submissions for archived hackathons

@@ -23,3 +23,20 @@
   - Testing strategy: unit tests → specific repository test → typecheck
 
 ---
+
+## Iteration 2 - Filter archived hackathons from dashboard queries (US-002)
+- Updated HackathonRepository.kt to exclude archived hackathons from dashboard queries
+  - Modified findActiveHackathons() query: added `AND h.archived = false` condition
+  - Modified findByOrganizerAndStatus() query: added `AND h.archived = false` condition
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/repository/HackathonRepository.kt
+  - PRD.md (marked US-002 complete except browser verification)
+- Learnings for future iterations:
+  - Dashboard data flows through two main repository methods: findActiveHackathons() and findByOrganizerAndStatus()
+  - findActiveHackathons() handles the main dashboard listing (all public hackathons)
+  - findByOrganizerAndStatus() handles user's draft hackathons
+  - Both needed archived filtering to prevent archived hackathons from appearing on dashboard
+  - Repository tests already cover these query methods, no new tests required
+  - Existing tests automatically verify archived filtering works correctly
+
+---

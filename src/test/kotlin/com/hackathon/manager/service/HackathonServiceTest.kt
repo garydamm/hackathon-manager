@@ -1005,6 +1005,112 @@ class HackathonServiceTest {
             .hasMessage("User is not an organizer")
     }
 
+    @Test
+    fun `getHackathonBySlug should allow access to archived hackathon when user is authenticated`() {
+        val archivedHackathon = Hackathon(
+            id = testHackathonId,
+            name = "Archived Hackathon",
+            slug = "archived-hackathon",
+            status = HackathonStatus.completed,
+            archived = true,
+            startsAt = OffsetDateTime.now().minusDays(10),
+            endsAt = OffsetDateTime.now().minusDays(8),
+            createdBy = testUser
+        )
+        val participants = List(3) {
+            HackathonUser(
+                hackathon = archivedHackathon,
+                user = testUser,
+                role = UserRole.participant
+            )
+        }
+
+        whenever(hackathonRepository.findBySlug("archived-hackathon")).thenReturn(archivedHackathon)
+        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
+            .thenReturn(participants)
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId))
+            .thenReturn(participants[0])
+
+        val result = hackathonService.getHackathonBySlug("archived-hackathon", testUserId)
+
+        assertThat(result.slug).isEqualTo("archived-hackathon")
+        assertThat(result.archived).isTrue()
+        assertThat(result.participantCount).isEqualTo(3)
+    }
+
+    @Test
+    fun `getHackathonBySlug should throw UnauthorizedException when accessing archived hackathon without authentication`() {
+        val archivedHackathon = Hackathon(
+            id = testHackathonId,
+            name = "Archived Hackathon",
+            slug = "archived-hackathon",
+            status = HackathonStatus.completed,
+            archived = true,
+            startsAt = OffsetDateTime.now().minusDays(10),
+            endsAt = OffsetDateTime.now().minusDays(8),
+            createdBy = testUser
+        )
+
+        whenever(hackathonRepository.findBySlug("archived-hackathon")).thenReturn(archivedHackathon)
+
+        assertThatThrownBy { hackathonService.getHackathonBySlug("archived-hackathon", null) }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Authentication required to view archived hackathons")
+    }
+
+    @Test
+    fun `getHackathonById should allow access to archived hackathon when user is authenticated`() {
+        val archivedHackathon = Hackathon(
+            id = testHackathonId,
+            name = "Archived Hackathon",
+            slug = "archived-hackathon",
+            status = HackathonStatus.completed,
+            archived = true,
+            startsAt = OffsetDateTime.now().minusDays(10),
+            endsAt = OffsetDateTime.now().minusDays(8),
+            createdBy = testUser
+        )
+        val participants = List(2) {
+            HackathonUser(
+                hackathon = archivedHackathon,
+                user = testUser,
+                role = UserRole.participant
+            )
+        }
+
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(archivedHackathon))
+        whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.participant))
+            .thenReturn(participants)
+        whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testUserId))
+            .thenReturn(participants[0])
+
+        val result = hackathonService.getHackathonById(testHackathonId, testUserId)
+
+        assertThat(result.id).isEqualTo(testHackathonId)
+        assertThat(result.archived).isTrue()
+        assertThat(result.participantCount).isEqualTo(2)
+    }
+
+    @Test
+    fun `getHackathonById should throw UnauthorizedException when accessing archived hackathon without authentication`() {
+        val archivedHackathon = Hackathon(
+            id = testHackathonId,
+            name = "Archived Hackathon",
+            slug = "archived-hackathon",
+            status = HackathonStatus.completed,
+            archived = true,
+            startsAt = OffsetDateTime.now().minusDays(10),
+            endsAt = OffsetDateTime.now().minusDays(8),
+            createdBy = testUser
+        )
+
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(archivedHackathon))
+
+        assertThatThrownBy { hackathonService.getHackathonById(testHackathonId, null) }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Authentication required to view archived hackathons")
+    }
+
     private fun Hackathon.copy(
         id: UUID? = this.id,
         name: String = this.name,

@@ -66,6 +66,7 @@ export interface Hackathon {
   description?: string | null
   rules?: string | null
   status: HackathonStatus
+  archived: boolean
   bannerUrl?: string | null
   logoUrl?: string | null
   location?: string | null

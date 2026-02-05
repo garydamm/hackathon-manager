@@ -46,6 +46,12 @@ class HackathonService(
     fun getHackathonById(id: UUID, userId: UUID? = null): HackathonResponse {
         val hackathon = hackathonRepository.findById(id)
             .orElseThrow { NotFoundException("Hackathon not found") }
+
+        // Require authentication for archived hackathons
+        if (hackathon.archived && userId == null) {
+            throw UnauthorizedException("Authentication required to view archived hackathons")
+        }
+
         val participantCount = getParticipantCount(id)
         val userRole = userId?.let { uid -> hackathonUserRepository.findByHackathonIdAndUserId(id, uid)?.role }
         return HackathonResponse.fromEntity(hackathon, participantCount, userRole)
@@ -55,6 +61,12 @@ class HackathonService(
     fun getHackathonBySlug(slug: String, userId: UUID? = null): HackathonResponse {
         val hackathon = hackathonRepository.findBySlug(slug)
             ?: throw NotFoundException("Hackathon not found")
+
+        // Require authentication for archived hackathons
+        if (hackathon.archived && userId == null) {
+            throw UnauthorizedException("Authentication required to view archived hackathons")
+        }
+
         val participantCount = getParticipantCount(hackathon.id!!)
         val userRole = userId?.let { uid -> hackathonUserRepository.findByHackathonIdAndUserId(hackathon.id!!, uid)?.role }
         return HackathonResponse.fromEntity(hackathon, participantCount, userRole)

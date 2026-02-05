@@ -86,6 +86,7 @@ class HackathonControllerTest {
         description = "A test hackathon",
         rules = null,
         status = status,
+        archived = false,
         bannerUrl = null,
         logoUrl = null,
         location = "Virtual",
@@ -367,7 +368,8 @@ class HackathonControllerTest {
         participantCount: Int? = this.participantCount,
         createdBy: UserResponse = this.createdBy,
         createdAt: OffsetDateTime? = this.createdAt,
-        userRole: UserRole? = this.userRole
+        userRole: UserRole? = this.userRole,
+        archived: Boolean = this.archived
     ) = HackathonResponse(
         id = id,
         name = name,
@@ -375,6 +377,7 @@ class HackathonControllerTest {
         description = description,
         rules = rules,
         status = status,
+        archived = archived,
         bannerUrl = bannerUrl,
         logoUrl = logoUrl,
         location = location,

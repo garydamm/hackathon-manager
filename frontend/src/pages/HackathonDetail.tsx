@@ -21,6 +21,7 @@ import {
   FolderKanban,
   Gavel,
   User,
+  Archive,
 } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
@@ -370,6 +371,21 @@ function ViewMode({
           </div>
         </div>
       </div>
+
+      {/* Archived Banner */}
+      {hackathon.archived && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <Archive className="h-5 w-5 text-amber-600" />
+            <div>
+              <h3 className="font-semibold text-amber-900">This hackathon is archived</h3>
+              <p className="text-sm text-amber-700 mt-1">
+                This event is archived and no longer accepting new registrations or submissions.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Info */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
