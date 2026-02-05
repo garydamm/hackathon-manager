@@ -18,7 +18,8 @@ class ProjectService(
     private val projectRepository: ProjectRepository,
     private val teamRepository: TeamRepository,
     private val teamMemberRepository: TeamMemberRepository,
-    private val hackathonRepository: HackathonRepository
+    private val hackathonRepository: HackathonRepository,
+    private val hackathonService: HackathonService
 ) {
 
     @Transactional(readOnly = true)
@@ -167,8 +168,12 @@ class ProjectService(
             throw ValidationException("Project is already archived")
         }
 
-        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
-            throw UnauthorizedException("Must be a team member to archive the project")
+        // Check if user is either a team member OR hackathon organizer
+        val isTeamMember = teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)
+        val isOrganizer = hackathonService.isUserOrganizer(project.hackathon.id!!, userId)
+
+        if (!isTeamMember && !isOrganizer) {
+            throw UnauthorizedException("Must be a team member or hackathon organizer to archive the project")
         }
 
         project.archivedAt = OffsetDateTime.now()

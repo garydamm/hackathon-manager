@@ -219,4 +219,122 @@ test.describe('Project Archive Workflow', () => {
     // Verify the new project DOES appear
     await expect(page.getByRole('heading', { name: 'New Project After Archive' })).toBeVisible();
   });
+
+  test('attempting to view archived project directly shows 404', async ({ page }) => {
+    // Get the access token
+    const accessToken = await page.evaluate(() => localStorage.getItem('accessToken'));
+
+    // Create a project to archive
+    const createResponse = await page.request.post('http://localhost:8080/api/projects', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      data: {
+        teamId: teamId,
+        name: 'Project to Archive for 404 Test',
+        description: 'This will be archived and then accessed directly.'
+      }
+    });
+    expect(createResponse.ok()).toBeTruthy();
+    const project = await createResponse.json();
+    const projectId = project.id;
+
+    // Archive the project via API
+    const archiveResponse = await page.request.post(`http://localhost:8080/api/projects/${projectId}/archive`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    expect(archiveResponse.ok()).toBeTruthy();
+
+    // Try to access the archived project via the API
+    const getResponse = await page.request.get(`http://localhost:8080/api/projects/${projectId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+
+    // Should get 404 Not Found because archived projects are treated as not found
+    expect(getResponse.status()).toBe(404);
+  });
+
+  test('hackathon organizer can archive a project', async ({ page }) => {
+    // The test user is already the hackathon organizer (created the hackathon)
+    // Create another user, team, and project to test organizer archiving a project they don't own
+
+    // Register a second user
+    const secondUserEmail = `e2etest_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@example.com`;
+    const secondUserPage = await page.context().newPage();
+    await secondUserPage.goto('/register');
+
+    await secondUserPage.getByLabel('First name').fill('SecondUser');
+    await secondUserPage.getByLabel('Last name').fill('Test');
+    await secondUserPage.getByLabel('Email').fill(secondUserEmail);
+    await secondUserPage.getByLabel('Password', { exact: true }).fill(TEST_PASSWORD);
+    await secondUserPage.getByLabel('Confirm password').fill(TEST_PASSWORD);
+    await secondUserPage.getByRole('button', { name: 'Create account' }).click();
+
+    await expect(secondUserPage.getByRole('heading', { name: /Welcome back, SecondUser/ })).toBeVisible({ timeout: 15000 });
+
+    // Get second user's access token
+    const secondUserToken = await secondUserPage.evaluate(() => localStorage.getItem('accessToken'));
+
+    // Second user creates a team
+    const teamResponse = await secondUserPage.request.post('http://localhost:8080/api/teams', {
+      headers: {
+        Authorization: `Bearer ${secondUserToken}`,
+        'Content-Type': 'application/json'
+      },
+      data: {
+        hackathonId: hackathonId,
+        name: `E2E Organizer Archive Team ${Date.now()}`,
+        description: 'Team for testing organizer archive.',
+        isOpen: true
+      }
+    });
+    expect(teamResponse.ok()).toBeTruthy();
+    const secondTeam = await teamResponse.json();
+    const secondTeamId = secondTeam.id;
+
+    // Second user creates a project for their team
+    const projectResponse = await secondUserPage.request.post('http://localhost:8080/api/projects', {
+      headers: {
+        Authorization: `Bearer ${secondUserToken}`,
+        'Content-Type': 'application/json'
+      },
+      data: {
+        teamId: secondTeamId,
+        name: 'Organizer Archive Test Project',
+        description: 'Project to be archived by organizer.'
+      }
+    });
+    expect(projectResponse.ok()).toBeTruthy();
+    const organizerProject = await projectResponse.json();
+    const organizerProjectId = organizerProject.id;
+
+    // Close second user page
+    await secondUserPage.close();
+
+    // Now the organizer (first test user) archives the second user's project
+    const accessToken = await page.evaluate(() => localStorage.getItem('accessToken'));
+    const archiveResponse = await page.request.post(`http://localhost:8080/api/projects/${organizerProjectId}/archive`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Organizers should be able to archive projects per US-002
+    expect(archiveResponse.ok()).toBeTruthy();
+
+    // Verify the project is archived
+    const getResponse = await page.request.get(`http://localhost:8080/api/projects/${organizerProjectId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+    expect(getResponse.status()).toBe(404);
+  });
 });

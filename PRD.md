@@ -80,12 +80,12 @@ Add the ability to archive projects (team submissions) within hackathons. Archiv
 **Description:** As a developer, I need end-to-end tests to ensure the complete archive workflow functions correctly.
 
 **Acceptance Criteria:**
-- [ ] UI system test: Team member archives project → Verify project disappears from lists
-- [ ] UI system test: Organizer archives project → Verify project disappears from lists
-- [ ] UI system test: Archive project → Team creates new project → Verify new project appears
-- [ ] UI system test: Attempt to view archived project directly → Verify 404 or error
-- [ ] UI system tests pass
-- [ ] Typecheck passes
+- [x] UI system test: Team member archives project → Verify project disappears from lists
+- [x] UI system test: Organizer archives project → Verify project disappears from lists
+- [x] UI system test: Archive project → Team creates new project → Verify new project appears
+- [x] UI system test: Attempt to view archived project directly → Verify 404 or error
+- [x] UI system tests pass
+- [x] Typecheck passes
 
 ## Non-Goals
 

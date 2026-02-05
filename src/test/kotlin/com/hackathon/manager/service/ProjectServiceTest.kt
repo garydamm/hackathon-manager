@@ -34,6 +34,9 @@ class ProjectServiceTest {
     @Mock
     lateinit var hackathonRepository: HackathonRepository
 
+    @Mock
+    lateinit var hackathonService: HackathonService
+
     @InjectMocks
     lateinit var projectService: ProjectService
 
@@ -502,6 +505,7 @@ class ProjectServiceTest {
     fun `archiveProject should archive project successfully`() {
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(false)
         whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
 
         projectService.archiveProject(testProjectId, testUserId)
@@ -520,13 +524,14 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `archiveProject should throw exception when not a team member`() {
+    fun `archiveProject should throw exception when not a team member or organizer`() {
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(false)
 
         assertThatThrownBy { projectService.archiveProject(testProjectId, testUserId) }
             .isInstanceOf(UnauthorizedException::class.java)
-            .hasMessage("Must be a team member to archive the project")
+            .hasMessage("Must be a team member or hackathon organizer to archive the project")
     }
 
     @Test
@@ -544,5 +549,20 @@ class ProjectServiceTest {
         assertThatThrownBy { projectService.archiveProject(testProjectId, testUserId) }
             .isInstanceOf(ValidationException::class.java)
             .hasMessage("Project is already archived")
+    }
+
+    @Test
+    fun `archiveProject should allow organizer to archive project`() {
+        val organizerId = UUID.randomUUID()
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, organizerId)).thenReturn(false)
+        whenever(hackathonService.isUserOrganizer(testHackathonId, organizerId)).thenReturn(true)
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        projectService.archiveProject(testProjectId, organizerId)
+
+        assertThat(testProject.archivedAt).isNotNull()
+        verify(projectRepository).save(testProject)
     }
 }
