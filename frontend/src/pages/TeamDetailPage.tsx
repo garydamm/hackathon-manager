@@ -168,11 +168,11 @@ export function TeamDetailPage() {
   const archiveProjectMutation = useMutation({
     mutationFn: (id: string) => projectService.archiveProject(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      // Immediately update the cache to remove the project
+      queryClient.setQueryData(["project", "team", teamId], null)
       queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon?.id] })
-      setShowArchiveConfirm(false)
       setArchiveError(null)
-      refetchProject()
+      setShowArchiveConfirm(false)
     },
     onError: (err) => {
       if (err instanceof ApiError) {

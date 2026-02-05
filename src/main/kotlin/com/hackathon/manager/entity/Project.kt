@@ -10,16 +10,13 @@ import java.time.OffsetDateTime
 import java.util.*
 
 @Entity
-@Table(
-    name = "projects",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["team_id", "hackathon_id"])]
-)
+@Table(name = "projects")
 class Project(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id", nullable = false)
     var team: Team,
 

@@ -49,6 +49,6 @@ class Team(
     @OneToMany(mappedBy = "team", cascade = [CascadeType.ALL], orphanRemoval = true)
     val members: MutableList<TeamMember> = mutableListOf()
 
-    @OneToOne(mappedBy = "team", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var project: Project? = null
+    @OneToMany(mappedBy = "team", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val projects: MutableList<Project> = mutableListOf()
 }
