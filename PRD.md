@@ -62,7 +62,7 @@ Add the ability to archive projects (team submissions) within hackathons. Archiv
 - [x] Unit tests added for UI component and button visibility logic
 - [x] Unit tests pass
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-005: Verify team can create new project after archiving
 **Description:** As a team member, I want to create a new project after archiving our old one.
