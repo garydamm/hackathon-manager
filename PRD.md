@@ -29,13 +29,13 @@ Add the ability to archive projects (team submissions) within hackathons. Archiv
 **Description:** As a developer, I need a server action to archive projects with proper permission checks.
 
 **Acceptance Criteria:**
-- [ ] Server action `archiveProject(projectId)` sets archivedAt to current timestamp
-- [ ] Validates user is either team member OR hackathon organizer
-- [ ] Returns error if user lacks permission
-- [ ] Returns error if project is already archived
-- [ ] Unit tests added for archive logic and permission checks
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Server action `archiveProject(projectId)` sets archivedAt to current timestamp
+- [x] Validates user is either team member OR hackathon organizer
+- [x] Returns error if user lacks permission
+- [x] Returns error if project is already archived
+- [x] Unit tests added for archive logic and permission checks
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-003: Filter archived projects from all queries
 **Description:** As a user, I should not see archived projects in any lists or views.

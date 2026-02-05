@@ -154,4 +154,23 @@ class ProjectService(
         val savedProject = projectRepository.save(project)
         return ProjectResponse.fromEntity(savedProject)
     }
+
+    @Transactional
+    fun archiveProject(id: UUID, userId: UUID): ProjectResponse {
+        val project = projectRepository.findById(id)
+            .orElseThrow { NotFoundException("Project not found") }
+
+        if (project.archivedAt != null) {
+            throw ValidationException("Project is already archived")
+        }
+
+        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
+            throw UnauthorizedException("Must be a team member to archive the project")
+        }
+
+        project.archivedAt = OffsetDateTime.now()
+
+        val savedProject = projectRepository.save(project)
+        return ProjectResponse.fromEntity(savedProject)
+    }
 }

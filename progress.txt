@@ -4,3 +4,23 @@
 (Patterns discovered during implementation)
 
 ---
+
+## Iteration 1 - Add archived_at timestamp to projects table (US-001)
+- Created database migration V5__add_archived_at_to_projects.sql
+- Added nullable archived_at TIMESTAMP WITH TIME ZONE column to projects table
+- Added index idx_projects_archived_at for query performance
+- Updated Project.kt entity with archivedAt field
+- Added unit test for archivedAt field persistence in ProjectRepositoryTest.kt
+- Files changed:
+  - src/main/resources/db/migration/V5__add_archived_at_to_projects.sql (new)
+  - src/main/kotlin/com/hackathon/manager/entity/Project.kt
+  - src/test/kotlin/com/hackathon/manager/repository/ProjectRepositoryTest.kt
+  - PRD.md (marked US-001 complete)
+- Learnings for future iterations:
+  - Migration pattern: Use V{N}__description.sql for sequential migrations
+  - Use nullable TIMESTAMP WITH TIME ZONE for archive timestamps (follows existing pattern)
+  - Always add index on timestamp columns used in WHERE clauses
+  - When testing OffsetDateTime persistence, compare using .toInstant() to handle timezone differences
+  - Follow testing strategy: Run controller/service tests, then specific repository test individually to avoid TestContainers resource exhaustion
+
+---

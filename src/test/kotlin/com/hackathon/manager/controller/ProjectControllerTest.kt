@@ -308,6 +308,54 @@ class ProjectControllerTest {
             .andExpect(status().isBadRequest)
     }
 
+    @Test
+    fun `archiveProject should return 200 when successful`() {
+        whenever(projectService.archiveProject(testProjectId, testUserId))
+            .thenReturn(createProjectResponse())
+
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/archive")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `archiveProject should return 401 without authentication`() {
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/archive")
+                .with(csrf())
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `archiveProject should return 403 when not a team member`() {
+        whenever(projectService.archiveProject(testProjectId, testUserId))
+            .thenThrow(ApiException("Must be a team member to archive the project", HttpStatus.FORBIDDEN))
+
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/archive")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
+    fun `archiveProject should return 400 when already archived`() {
+        whenever(projectService.archiveProject(testProjectId, testUserId))
+            .thenThrow(ApiException("Project is already archived", HttpStatus.BAD_REQUEST))
+
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/archive")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isBadRequest)
+    }
+
     private fun ProjectResponse.copy(
         name: String = this.name
     ) = ProjectResponse(

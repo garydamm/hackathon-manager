@@ -78,4 +78,13 @@ class ProjectController(
         val project = projectService.unsubmitProject(id, principal.id)
         return ResponseEntity.ok(project)
     }
+
+    @PostMapping("/{id}/archive")
+    fun archiveProject(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<ProjectResponse> {
+        val project = projectService.archiveProject(id, principal.id)
+        return ResponseEntity.ok(project)
+    }
 }

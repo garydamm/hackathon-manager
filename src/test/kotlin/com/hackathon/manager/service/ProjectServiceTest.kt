@@ -407,4 +407,52 @@ class ProjectServiceTest {
             .isInstanceOf(ValidationException::class.java)
             .hasMessage("Project is not submitted")
     }
+
+    @Test
+    fun `archiveProject should archive project successfully`() {
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        projectService.archiveProject(testProjectId, testUserId)
+
+        assertThat(testProject.archivedAt).isNotNull()
+        verify(projectRepository).save(testProject)
+    }
+
+    @Test
+    fun `archiveProject should throw exception when not found`() {
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy { projectService.archiveProject(testProjectId, testUserId) }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Project not found")
+    }
+
+    @Test
+    fun `archiveProject should throw exception when not a team member`() {
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
+
+        assertThatThrownBy { projectService.archiveProject(testProjectId, testUserId) }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Must be a team member to archive the project")
+    }
+
+    @Test
+    fun `archiveProject should throw exception when already archived`() {
+        val archivedProject = Project(
+            id = testProjectId,
+            team = testTeam,
+            hackathon = testHackathon,
+            name = "Archived Project",
+            archivedAt = OffsetDateTime.now()
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(archivedProject))
+
+        assertThatThrownBy { projectService.archiveProject(testProjectId, testUserId) }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("Project is already archived")
+    }
 }
