@@ -24,3 +24,39 @@
   - Follow testing strategy: Run controller/service tests, then specific repository test individually to avoid TestContainers resource exhaustion
 
 ---
+
+## Iteration 2 - Add archive project server action (US-002)
+- Added archiveProject() method to ProjectService.kt
+  - Sets archivedAt to OffsetDateTime.now() when archiving
+  - Validates project exists (throws NotFoundException)
+  - Validates user is team member (throws UnauthorizedException)
+  - Validates project not already archived (throws ValidationException)
+- Added POST /api/projects/{id}/archive endpoint in ProjectController.kt
+  - Uses @AuthenticationPrincipal to extract user ID
+  - Returns 200 OK with ProjectResponse on success
+- Added comprehensive unit tests in ProjectServiceTest.kt:
+  - Test successful archive operation
+  - Test exception when project not found
+  - Test exception when user not a team member
+  - Test exception when project already archived
+- Added comprehensive unit tests in ProjectControllerTest.kt:
+  - Test successful archive returns 200
+  - Test requires authentication (401 without auth)
+  - Test permission check (403 when not team member)
+  - Test validation (400 when already archived)
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/ProjectService.kt
+  - src/main/kotlin/com/hackathon/manager/controller/ProjectController.kt
+  - src/test/kotlin/com/hackathon/manager/service/ProjectServiceTest.kt
+  - src/test/kotlin/com/hackathon/manager/controller/ProjectControllerTest.kt
+  - PRD.md (marked US-002 complete)
+- Learnings for future iterations:
+  - Service methods follow pattern: find entity → validate permissions → validate business rules → update → save
+  - Controller methods extract userId from @AuthenticationPrincipal principal
+  - Test pattern: Mock repository/service responses, verify correct calls
+  - Mockito throws UnnecessaryStubbingException if you stub methods that don't get called (remove unnecessary stubs)
+  - Validation that happens early in service method (like "already archived" check) runs before later checks (like team member check)
+  - Archive operation only checks team member permission (not hackathon organizer), following US-002 requirements
+  - All unit tests pass (326 tests), typecheck passes
+
+---
