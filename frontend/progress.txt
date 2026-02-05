@@ -1,0 +1,30 @@
+## Iteration 3 - Add authentication check for archived hackathon access (US-003)
+- Added archived field to HackathonResponse DTO in backend
+- Updated HackathonResponse.fromEntity() to include archived field
+- Modified HackathonService.getHackathonBySlug() to require authentication for archived hackathons
+- Modified HackathonService.getHackathonById() to require authentication for archived hackathons
+- Added archived field to frontend Hackathon TypeScript interface
+- Added amber-colored archived banner to HackathonDetail.tsx page with Archive icon
+- Added 4 unit tests for archived hackathon authentication checks:
+  - Test authenticated access to archived hackathon by slug (should succeed)
+  - Test unauthenticated access to archived hackathon by slug (should throw UnauthorizedException)
+  - Test authenticated access to archived hackathon by ID (should succeed)
+  - Test unauthenticated access to archived hackathon by ID (should throw UnauthorizedException)
+- Fixed HackathonControllerTest to include archived field in test helper methods
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/dto/HackathonDtos.kt (added archived field)
+  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt (added auth checks)
+  - frontend/src/types/index.ts (added archived field to Hackathon interface)
+  - frontend/src/pages/HackathonDetail.tsx (added archived banner)
+  - src/test/kotlin/com/hackathon/manager/service/HackathonServiceTest.kt (added 4 tests)
+  - src/test/kotlin/com/hackathon/manager/controller/HackathonControllerTest.kt (fixed helper)
+  - PRD.md (marked US-003 complete except browser verification)
+- Learnings for future iterations:
+  - Authentication checks in service layer use `userId == null` to detect unauthenticated requests
+  - UnauthorizedException is the correct exception for auth failures (not NotFoundException)
+  - HackathonResponse DTO must stay in sync with Hackathon entity fields
+  - Controller tests have helper methods that need updating when DTO structure changes
+  - Frontend banner uses Tailwind's amber color palette (amber-50, amber-200, amber-600, amber-700, amber-900)
+  - Archive icon imported from lucide-react works well for archived state visualization
+
+---
