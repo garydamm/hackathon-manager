@@ -73,7 +73,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         entityManager.persist(project)
         entityManager.flush()
 
-        val found = projectRepository.findByTeamId(testTeam.id!!)
+        val found = projectRepository.findByTeamIdAndArchivedAtIsNull(testTeam.id!!)
 
         assertThat(found).isNotNull
         assertThat(found?.name).isEqualTo("Test Project")
@@ -90,7 +90,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         entityManager.persist(anotherTeam)
         entityManager.flush()
 
-        val found = projectRepository.findByTeamId(anotherTeam.id!!)
+        val found = projectRepository.findByTeamIdAndArchivedAtIsNull(anotherTeam.id!!)
 
         assertThat(found).isNull()
     }
@@ -122,7 +122,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
 
         entityManager.flush()
 
-        val found = projectRepository.findByHackathonId(testHackathon.id!!)
+        val found = projectRepository.findByHackathonIdAndArchivedAtIsNull(testHackathon.id!!)
 
         assertThat(found).hasSize(2)
         assertThat(found.map { it.name }).containsExactlyInAnyOrder("Project 1", "Project 2")
@@ -140,7 +140,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         entityManager.persist(anotherHackathon)
         entityManager.flush()
 
-        val found = projectRepository.findByHackathonId(anotherHackathon.id!!)
+        val found = projectRepository.findByHackathonIdAndArchivedAtIsNull(anotherHackathon.id!!)
 
         assertThat(found).isEmpty()
     }
@@ -187,21 +187,21 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
 
         entityManager.flush()
 
-        val draftProjects = projectRepository.findByHackathonIdAndStatus(
+        val draftProjects = projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(
             testHackathon.id!!,
             SubmissionStatus.draft
         )
         assertThat(draftProjects).hasSize(1)
         assertThat(draftProjects[0].name).isEqualTo("Draft Project")
 
-        val submittedProjects = projectRepository.findByHackathonIdAndStatus(
+        val submittedProjects = projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(
             testHackathon.id!!,
             SubmissionStatus.submitted
         )
         assertThat(submittedProjects).hasSize(1)
         assertThat(submittedProjects[0].name).isEqualTo("Submitted Project")
 
-        val acceptedProjects = projectRepository.findByHackathonIdAndStatus(
+        val acceptedProjects = projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(
             testHackathon.id!!,
             SubmissionStatus.accepted
         )
@@ -220,7 +220,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         entityManager.persist(project)
         entityManager.flush()
 
-        val found = projectRepository.findByHackathonIdAndStatus(
+        val found = projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(
             testHackathon.id!!,
             SubmissionStatus.rejected
         )

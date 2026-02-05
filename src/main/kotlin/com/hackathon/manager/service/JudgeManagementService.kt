@@ -37,7 +37,7 @@ class JudgeManagementService(
 
         val judges = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.judge)
         val organizers = hackathonUserRepository.findByHackathonIdAndRole(hackathonId, UserRole.organizer)
-        val totalProjects = projectRepository.findByHackathonIdAndStatus(hackathonId, SubmissionStatus.submitted).size
+        val totalProjects = projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(hackathonId, SubmissionStatus.submitted).size
 
         val judgeResponses = judges.map { hackathonUser ->
             val completedAssignments = judgeAssignmentRepository
@@ -111,7 +111,7 @@ class JudgeManagementService(
             hackathonUserRepository.save(hackathonUser)
         }
 
-        val totalProjects = projectRepository.findByHackathonIdAndStatus(hackathonId, SubmissionStatus.submitted).size
+        val totalProjects = projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(hackathonId, SubmissionStatus.submitted).size
 
         return JudgeInfoResponse(
             userId = user.id!!,

@@ -41,14 +41,14 @@ Add the ability to archive projects (team submissions) within hackathons. Archiv
 **Description:** As a user, I should not see archived projects in any lists or views.
 
 **Acceptance Criteria:**
-- [ ] All project list queries filter WHERE archivedAt IS NULL
-- [ ] Archived projects excluded from hackathon project lists
-- [ ] Archived projects excluded from team project views
-- [ ] Archived projects excluded from search results
-- [ ] Attempting to view archived project directly shows 404 or error
-- [ ] Unit tests added for query filtering logic
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] All project list queries filter WHERE archivedAt IS NULL
+- [x] Archived projects excluded from hackathon project lists
+- [x] Archived projects excluded from team project views
+- [x] Archived projects excluded from search results
+- [x] Attempting to view archived project directly shows 404 or error
+- [x] Unit tests added for query filtering logic
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-004: Add archive button to project UI
 **Description:** As a team member or organizer, I want to archive a project so I can remove it from the hackathon.

@@ -40,7 +40,7 @@ class LeaderboardService(
         }
 
         // Get all submitted projects
-        val submittedProjects = projectRepository.findByHackathonIdAndStatus(hackathonId, SubmissionStatus.submitted)
+        val submittedProjects = projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(hackathonId, SubmissionStatus.submitted)
         if (submittedProjects.isEmpty()) {
             return emptyList()
         }

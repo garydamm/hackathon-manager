@@ -8,8 +8,8 @@ import java.util.*
 
 @Repository
 interface ProjectRepository : JpaRepository<Project, UUID> {
-    fun findByHackathonId(hackathonId: UUID): List<Project>
-    fun findByTeamId(teamId: UUID): Project?
-    fun findByHackathonIdAndStatus(hackathonId: UUID, status: SubmissionStatus): List<Project>
-    fun existsByTeamIdAndHackathonId(teamId: UUID, hackathonId: UUID): Boolean
+    fun findByHackathonIdAndArchivedAtIsNull(hackathonId: UUID): List<Project>
+    fun findByTeamIdAndArchivedAtIsNull(teamId: UUID): Project?
+    fun findByHackathonIdAndStatusAndArchivedAtIsNull(hackathonId: UUID, status: SubmissionStatus): List<Project>
+    fun existsByTeamIdAndHackathonIdAndArchivedAtIsNull(teamId: UUID, hackathonId: UUID): Boolean
 }

@@ -88,13 +88,32 @@ class ProjectServiceTest {
 
     @Test
     fun `getProjectsByHackathon should return all projects`() {
-        whenever(projectRepository.findByHackathonId(testHackathonId)).thenReturn(listOf(testProject))
+        whenever(projectRepository.findByHackathonIdAndArchivedAtIsNull(testHackathonId)).thenReturn(listOf(testProject))
 
         val result = projectService.getProjectsByHackathon(testHackathonId)
 
         assertThat(result).hasSize(1)
         assertThat(result[0].name).isEqualTo("Test Project")
         assertThat(result[0].hackathonId).isEqualTo(testHackathonId)
+    }
+
+    @Test
+    fun `getProjectsByHackathon should exclude archived projects`() {
+        val archivedProject = Project(
+            id = UUID.randomUUID(),
+            team = testTeam,
+            hackathon = testHackathon,
+            name = "Archived Project",
+            archivedAt = OffsetDateTime.now()
+        )
+
+        whenever(projectRepository.findByHackathonIdAndArchivedAtIsNull(testHackathonId)).thenReturn(listOf(testProject))
+
+        val result = projectService.getProjectsByHackathon(testHackathonId)
+
+        assertThat(result).hasSize(1)
+        assertThat(result[0].name).isEqualTo("Test Project")
+        assertThat(result.none { it.name == "Archived Project" }).isTrue()
     }
 
     @Test
@@ -107,13 +126,32 @@ class ProjectServiceTest {
             status = SubmissionStatus.submitted
         )
 
-        whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
+        whenever(projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(testHackathonId, SubmissionStatus.submitted))
             .thenReturn(listOf(submittedProject))
 
         val result = projectService.getSubmittedProjectsByHackathon(testHackathonId)
 
         assertThat(result).hasSize(1)
         assertThat(result[0].status).isEqualTo(SubmissionStatus.submitted)
+    }
+
+    @Test
+    fun `getSubmittedProjectsByHackathon should exclude archived projects`() {
+        val archivedSubmittedProject = Project(
+            id = UUID.randomUUID(),
+            team = testTeam,
+            hackathon = testHackathon,
+            name = "Archived Submitted Project",
+            status = SubmissionStatus.submitted,
+            archivedAt = OffsetDateTime.now()
+        )
+
+        whenever(projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(testHackathonId, SubmissionStatus.submitted))
+            .thenReturn(emptyList())
+
+        val result = projectService.getSubmittedProjectsByHackathon(testHackathonId)
+
+        assertThat(result).isEmpty()
     }
 
     @Test
@@ -136,8 +174,25 @@ class ProjectServiceTest {
     }
 
     @Test
+    fun `getProjectById should throw exception when project is archived`() {
+        val archivedProject = Project(
+            id = testProjectId,
+            team = testTeam,
+            hackathon = testHackathon,
+            name = "Archived Project",
+            archivedAt = OffsetDateTime.now()
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(archivedProject))
+
+        assertThatThrownBy { projectService.getProjectById(testProjectId) }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Project not found")
+    }
+
+    @Test
     fun `getProjectByTeam should return project when exists`() {
-        whenever(projectRepository.findByTeamId(testTeamId)).thenReturn(testProject)
+        whenever(projectRepository.findByTeamIdAndArchivedAtIsNull(testTeamId)).thenReturn(testProject)
 
         val result = projectService.getProjectByTeam(testTeamId)
 
@@ -147,7 +202,16 @@ class ProjectServiceTest {
 
     @Test
     fun `getProjectByTeam should return null when no project exists`() {
-        whenever(projectRepository.findByTeamId(testTeamId)).thenReturn(null)
+        whenever(projectRepository.findByTeamIdAndArchivedAtIsNull(testTeamId)).thenReturn(null)
+
+        val result = projectService.getProjectByTeam(testTeamId)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `getProjectByTeam should return null when project is archived`() {
+        whenever(projectRepository.findByTeamIdAndArchivedAtIsNull(testTeamId)).thenReturn(null)
 
         val result = projectService.getProjectByTeam(testTeamId)
 
@@ -166,7 +230,7 @@ class ProjectServiceTest {
 
         whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
-        whenever(projectRepository.existsByTeamIdAndHackathonId(testTeamId, testHackathonId)).thenReturn(false)
+        whenever(projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(testTeamId, testHackathonId)).thenReturn(false)
         whenever(projectRepository.save(any<Project>())).thenAnswer { invocation ->
             val project = invocation.arguments[0] as Project
             Project(
@@ -228,11 +292,37 @@ class ProjectServiceTest {
 
         whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
-        whenever(projectRepository.existsByTeamIdAndHackathonId(testTeamId, testHackathonId)).thenReturn(true)
+        whenever(projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(testTeamId, testHackathonId)).thenReturn(true)
 
         assertThatThrownBy { projectService.createProject(request, testUserId) }
             .isInstanceOf(ConflictException::class.java)
             .hasMessage("Team already has a project for this hackathon")
+    }
+
+    @Test
+    fun `createProject should allow creation when previous project is archived`() {
+        val request = CreateProjectRequest(
+            teamId = testTeamId,
+            name = "New Project After Archive"
+        )
+
+        whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
+        whenever(projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(testTeamId, testHackathonId)).thenReturn(false)
+        whenever(projectRepository.save(any<Project>())).thenAnswer { invocation ->
+            val project = invocation.arguments[0] as Project
+            Project(
+                id = UUID.randomUUID(),
+                team = project.team,
+                hackathon = project.hackathon,
+                name = project.name
+            )
+        }
+
+        val result = projectService.createProject(request, testUserId)
+
+        assertThat(result.name).isEqualTo("New Project After Archive")
+        verify(projectRepository).save(any<Project>())
     }
 
     @Test

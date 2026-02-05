@@ -46,7 +46,7 @@ class ScoringService(
         }
 
         // Get all submitted projects for the hackathon
-        val submittedProjects = projectRepository.findByHackathonIdAndStatus(hackathonId, SubmissionStatus.submitted)
+        val submittedProjects = projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(hackathonId, SubmissionStatus.submitted)
 
         // Get existing assignments for this judge
         val existingAssignments = judgeAssignmentRepository.findByJudgeIdAndHackathonId(userId, hackathonId)

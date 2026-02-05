@@ -23,13 +23,13 @@ class ProjectService(
 
     @Transactional(readOnly = true)
     fun getProjectsByHackathon(hackathonId: UUID): List<ProjectResponse> {
-        return projectRepository.findByHackathonId(hackathonId)
+        return projectRepository.findByHackathonIdAndArchivedAtIsNull(hackathonId)
             .map { project -> ProjectResponse.fromEntity(project) }
     }
 
     @Transactional(readOnly = true)
     fun getSubmittedProjectsByHackathon(hackathonId: UUID): List<ProjectResponse> {
-        return projectRepository.findByHackathonIdAndStatus(hackathonId, SubmissionStatus.submitted)
+        return projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(hackathonId, SubmissionStatus.submitted)
             .map { project -> ProjectResponse.fromEntity(project) }
     }
 
@@ -37,12 +37,15 @@ class ProjectService(
     fun getProjectById(id: UUID): ProjectResponse {
         val project = projectRepository.findById(id)
             .orElseThrow { NotFoundException("Project not found") }
+        if (project.archivedAt != null) {
+            throw NotFoundException("Project not found")
+        }
         return ProjectResponse.fromEntity(project)
     }
 
     @Transactional(readOnly = true)
     fun getProjectByTeam(teamId: UUID): ProjectResponse? {
-        val project = projectRepository.findByTeamId(teamId)
+        val project = projectRepository.findByTeamIdAndArchivedAtIsNull(teamId)
         return project?.let { foundProject -> ProjectResponse.fromEntity(foundProject) }
     }
 
@@ -59,7 +62,7 @@ class ProjectService(
             throw UnauthorizedException("Must be a team member to create a project")
         }
 
-        if (projectRepository.existsByTeamIdAndHackathonId(request.teamId, team.hackathon.id!!)) {
+        if (projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(request.teamId, team.hackathon.id!!)) {
             throw ConflictException("Team already has a project for this hackathon")
         }
 

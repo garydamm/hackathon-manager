@@ -130,7 +130,7 @@ class JudgeManagementServiceTest {
             .thenReturn(listOf(judgeHackathonUser))
         whenever(hackathonUserRepository.findByHackathonIdAndRole(testHackathonId, UserRole.organizer))
             .thenReturn(emptyList())
-        whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
+        whenever(projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(testHackathonId, SubmissionStatus.submitted))
             .thenReturn(listOf(testProject))
         whenever(judgeAssignmentRepository.findByJudgeIdAndHackathonId(testJudgeUserId, testHackathonId))
             .thenReturn(listOf(completedAssignment))
@@ -160,7 +160,7 @@ class JudgeManagementServiceTest {
         whenever(userRepository.findById(testJudgeUserId)).thenReturn(Optional.of(testJudgeUser))
         whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testJudgeUserId)).thenReturn(null)
         whenever(hackathonUserRepository.save(any<HackathonUser>())).thenAnswer { it.arguments[0] }
-        whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
+        whenever(projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(testHackathonId, SubmissionStatus.submitted))
             .thenReturn(listOf(testProject))
 
         val result = judgeManagementService.addJudge(testHackathonId, testJudgeUserId, testUserId)
@@ -186,7 +186,7 @@ class JudgeManagementServiceTest {
         whenever(hackathonUserRepository.findByHackathonIdAndUserId(testHackathonId, testJudgeUserId))
             .thenReturn(existingParticipant)
         whenever(hackathonUserRepository.save(any<HackathonUser>())).thenAnswer { it.arguments[0] }
-        whenever(projectRepository.findByHackathonIdAndStatus(testHackathonId, SubmissionStatus.submitted))
+        whenever(projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(testHackathonId, SubmissionStatus.submitted))
             .thenReturn(emptyList())
 
         val result = judgeManagementService.addJudge(testHackathonId, testJudgeUserId, testUserId)
