@@ -32,6 +32,7 @@ import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RegisterModal } from "@/components/RegisterModal"
 import { UnregisterModal } from "@/components/UnregisterModal"
+import { ArchiveModal } from "@/components/ArchiveModal"
 import { ProjectCard } from "@/components/ProjectCard"
 import { ProjectDetailModal } from "@/components/ProjectDetailModal"
 import { JudgingCriteriaSection } from "@/components/JudgingCriteriaSection"
@@ -564,11 +565,13 @@ function EditMode({
   onSave,
   onCancel,
   isSaving,
+  onArchiveClick,
 }: {
   hackathon: Hackathon
   onSave: (data: UpdateFormData) => void
   onCancel: () => void
   isSaving: boolean
+  onArchiveClick: (mode: "archive" | "unarchive") => void
 }) {
   const {
     register,
@@ -771,6 +774,38 @@ function EditMode({
         </CardContent>
       </Card>
 
+      {/* Archive Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Archive Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-4">
+            <Archive className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-3">
+              <div>
+                <p className="font-medium">
+                  {hackathon.archived ? "This hackathon is archived" : "Archive this hackathon"}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {hackathon.archived
+                    ? "Archived hackathons are hidden from the dashboard but remain accessible via direct URL. You can unarchive it to restore visibility."
+                    : "Archiving will hide this hackathon from the dashboard and prevent new registrations or submissions. All existing data will be preserved."}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant={hackathon.archived ? "default" : "destructive"}
+                onClick={() => onArchiveClick(hackathon.archived ? "unarchive" : "archive")}
+              >
+                <Archive className="h-4 w-4 mr-2" />
+                {hackathon.archived ? "Unarchive Hackathon" : "Archive Hackathon"}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Actions */}
       <div className="flex justify-end gap-4">
         <Button type="button" variant="outline" onClick={onCancel}>
@@ -803,6 +838,8 @@ export function HackathonDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
   const [isUnregisterModalOpen, setIsUnregisterModalOpen] = useState(false)
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
+  const [archiveMode, setArchiveMode] = useState<"archive" | "unarchive">("archive")
 
   const {
     data: hackathon,
@@ -918,6 +955,10 @@ export function HackathonDetailPage() {
               onSave={(data) => updateMutation.mutate(data)}
               onCancel={() => setIsEditing(false)}
               isSaving={updateMutation.isPending}
+              onArchiveClick={(mode) => {
+                setArchiveMode(mode)
+                setIsArchiveModalOpen(true)
+              }}
             />
           ) : (
             <ViewMode
@@ -942,6 +983,14 @@ export function HackathonDetailPage() {
         isOpen={isUnregisterModalOpen}
         onClose={() => setIsUnregisterModalOpen(false)}
         hackathon={hackathon}
+      />
+
+      {/* Archive Modal */}
+      <ArchiveModal
+        isOpen={isArchiveModalOpen}
+        onClose={() => setIsArchiveModalOpen(false)}
+        hackathon={hackathon}
+        mode={archiveMode}
       />
     </AppLayout>
   )

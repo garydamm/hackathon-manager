@@ -67,3 +67,30 @@
   - No new tests needed - existing service tests cover all modified methods
 
 ---
+## Iteration 5 - Add archive/unarchive actions to backend (US-005)
+- Added archive/unarchive methods to HackathonService.kt
+  - archiveHackathon(): Sets archived = true, verifies user is organizer
+  - unarchiveHackathon(): Sets archived = false, verifies user is organizer
+- Added controller endpoints in HackathonController.kt:
+  - POST /api/hackathons/{id}/archive
+  - POST /api/hackathons/{id}/unarchive
+- Added comprehensive unit tests to HackathonServiceTest.kt:
+  - Tests for successful archive/unarchive operations
+  - Tests for permission checks (UnauthorizedException when not organizer)
+  - Tests for not found scenarios
+  - Test verifying archived hackathon blocks registrations
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/HackathonService.kt
+  - src/main/kotlin/com/hackathon/manager/controller/HackathonController.kt
+  - src/test/kotlin/com/hackathon/manager/service/HackathonServiceTest.kt
+  - PRD.md (marked US-005 complete)
+- Learnings for future iterations:
+  - Archive/unarchive operations follow the same pattern as other organizer-only operations (promote/demote)
+  - Permission checks use isUserOrganizer() which accepts both organizer and admin roles
+  - Service methods return HackathonResponse with updated state after archive/unarchive
+  - Controller endpoints use POST (not PUT/PATCH) for archive/unarchive actions
+  - Unit tests follow existing patterns: success case, permission errors, not found errors
+  - Test strategy worked: unit tests pass, typecheck passes
+
+---
+

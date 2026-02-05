@@ -28,3 +28,33 @@
   - Archive icon imported from lucide-react works well for archived state visualization
 
 ---
+## Iteration 6 - Add archive/unarchive UI controls in hackathon settings (US-006)
+- Added archive/unarchive methods to frontend hackathon service
+  - archive(): POST /api/hackathons/{id}/archive
+  - unarchive(): POST /api/hackathons/{id}/unarchive
+- Created ArchiveModal.tsx component for confirmation dialogs
+  - Modal supports both archive and unarchive modes
+  - Shows detailed warnings about what will happen
+  - Displays success/error states with appropriate messaging
+  - Uses AnimatePresence for smooth transitions
+- Added archive/unarchive controls to HackathonDetail.tsx
+  - Archive Settings section in EditMode (organizer-only)
+  - Dynamic button shows "Archive" or "Unarchive" based on current state
+  - Integrated with ArchiveModal for confirmation
+  - Button styling: destructive for archive, default for unarchive
+- Files changed:
+  - frontend/src/services/hackathons.ts
+  - frontend/src/components/ArchiveModal.tsx (new)
+  - frontend/src/pages/HackathonDetail.tsx
+  - PRD.md (marked US-006 complete except browser verification)
+- Learnings for future iterations:
+  - Archive controls placed in EditMode section for organizer access
+  - Modal pattern reused from RegisterModal/UnregisterModal
+  - Archive button uses destructive variant to signal irreversible action
+  - State management: isArchiveModalOpen + archiveMode to control modal display
+  - Frontend typecheck runs as part of `npm run build` (tsc -b)
+  - All tests pass (189 tests), typecheck passes
+  - Archive field already exists in Hackathon TypeScript type
+
+---
+

@@ -49,4 +49,12 @@ export const hackathonService = {
   async demoteOrganizer(hackathonId: string, userId: string): Promise<OrganizerInfo[]> {
     return api.delete<OrganizerInfo[]>(`/hackathons/${hackathonId}/organizers/${userId}`)
   },
+
+  async archive(hackathonId: string): Promise<Hackathon> {
+    return api.post<Hackathon>(`/hackathons/${hackathonId}/archive`)
+  },
+
+  async unarchive(hackathonId: string): Promise<Hackathon> {
+    return api.post<Hackathon>(`/hackathons/${hackathonId}/unarchive`)
+  },
 }

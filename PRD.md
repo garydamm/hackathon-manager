@@ -78,13 +78,13 @@ Add the ability to archive hackathons so they are hidden from the public dashboa
 **Description:** As an organizer, I want to archive or unarchive a hackathon from the settings page so I can control its visibility.
 
 **Acceptance Criteria:**
-- [ ] Add "Archive Hackathon" button in hackathon settings (visible when hackathon is active)
-- [ ] Add "Unarchive Hackathon" button in hackathon settings (visible when hackathon is archived)
-- [ ] Show confirmation dialog before archiving/unarchiving
-- [ ] Display success message after action completes
-- [ ] Button only visible to hackathon organizers
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Add "Archive Hackathon" button in hackathon settings (visible when hackathon is active)
+- [x] Add "Unarchive Hackathon" button in hackathon settings (visible when hackathon is archived)
+- [x] Show confirmation dialog before archiving/unarchiving
+- [x] Display success message after action completes
+- [x] Button only visible to hackathon organizers
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-007: Add UI system tests for archive workflow
