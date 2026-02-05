@@ -171,3 +171,18 @@
   - All backend unit tests pass (326 tests), typecheck passes
   - Archive functionality is fully implemented and tested, just needs backend restart
 ---
+## Iteration 6 - Verify team can create new project after archiving (US-005)
+- Verified all acceptance criteria already met from US-003 implementation
+- Team can create new project after archiving because:
+  - existsByTeamIdAndHackathonIdAndArchivedAtIsNull excludes archived projects
+  - No validation errors occur
+  - New projects appear normally
+- Unit test already exists: ProjectServiceTest.createProject should allow creation when previous project is archived
+- E2e test in project-archive.spec.ts covers this scenario
+- Files changed:
+  - PRD.md (marked US-005 complete)
+- Learnings for future iterations:
+  - US-005 was completed as part of US-003 implementation
+  - The archived project filter naturally allows new project creation
+  - All backend tests pass (326 tests), typecheck passes
+---
