@@ -37,4 +37,8 @@ export const projectService = {
   async unsubmitProject(id: string): Promise<Project> {
     return api.post<Project>(`/projects/${id}/unsubmit`)
   },
+
+  async archiveProject(id: string): Promise<void> {
+    return api.post<void>(`/projects/${id}/archive`)
+  },
 }

@@ -54,14 +54,14 @@ Add the ability to archive projects (team submissions) within hackathons. Archiv
 **Description:** As a team member or organizer, I want to archive a project so I can remove it from the hackathon.
 
 **Acceptance Criteria:**
-- [ ] Archive button appears in project settings or actions menu
-- [ ] Button only visible to team members and hackathon organizers
-- [ ] Clicking shows confirmation dialog with warning about permanence
-- [ ] Successful archive redirects to appropriate page (hackathon or team view)
-- [ ] Shows error message if archive fails
-- [ ] Unit tests added for UI component and button visibility logic
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Archive button appears in project settings or actions menu
+- [x] Button only visible to team members and hackathon organizers
+- [x] Clicking shows confirmation dialog with warning about permanence
+- [x] Successful archive redirects to appropriate page (hackathon or team view)
+- [x] Shows error message if archive fails
+- [x] Unit tests added for UI component and button visibility logic
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-005: Verify team can create new project after archiving

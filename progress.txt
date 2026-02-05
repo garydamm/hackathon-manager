@@ -60,3 +60,51 @@
   - All unit tests pass (326 tests), typecheck passes
 
 ---
+## Iteration 3 - Filter archived projects from all queries (US-003)
+- Updated ProjectRepository.kt to filter archived projects in all query methods
+  - Changed findByHackathonId → findByHackathonIdAndArchivedAtIsNull
+  - Changed findByTeamId → findByTeamIdAndArchivedAtIsNull
+  - Changed findByHackathonIdAndStatus → findByHackathonIdAndStatusAndArchivedAtIsNull
+  - Changed existsByTeamIdAndHackathonId → existsByTeamIdAndHackathonIdAndArchivedAtIsNull
+- Updated ProjectService.kt to use new filtered repository methods
+  - getProjectsByHackathon() now excludes archived projects
+  - getSubmittedProjectsByHackathon() now excludes archived projects
+  - getProjectById() throws NotFoundException if project is archived
+  - getProjectByTeam() excludes archived projects
+  - createProject() allows team to create new project after archiving previous one
+- Updated other services that query projects:
+  - ScoringService.kt: getAssignmentsByJudge() excludes archived submitted projects
+  - JudgeManagementService.kt: getJudgesByHackathon() and addJudge() exclude archived projects from counts
+  - LeaderboardService.kt: getLeaderboard() excludes archived submitted projects
+- Added comprehensive unit tests in ProjectServiceTest.kt:
+  - Test getProjectsByHackathon excludes archived projects
+  - Test getSubmittedProjectsByHackathon excludes archived projects
+  - Test getProjectById throws NotFoundException for archived projects
+  - Test getProjectByTeam returns null when project is archived
+  - Test createProject allows creation when previous project is archived
+- Updated all existing test files to use new repository method names:
+  - ProjectRepositoryTest.kt (all query tests updated)
+  - JudgeManagementServiceTest.kt (3 occurrences)
+  - LeaderboardServiceTest.kt (5 occurrences)
+  - ScoringServiceTest.kt (2 occurrences)
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/repository/ProjectRepository.kt
+  - src/main/kotlin/com/hackathon/manager/service/ProjectService.kt
+  - src/main/kotlin/com/hackathon/manager/service/ScoringService.kt
+  - src/main/kotlin/com/hackathon/manager/service/JudgeManagementService.kt
+  - src/main/kotlin/com/hackathon/manager/service/LeaderboardService.kt
+  - src/test/kotlin/com/hackathon/manager/service/ProjectServiceTest.kt
+  - src/test/kotlin/com/hackathon/manager/repository/ProjectRepositoryTest.kt
+  - src/test/kotlin/com/hackathon/manager/service/JudgeManagementServiceTest.kt
+  - src/test/kotlin/com/hackathon/manager/service/LeaderboardServiceTest.kt
+  - src/test/kotlin/com/hackathon/manager/service/ScoringServiceTest.kt
+  - PRD.md (marked US-003 complete)
+- Learnings for future iterations:
+  - Spring Data JPA method naming: Add "AndArchivedAtIsNull" suffix to filter out archived records
+  - When changing repository method signatures, must update ALL references including test files
+  - Archived projects are now completely hidden from all queries (hackathon lists, team views, search, direct access)
+  - Teams can create new projects after archiving (existsByTeamIdAndHackathonIdAndArchivedAtIsNull excludes archived)
+  - getProjectById should throw NotFoundException for archived projects to maintain consistent 404 behavior
+  - All affected services (Scoring, JudgeManagement, Leaderboard) must also use filtered queries
+  - All unit tests pass (326 tests), typecheck passes
+---

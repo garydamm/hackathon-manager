@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket, FolderKanban, FolderPlus, Send, Undo2 } from "lucide-react"
+import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket, FolderKanban, FolderPlus, Send, Undo2, Archive } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -32,6 +32,8 @@ export function TeamDetailPage() {
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
   const [showUnsubmitConfirm, setShowUnsubmitConfirm] = useState(false)
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false)
+  const [archiveError, setArchiveError] = useState<string | null>(null)
 
   const {
     data: hackathon,
@@ -163,6 +165,24 @@ export function TeamDetailPage() {
     },
   })
 
+  const archiveProjectMutation = useMutation({
+    mutationFn: (id: string) => projectService.archiveProject(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon?.id] })
+      setShowArchiveConfirm(false)
+      setArchiveError(null)
+      refetchProject()
+    },
+    onError: (err) => {
+      if (err instanceof ApiError) {
+        setArchiveError(err.message)
+      } else {
+        setArchiveError("Failed to archive project. Please try again.")
+      }
+    },
+  })
+
   const isLoading = isLoadingHackathon || isLoadingTeam || isLoadingMyTeam || isLoadingProject
   const error = hackathonError || teamError
 
@@ -205,6 +225,8 @@ export function TeamDetailPage() {
   const currentUserMember = members.find((m) => m.user.id === user?.id)
   const isLeader = isOnThisTeam && currentUserMember?.isLeader === true
   const hasOtherMembers = members.length > 1
+  const isOrganizer = hackathon.userRole === "organizer"
+  const canArchiveProject = project && (isOnThisTeam || isOrganizer)
 
   // Show join button if: team is open, user is registered, user has no team
   const canJoin = team.isOpen && isRegistered && !hasTeam
@@ -529,7 +551,7 @@ export function TeamDetailPage() {
                         </Button>
                       </>
                     )}
-                    {project && project.status === "submitted" && (
+                    {project && project.status === "submitted" && isOnThisTeam && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -537,6 +559,19 @@ export function TeamDetailPage() {
                       >
                         <Undo2 className="h-4 w-4 mr-2" />
                         Unsubmit Project
+                      </Button>
+                    )}
+                    {canArchiveProject && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setArchiveError(null)
+                          setShowArchiveConfirm(true)
+                        }}
+                      >
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archive Project
                       </Button>
                     )}
                   </div>
@@ -984,6 +1019,98 @@ export function TeamDetailPage() {
                       </>
                     ) : (
                       "Unsubmit Project"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Archive Project Confirmation Dialog */}
+      <AnimatePresence>
+        {showArchiveConfirm && project && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowArchiveConfirm(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="bg-background rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+                      <Archive className="h-5 w-5 text-destructive" />
+                    </div>
+                    <h2 className="text-xl font-semibold">Archive Project</h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowArchiveConfirm(false)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-muted-foreground">
+                    Are you sure you want to archive <strong>{project.name}</strong>?
+                  </p>
+                  <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                    <strong>Warning:</strong> This action is permanent. The project will be completely removed from the hackathon and cannot be recovered. Your team will be able to create a new project after archiving.
+                  </div>
+                </div>
+
+                {/* Error message */}
+                {archiveError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                  >
+                    {archiveError}
+                  </motion.div>
+                )}
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowArchiveConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => archiveProjectMutation.mutate(project.id)}
+                    disabled={archiveProjectMutation.isPending}
+                  >
+                    {archiveProjectMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Archiving...
+                      </>
+                    ) : (
+                      "Archive Project"
                     )}
                   </Button>
                 </div>
