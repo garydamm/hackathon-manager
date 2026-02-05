@@ -27,21 +27,30 @@ class JwtAuthenticationFilter(
         try {
             val jwt = getJwtFromRequest(request)
 
-            if (jwt != null && jwtTokenProvider.validateToken(jwt)) {
-                val userId = jwtTokenProvider.getUserIdFromToken(jwt)
-                val userDetails = customUserDetailsService.loadUserById(userId)
+            if (jwt != null) {
+                if (jwtTokenProvider.validateToken(jwt)) {
+                    val userId = jwtTokenProvider.getUserIdFromToken(jwt)
+                    val userDetails = customUserDetailsService.loadUserById(userId)
 
-                val authentication = UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.authorities
-                )
-                authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
+                    val authentication = UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.authorities
+                    )
+                    authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
 
-                SecurityContextHolder.getContext().authentication = authentication
+                    SecurityContextHolder.getContext().authentication = authentication
+                } else {
+                    // JWT token is present but invalid
+                    log.warn("Invalid JWT token provided for request: ${request.requestURI}")
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired authentication token. Please log in again.")
+                    return
+                }
             }
         } catch (ex: Exception) {
             log.error("Could not set user authentication in security context", ex)
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed. Please log in again.")
+            return
         }
 
         filterChain.doFilter(request, response)

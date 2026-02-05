@@ -34,7 +34,12 @@ export function ArchiveModal({ isOpen, onClose, hackathon, mode }: ArchiveModalP
     },
     onError: (err) => {
       if (err instanceof ApiError) {
-        setError(err.message)
+        // Handle authentication errors specifically
+        if (err.status === 401) {
+          setError("Your session has expired. Please log in again to continue.")
+        } else {
+          setError(err.message)
+        }
       } else {
         setError(`Failed to ${mode} hackathon. Please try again.`)
       }
