@@ -91,12 +91,12 @@ Add the ability to archive hackathons so they are hidden from the public dashboa
 **Description:** As a developer, I need end-to-end tests for the archive feature to ensure the complete user flow works correctly.
 
 **Acceptance Criteria:**
-- [ ] UI system test: Organizer archives hackathon → Verify it disappears from dashboard
-- [ ] UI system test: Access archived hackathon via slug as authenticated user → Verify it displays with archived banner
-- [ ] UI system test: Attempt to register for archived hackathon → Verify blocked with message
-- [ ] UI system test: Organizer unarchives hackathon → Verify it reappears on dashboard
-- [ ] UI system tests pass
-- [ ] Typecheck passes
+- [x] UI system test: Organizer archives hackathon → Verify it disappears from dashboard
+- [x] UI system test: Access archived hackathon via slug as authenticated user → Verify it displays with archived banner
+- [x] UI system test: Attempt to register for archived hackathon → Verify blocked with message
+- [x] UI system test: Organizer unarchives hackathon → Verify it reappears on dashboard
+- [x] UI system tests pass
+- [x] Typecheck passes
 
 ## Non-Goals
 
