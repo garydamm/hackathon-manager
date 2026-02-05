@@ -4,3 +4,22 @@
 (Patterns discovered during implementation)
 
 ---
+
+## Iteration 1 - Add archived field to hackathon database schema (US-001)
+- Created Flyway migration V4__add_archived_to_hackathons.sql
+  - Added archived boolean column with default false
+  - Added index idx_hackathons_archived for query optimization
+  - Added comment documenting column purpose
+- Updated Hackathon.kt entity with archived field
+- Files changed:
+  - src/main/resources/db/migration/V4__add_archived_to_hackathons.sql (new)
+  - src/main/kotlin/com/hackathon/manager/entity/Hackathon.kt
+  - PRD.md (marked US-001 complete)
+- Learnings for future iterations:
+  - This project uses Flyway for SQL migrations, not Prisma
+  - Migration naming convention: V{version}__{description}.sql
+  - Always add indexes for boolean columns used in WHERE clauses
+  - HackathonRepositoryTest exists and should be run individually after migrations
+  - Testing strategy: unit tests → specific repository test → typecheck
+
+---
