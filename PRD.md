@@ -1,132 +1,116 @@
-# PRD: Multiple Hackathon Organizers Management
+# PRD: Hackathon Archive Functionality
 
 ## Introduction
 
-Add the ability for hackathons to have multiple organizers who can collaboratively manage the event. The infrastructure (database schema and role system) already exists via the `hackathon_users` junction table, but there's currently no UI or API to add/remove organizers after hackathon creation. This feature will allow existing organizers to promote registered participants to organizer status and demote organizers back to participants.
+Add the ability to archive hackathons so they are hidden from the public dashboard but remain accessible via direct URL for authenticated users. This allows organizers to clean up their active hackathon list while preserving historical events and their data. Archived hackathons become read-only to prevent new registrations or submissions.
 
 ## Goals
 
-- Enable organizers to promote registered participants to organizer role
-- Enable organizers to demote other organizers back to participant role
-- Enforce business rules to prevent system lock-out (can't remove creator, can't remove yourself)
-- Provide clear UI in the OrganizersSection for managing the organizer team
-- Maintain at least one organizer at all times (creator cannot be removed)
+- Hide archived hackathons from the main dashboard listing
+- Preserve all hackathon data (participants, teams, submissions) when archived
+- Allow authenticated users to view archived hackathons via direct slug URL
+- Enable organizers to archive/unarchive hackathons from settings
+- Prevent new registrations and submissions to archived hackathons
+- Maintain read-only access to all existing data in archived hackathons
 
 ## User Stories
 
-### US-001: Add backend endpoint to promote participant to organizer
-**Description:** As an organizer, I want to promote a registered participant to organizer so they can help manage the hackathon.
+### US-001: Add archived field to hackathon database schema
+**Description:** As a developer, I need to store the archived status of hackathons so the system can differentiate between active and archived events.
 
 **Acceptance Criteria:**
-- [x] Add POST `/api/hackathons/{hackathonId}/organizers` endpoint in HackathonController
-- [x] Request body accepts `{ userId: string }`
-- [x] Validates requesting user has organizer or admin role via `isUserOrganizer()`
-- [x] Validates target user exists in hackathon_users with participant role
-- [x] Returns 403 FORBIDDEN if requester is not organizer
-- [x] Returns 404 NOT_FOUND if target user not found or not a participant
-- [x] Updates hackathon_users.role from 'participant' to 'organizer'
-- [x] Returns updated list of organizers (List<OrganizerInfo>)
-- [x] Unit tests added for HackathonService.promoteToOrganizer() method and validation
+- [x] Add `archived` boolean column to hackathons table with default `false`
+- [x] Generate and run database migration successfully
+- [x] Update Prisma schema with archived field
+- [x] Unit tests added for schema validation
 - [x] Unit tests pass
 - [x] Typecheck passes
 
-### US-002: Add backend endpoint to demote organizer to participant
-**Description:** As an organizer, I want to remove organizer status from other organizers so I can manage the organizer team.
+### US-002: Filter archived hackathons from dashboard queries
+**Description:** As a user, I want to see only active hackathons on the dashboard so I'm not overwhelmed by old events.
 
 **Acceptance Criteria:**
-- [x] Add DELETE `/api/hackathons/{hackathonId}/organizers/{userId}` endpoint in HackathonController
-- [x] Validates requesting user has organizer or admin role via `isUserOrganizer()`
-- [x] Returns 403 FORBIDDEN if requester is not organizer
-- [x] Returns 400 BAD_REQUEST if attempting to remove the original creator (created_by field)
-- [x] Returns 400 BAD_REQUEST if attempting to remove yourself (requester userId == target userId)
-- [x] Returns 404 NOT_FOUND if target user is not an organizer
-- [x] Updates hackathon_users.role from 'organizer' to 'participant'
-- [x] Returns updated list of organizers (List<OrganizerInfo>)
-- [x] Unit tests added for HackathonService.demoteOrganizer() method and all restriction validations
-- [x] Unit tests pass
-- [x] Typecheck passes
+- [ ] Update dashboard query to exclude hackathons where `archived = true`
+- [ ] Verify dashboard only shows active hackathons
+- [ ] Unit tests added for filtering logic
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-003: Add organizer management UI to OrganizersSection
-**Description:** As an organizer viewing a hackathon in edit mode, I want to see controls to add and remove organizers directly in the OrganizersSection.
+### US-003: Add authentication check for archived hackathon access
+**Description:** As a security measure, archived hackathons should require user authentication when accessed via direct URL.
 
 **Acceptance Criteria:**
-- [x] Update OrganizersSection.tsx component in HackathonDetail page
-- [x] When `canEdit` is true, show "Manage Organizers" controls section
-- [x] Fetch current participants list from `/api/hackathons/{id}/participants` endpoint
-- [x] Display dropdown/select showing participants not already organizers
-- [x] "Promote to Organizer" button next to dropdown to promote selected participant
-- [x] Each organizer in the list shows a "Remove" button
-- [x] Remove button disabled for the creator (check hackathon.createdBy) with tooltip "Cannot remove creator"
-- [x] Remove button disabled for current user (check against auth context) with tooltip "Cannot remove yourself"
-- [x] Clicking "Promote to Organizer" calls POST `/api/hackathons/{id}/organizers` and refreshes organizer list on success
-- [x] Clicking "Remove" calls DELETE `/api/hackathons/{id}/organizers/{userId}` and refreshes organizer list on success
-- [x] Shows error message if API calls fail with appropriate error message
-- [x] Dropdown updates to remove promoted user from participant list
-- [x] Organizer list updates to show newly promoted organizer
-- [x] Unit tests added for component behavior, button states, and API integration
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [x] Verify changes work in browser (verified via E2E tests in US-004)
+- [ ] Add middleware/check to redirect unauthenticated users to login when accessing archived hackathon
+- [ ] Authenticated users can view archived hackathon details
+- [ ] Show "This hackathon is archived" banner on archived hackathon pages
+- [ ] Unit tests added for authentication check
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-004: Add UI system tests for organizer management workflow
-**Description:** As a developer, I need end-to-end tests for the organizer management feature to ensure the complete workflow functions correctly.
+### US-004: Prevent registrations and submissions for archived hackathons
+**Description:** As an organizer, I want archived hackathons to be read-only so no new data is added after archiving.
 
 **Acceptance Criteria:**
-- [x] UI system test: Login as user1 → Create hackathon → Login as user2 → Register for hackathon → Login as user1 → Promote user2 to organizer → Verify user2 appears in organizers list
-- [x] UI system test: Attempt to remove self → Verify "Remove" button is disabled with tooltip
-- [~] UI system test: Attempt to remove creator → Verify "Remove" button is disabled with tooltip (skipped - complex auth state management in E2E)
-- [~] UI system test: Demote non-creator organizer → Verify removed from organizers list and appears in participants list (skipped - selector/state issues)
-- [x] UI system tests pass (2/4 pass, 2 skipped due to E2E complexity)
-- [x] Typecheck passes
+- [ ] Block new participant registrations for archived hackathons (return error or show message)
+- [ ] Block new team creation for archived hackathons
+- [ ] Block new submissions for archived hackathons
+- [ ] Show appropriate "This hackathon is archived" message when actions are blocked
+- [ ] Unit tests added for blocking logic
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-005: Add archive/unarchive actions to backend
+**Description:** As an organizer, I need backend endpoints to archive and unarchive hackathons so I can manage their visibility.
+
+**Acceptance Criteria:**
+- [ ] Create server action to archive a hackathon (sets `archived = true`)
+- [ ] Create server action to unarchive a hackathon (sets `archived = false`)
+- [ ] Actions verify user is an organizer of the hackathon
+- [ ] Actions return success/error status
+- [ ] Unit tests added for archive/unarchive logic and permissions
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+
+### US-006: Add archive/unarchive UI controls in hackathon settings
+**Description:** As an organizer, I want to archive or unarchive a hackathon from the settings page so I can control its visibility.
+
+**Acceptance Criteria:**
+- [ ] Add "Archive Hackathon" button in hackathon settings (visible when hackathon is active)
+- [ ] Add "Unarchive Hackathon" button in hackathon settings (visible when hackathon is archived)
+- [ ] Show confirmation dialog before archiving/unarchiving
+- [ ] Display success message after action completes
+- [ ] Button only visible to hackathon organizers
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-007: Add UI system tests for archive workflow
+**Description:** As a developer, I need end-to-end tests for the archive feature to ensure the complete user flow works correctly.
+
+**Acceptance Criteria:**
+- [ ] UI system test: Organizer archives hackathon → Verify it disappears from dashboard
+- [ ] UI system test: Access archived hackathon via slug as authenticated user → Verify it displays with archived banner
+- [ ] UI system test: Attempt to register for archived hackathon → Verify blocked with message
+- [ ] UI system test: Organizer unarchives hackathon → Verify it reappears on dashboard
+- [ ] UI system tests pass
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- No invitation/approval system - organizers can directly promote participants
-- No email notifications when promoted/demoted
-- No role hierarchy (all organizers have equal permissions)
-- No separate "admin" vs "organizer" permission distinctions for this feature
-- No ability to add organizers who haven't registered as participants first
-- No ability to remove the original creator under any circumstances
-- No batch promote/demote operations
-- No audit log of organizer changes (future enhancement)
+- No automatic archiving based on hackathon end date
+- No separate "Archived" section in dashboard for organizers (archived hackathons only accessible via direct URL)
+- No notifications sent to participants when hackathon is archived
+- No export/backup functionality specifically for archived hackathons
+- No public archive listing or search functionality
 
 ## Technical Considerations
 
-**Existing Infrastructure (Already Built):**
-- `hackathon_users` table with role field supporting multiple organizers
-- `HackathonService.isUserOrganizer()` authorization method
-- `HackathonService.getHackathonOrganizers()` retrieval method
-- `GET /api/hackathons/{id}/organizers` endpoint already exists
-- `GET /api/hackathons/{id}/participants` endpoint already exists
-- Frontend `OrganizersSection` component displays organizers
-- `Hackathon.created_by` field tracks the original creator
-- `UserRole` enum with values: participant, organizer, judge, admin
-
-**Implementation Notes:**
-- Backend uses Spring Boot with Kotlin
-- Follow existing controller pattern with `@AuthenticationPrincipal principal: UserPrincipal`
-- Add new service methods to `HackathonService.kt`:
-  - `promoteToOrganizer(hackathonId: UUID, userId: UUID, requesterId: UUID): List<OrganizerInfo>`
-  - `demoteOrganizer(hackathonId: UUID, userId: UUID, requesterId: UUID): List<OrganizerInfo>`
-- Backend validation should check `hackathons.created_by` to enforce creator protection rule
-- Frontend should integrate into existing OrganizersSection component in `HackathonDetail.tsx`
-- Use existing error handling patterns (ApiException with appropriate HTTP status codes)
-- Reuse existing React Query patterns for data fetching and mutations
-- Use existing toast notification system for success/error messages
-
-**Business Rules to Enforce:**
-1. Original creator (created_by) can never be demoted
-2. Any organizer can promote participants to organizers
-3. Any organizer can demote other organizers (except creator and themselves)
-4. An organizer cannot demote themselves
-5. Must always have at least one organizer (automatically satisfied by rule 1)
-6. Can only promote users who are already registered participants
-7. Can only demote users who are currently organizers
-
-**UI/UX Considerations:**
-- Management controls only visible when `canEdit` is true (user is organizer)
-- Use disabled buttons with tooltips for restricted actions (better UX than hiding)
-- Optimistic UI updates for better perceived performance
-- Clear error messages when operations fail
-- Dropdown should show participant names in format: "FirstName LastName (email)"
-- Empty state message when no participants available to promote
+- Reuse existing authentication middleware for archived hackathon access checks
+- Use existing permission checks for organizer verification on archive actions
+- Archive banner component should be consistent with other system messages/banners
+- Consider adding `archived` field to TypeScript types for hackathon data
+- Existing queries should be reviewed to ensure they filter archived hackathons where appropriate
+- UI system tests should use Playwright for end-to-end testing

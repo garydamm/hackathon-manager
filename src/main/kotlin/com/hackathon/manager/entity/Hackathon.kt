@@ -71,6 +71,9 @@ class Hackathon(
     @Column(name = "max_participants")
     var maxParticipants: Int? = null,
 
+    @Column(nullable = false)
+    var archived: Boolean = false,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     var createdBy: User,
