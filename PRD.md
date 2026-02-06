@@ -86,15 +86,15 @@ The MCP server communicates with the existing hackathon-api via internal HTTP ca
 **Description:** As a developer, I need the MCP server in the Render blueprint so it deploys automatically alongside the existing services.
 
 **Acceptance Criteria:**
-- [ ] Add `hackathon-mcp` web service to `render.yaml`:
+- [x] Add `hackathon-mcp` web service to `render.yaml`:
   - Type: `web`, runtime: `docker`
   - Dockerfile path: `mcp-server/Dockerfile`
   - Plan: `free`
   - Health check path: `/health`
   - Environment variable `API_BASE_URL` referencing the `hackathon-api` service's external URL via `fromService`
-- [ ] Existing services in `render.yaml` remain unchanged
-- [ ] Blueprint YAML is valid (no syntax errors)
-- [ ] Typecheck passes
+- [x] Existing services in `render.yaml` remain unchanged
+- [x] Blueprint YAML is valid (no syntax errors)
+- [x] Typecheck passes
 
 ## Non-Goals
 

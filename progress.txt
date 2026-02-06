@@ -91,3 +91,19 @@
   - Docker build context needs root build.gradle.kts + settings.gradle.kts because Gradle multi-project resolves the root project first
   - No need to copy root `src/` — `shadowJar` task only compiles the mcp-server subproject
 ---
+
+## Iteration 5 - US-005: Add MCP server to Render blueprint
+- Added `hackathon-mcp` web service to `render.yaml` between backend API and frontend
+- Configured: type `web`, runtime `docker`, dockerfilePath `mcp-server/Dockerfile`, plan `free`, healthCheckPath `/health`
+- Wired `API_BASE_URL` env var using `fromService` referencing `hackathon-api`'s `RENDER_EXTERNAL_URL`
+- Validated YAML syntax with `npx js-yaml` — parses correctly
+- Verified existing services (`hackathon-api`, `hackathon-app`) remain unchanged
+- Build/typecheck passes
+- Files changed:
+  - render.yaml (added hackathon-mcp service)
+  - PRD.md (marked US-005 complete)
+- Learnings for future iterations:
+  - Render blueprint `dockerfilePath` is relative to repo root
+  - `fromService` with `envVarKey: RENDER_EXTERNAL_URL` gives the public URL of another service — use for inter-service communication
+  - `npx -y js-yaml <file>` is a quick way to validate YAML when no local parser is available
+---

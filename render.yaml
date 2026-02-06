@@ -45,6 +45,20 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
 
+  # MCP Server - Hackathon search MCP service
+  - type: web
+    name: hackathon-mcp
+    runtime: docker
+    dockerfilePath: mcp-server/Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: API_BASE_URL
+        fromService:
+          type: web
+          name: hackathon-api
+          envVarKey: RENDER_EXTERNAL_URL
+
   # Frontend - React/Vite static site
   - type: web
     name: hackathon-app
