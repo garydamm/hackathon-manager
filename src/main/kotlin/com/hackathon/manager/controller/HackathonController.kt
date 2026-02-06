@@ -61,7 +61,7 @@ class HackathonController(
         return ResponseEntity.ok(hackathons)
     }
 
-    @GetMapping("/{slug}")
+    @GetMapping("/{slug:(?!search$|my-drafts$).+}")
     fun getHackathonBySlug(
         @PathVariable slug: String,
         @AuthenticationPrincipal principal: UserPrincipal?
