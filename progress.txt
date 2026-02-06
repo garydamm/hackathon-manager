@@ -3,6 +3,12 @@
 ## Learnings
 (Patterns discovered during implementation)
 - MCP SDK 0.8.3 requires Kotlin 2.2.0+ and Ktor 3.2.3 — metadata version 2.2.0 is unreadable by Kotlin < 2.2
+- MCP SDK types are in `io.modelcontextprotocol.kotlin.sdk.types.*` (Tool, ToolSchema, CallToolResult, TextContent, etc.)
+- `io.modelcontextprotocol.kotlin.sdk.Tool` is a companion object with `Input()`/`Output()` factory methods — NOT the Tool data class
+- `server.addTool(Tool, handler)` overload is simplest — takes a `types.Tool` directly
+- `CallToolResult.isError` is `Boolean?` (nullable), defaults to null not false — test with `!= true` not `== false`
+- `ToolSchema.properties` is `JsonObject?` (nullable) — use `!!` in tests
+- `CallToolRequest.arguments` returns `JsonObject?` — need null check
 - Gradle multi-project builds share Kotlin plugin version — can't have root at 1.9.22 and subproject at 2.2.0
 - Kotlin 2.2.0 makes `kotlinOptions` an error — must use `compilerOptions` DSL with `JvmTarget.JVM_17`
 - `jvmToolchain(17)` fails if JDK 17 isn't installed — use `compilerOptions { jvmTarget }` instead for cross-compilation
@@ -25,4 +31,24 @@
   - mcp-server/build.gradle.kts (new)
   - mcp-server/src/main/kotlin/com/hackathon/mcp/Main.kt (new)
 - All backend tests pass, both builds succeed
+---
+
+## Iteration 2 - US-002: Implement search_hackathons MCP tool
+- Implemented MCP server with `search_hackathons` tool using Kotlin MCP SDK
+- Created `HackathonApiClient` — Ktor HTTP client that calls backend `/api/hackathons/search` with proper query params
+- Created `ResponseFormatter` — formats search results as readable text with hackathon details and pagination
+- Updated `Main.kt` — creates MCP Server with tool registration and handler that bridges MCP → backend API
+- 16 unit tests covering: response formatting, API client param mapping, tool handler integration, error handling
+- Files changed:
+  - mcp-server/src/main/kotlin/com/hackathon/mcp/Main.kt (MCP server + tool registration)
+  - mcp-server/src/main/kotlin/com/hackathon/mcp/HackathonApiClient.kt (new — HTTP client)
+  - mcp-server/src/main/kotlin/com/hackathon/mcp/ResponseFormatter.kt (new — text formatter)
+  - mcp-server/src/test/kotlin/com/hackathon/mcp/ResponseFormatterTest.kt (new — 7 tests)
+  - mcp-server/src/test/kotlin/com/hackathon/mcp/HackathonApiClientTest.kt (new — 5 tests)
+  - mcp-server/src/test/kotlin/com/hackathon/mcp/SearchToolTest.kt (new — 4 tests)
+  - mcp-server/build.gradle.kts (added test deps: ktor-client-mock, kotlinx-coroutines-test)
+- Learnings for future iterations:
+  - MCP SDK types vs companion objects have different packages — check with javap when unsure
+  - Ktor mock engine captures request URLs for assertion — great for verifying param mapping
+  - `CallToolResult.isError` is nullable Boolean — common gotcha in assertions
 ---

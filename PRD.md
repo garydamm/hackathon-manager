@@ -37,9 +37,9 @@ The MCP server communicates with the existing hackathon-api via internal HTTP ca
 **Description:** As an AI assistant user, I want to search hackathons via MCP so I can find relevant events without using the web UI.
 
 **Acceptance Criteria:**
-- [ ] Create MCP server in `Main.kt` using the Kotlin MCP SDK `Server` builder
-- [ ] Server name: `"hackathon-search"`, version: `"1.0.0"`
-- [ ] Register a single tool `search_hackathons` with the following input schema parameters:
+- [x] Create MCP server in `Main.kt` using the Kotlin MCP SDK `Server` builder
+- [x] Server name: `"hackathon-search"`, version: `"1.0.0"`
+- [x] Register a single tool `search_hackathons` with the following input schema parameters:
   - `query` (string, optional) — full-text search on name/description
   - `timeFrame` (string, optional, enum: upcoming/ongoing/past)
   - `status` (string, optional, enum: registration_open/registration_closed/in_progress/judging/completed/cancelled)
@@ -47,14 +47,14 @@ The MCP server communicates with the existing hackathon-api via internal HTTP ca
   - `endDate` (string, optional) — ISO date format
   - `page` (integer, optional, default 0)
   - `size` (integer, optional, default 20)
-- [ ] Tool handler makes HTTP GET request to `${API_BASE_URL}/api/hackathons/search` with the provided parameters as query params
-- [ ] `API_BASE_URL` read from environment variable (defaults to `http://localhost:8080` for local dev)
-- [ ] Response from backend is parsed and returned as formatted text content in the MCP tool result
-- [ ] Tool result includes: hackathon name, status, dates, location, participant count for each result, plus pagination summary
-- [ ] Error responses from the backend are caught and returned as MCP error content (isError = true)
-- [ ] Unit tests for request parameter mapping and response formatting
-- [ ] `./gradlew :mcp-server:test` passes
-- [ ] Typecheck passes
+- [x] Tool handler makes HTTP GET request to `${API_BASE_URL}/api/hackathons/search` with the provided parameters as query params
+- [x] `API_BASE_URL` read from environment variable (defaults to `http://localhost:8080` for local dev)
+- [x] Response from backend is parsed and returned as formatted text content in the MCP tool result
+- [x] Tool result includes: hackathon name, status, dates, location, participant count for each result, plus pagination summary
+- [x] Error responses from the backend are caught and returned as MCP error content (isError = true)
+- [x] Unit tests for request parameter mapping and response formatting
+- [x] `./gradlew :mcp-server:test` passes
+- [x] Typecheck passes
 
 ### US-003: Add SSE transport and server entry point
 **Description:** As a developer, I need the MCP server to accept connections over SSE so it can be accessed remotely when deployed.
