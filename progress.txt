@@ -7,6 +7,10 @@
 - Flyway migrations are V1-V7 now; next migration is V8
 - Hackathon entity does NOT have a search_vector JPA field (it's managed purely at DB level via trigger)
 - Migration pattern: ALTER TABLE, CREATE INDEX, CREATE FUNCTION, CREATE TRIGGER, then backfill UPDATE
+- HackathonSearchRepository uses EntityManager with dynamic native SQL (not @Query) for complex search queries
+- Native SQL results come back as Array<Any?> rows that need manual mapping to DTOs
+- Status enum is stored as PostgreSQL named enum; use h.status::text in SELECT and compare with string in WHERE
+- participantCount derived via subquery: SELECT COUNT(*) FROM hackathon_users WHERE hackathon_id = h.id
 
 ---
 
@@ -21,4 +25,44 @@
   - Native SQL queries (@Query(nativeQuery=true)) will be needed for full-text search in the repository
   - Use plainto_tsquery for user-friendly query parsing per PRD
   - Existing tests all pass with the new migration (TestContainers runs Flyway automatically)
+---
+
+## Iteration 2 - US-002: Add public search response DTO and repository query
+- Created HackathonSearchResult and HackathonSearchResponse DTOs in HackathonSearchDtos.kt
+- Created HackathonSearchRepository with dynamic native SQL search method
+- Created unit tests for DTO construction (HackathonSearchDtosTest.kt)
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/dto/HackathonSearchDtos.kt (new)
+  - src/main/kotlin/com/hackathon/manager/repository/HackathonSearchRepository.kt (new)
+  - src/test/kotlin/com/hackathon/manager/dto/HackathonSearchDtosTest.kt (new)
+- Learnings for future iterations:
+  - HackathonSearchRepository is a standalone @Repository class (not extending JpaRepository) using EntityManager
+  - The search method returns Page<HackathonSearchResult> using PageImpl
+  - Query dynamically builds WHERE clause from optional parameters
+  - Full-text search uses plainto_tsquery('english', :query) and ts_rank for relevance scoring
+  - Always filters out archived=true and status='draft'
+  - US-003 will need to create a service layer and controller that uses HackathonSearchRepository
+  - US-004 will need integration tests with TestContainers (run individually per testing strategy)
+---
+
+## Iteration 3 - US-003: Add search service and public controller endpoint
+- Created HackathonSearchService with validation for query params (size, page, timeFrame, status, date format)
+- Added GET /api/hackathons/search endpoint to HackathonController with all optional params
+- Updated SecurityConfig to permit GET /api/hackathons/search without authentication
+- Added unit tests for HackathonSearchServiceTest (13 tests: all param passing, blank query, validation errors)
+- Added controller tests for search endpoint (5 tests: basic search, param forwarding, validation 400, defaults, no createdBy)
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/HackathonSearchService.kt (new)
+  - src/main/kotlin/com/hackathon/manager/controller/HackathonController.kt (modified - added search endpoint + HackathonSearchService dependency)
+  - src/main/kotlin/com/hackathon/manager/config/SecurityConfig.kt (modified - added /api/hackathons/search permitAll)
+  - src/test/kotlin/com/hackathon/manager/service/HackathonSearchServiceTest.kt (new)
+  - src/test/kotlin/com/hackathon/manager/controller/HackathonControllerTest.kt (modified - added search tests + MockBean)
+- Learnings for future iterations:
+  - Search endpoint must be defined BEFORE /{slug} route in the controller to avoid route conflicts
+  - SecurityConfig needs /api/hackathons/search BEFORE /api/hackathons/{slug} in requestMatchers ordering
+  - HackathonSearchService parses ISO date strings (e.g., "2024-01-15") into OffsetDateTime at UTC
+  - ValidationException from DomainExceptions.kt is handled by GlobalExceptionHandler → 400 BAD_REQUEST
+  - The controller uses @RequestParam with defaultValue for page/size, and passes String dates to the service for parsing
+  - @WebMvcTest for controller tests needs @MockBean for both HackathonService AND HackathonSearchService
+  - US-004 still needs integration tests with TestContainers
 ---

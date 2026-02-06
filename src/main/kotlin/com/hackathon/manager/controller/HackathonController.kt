@@ -2,12 +2,14 @@ package com.hackathon.manager.controller
 
 import com.hackathon.manager.dto.CreateHackathonRequest
 import com.hackathon.manager.dto.HackathonResponse
+import com.hackathon.manager.dto.HackathonSearchResponse
 import com.hackathon.manager.dto.OrganizerInfo
 import com.hackathon.manager.dto.ParticipantResponse
 import com.hackathon.manager.dto.PromoteOrganizerRequest
 import com.hackathon.manager.dto.UpdateHackathonRequest
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.security.UserPrincipal
+import com.hackathon.manager.service.HackathonSearchService
 import com.hackathon.manager.service.HackathonService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -19,13 +21,36 @@ import java.util.*
 @RestController
 @RequestMapping("/api/hackathons")
 class HackathonController(
-    private val hackathonService: HackathonService
+    private val hackathonService: HackathonService,
+    private val hackathonSearchService: HackathonSearchService
 ) {
 
     @GetMapping
     fun getAllHackathons(): ResponseEntity<List<HackathonResponse>> {
         val hackathons = hackathonService.getActiveHackathons()
         return ResponseEntity.ok(hackathons)
+    }
+
+    @GetMapping("/search")
+    fun searchHackathons(
+        @RequestParam(required = false) query: String?,
+        @RequestParam(required = false) timeFrame: String?,
+        @RequestParam(required = false) startDate: String?,
+        @RequestParam(required = false) endDate: String?,
+        @RequestParam(required = false) status: String?,
+        @RequestParam(required = false, defaultValue = "0") page: Int,
+        @RequestParam(required = false, defaultValue = "20") size: Int
+    ): ResponseEntity<HackathonSearchResponse> {
+        val results = hackathonSearchService.search(
+            query = query,
+            timeFrame = timeFrame,
+            startDate = startDate,
+            endDate = endDate,
+            status = status,
+            page = page,
+            size = size
+        )
+        return ResponseEntity.ok(results)
     }
 
     @GetMapping("/my-drafts")

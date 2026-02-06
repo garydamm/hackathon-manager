@@ -40,6 +40,7 @@ class SecurityConfig(
                     .requestMatchers("/api/health").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/hackathons").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/hackathons/search").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/hackathons/{slug}").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/hackathons/*/organizers").permitAll()
                     .requestMatchers("/error").permitAll()

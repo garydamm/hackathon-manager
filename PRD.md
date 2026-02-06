@@ -48,18 +48,18 @@ Add a public search API endpoint that allows querying hackathons by name, time f
 **Description:** As an API consumer, I want a public `GET /api/hackathons/search` endpoint with flat query parameters so I can search for hackathons without authentication, and so this endpoint can later be exposed as an MCP tool.
 
 **Acceptance Criteria:**
-- [ ] `GET /api/hackathons/search` endpoint exists on `HackathonController`
-- [ ] Endpoint accepts these optional query parameters: `query` (string), `timeFrame` (string: upcoming|ongoing|past), `startDate` (ISO date), `endDate` (ISO date), `status` (string: registration_open|registration_closed|in_progress|judging|completed|cancelled), `page` (int, default 0), `size` (int, default 20, max 100)
-- [ ] All parameters are optional; omitting all returns all non-archived, non-draft hackathons
-- [ ] Results sorted by relevance score when `query` is provided, by `startsAt` descending otherwise
-- [ ] `SecurityConfig` updated to permit `GET /api/hackathons/search` without authentication
-- [ ] Returns 200 with `HackathonSearchResponse` body
-- [ ] Returns 400 if `size` exceeds 100 or date params are invalid
-- [ ] Service layer validates parameter combinations (e.g., `endDate` without `startDate` is allowed and treated as "before endDate")
-- [ ] Unit tests added for search service logic
-- [ ] Unit tests added for controller endpoint (WebMvcTest)
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] `GET /api/hackathons/search` endpoint exists on `HackathonController`
+- [x] Endpoint accepts these optional query parameters: `query` (string), `timeFrame` (string: upcoming|ongoing|past), `startDate` (ISO date), `endDate` (ISO date), `status` (string: registration_open|registration_closed|in_progress|judging|completed|cancelled), `page` (int, default 0), `size` (int, default 20, max 100)
+- [x] All parameters are optional; omitting all returns all non-archived, non-draft hackathons
+- [x] Results sorted by relevance score when `query` is provided, by `startsAt` descending otherwise
+- [x] `SecurityConfig` updated to permit `GET /api/hackathons/search` without authentication
+- [x] Returns 200 with `HackathonSearchResponse` body
+- [x] Returns 400 if `size` exceeds 100 or date params are invalid
+- [x] Service layer validates parameter combinations (e.g., `endDate` without `startDate` is allowed and treated as "before endDate")
+- [x] Unit tests added for search service logic
+- [x] Unit tests added for controller endpoint (WebMvcTest)
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-004: Add repository integration tests for search
 **Description:** As a developer, I need integration tests using TestContainers to verify the full-text search query, filtering, and pagination work correctly against a real PostgreSQL database.

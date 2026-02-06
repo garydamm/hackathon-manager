@@ -3,14 +3,18 @@ package com.hackathon.manager.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.hackathon.manager.dto.CreateHackathonRequest
 import com.hackathon.manager.dto.HackathonResponse
+import com.hackathon.manager.dto.HackathonSearchResponse
+import com.hackathon.manager.dto.HackathonSearchResult
 import com.hackathon.manager.dto.UpdateHackathonRequest
 import com.hackathon.manager.dto.auth.UserResponse
 import com.hackathon.manager.entity.enums.HackathonStatus
 import com.hackathon.manager.entity.enums.UserRole
 import com.hackathon.manager.exception.ApiException
+import com.hackathon.manager.exception.ValidationException
 import com.hackathon.manager.security.JwtAuthenticationFilter
 import com.hackathon.manager.security.JwtTokenProvider
 import com.hackathon.manager.security.UserPrincipal
+import com.hackathon.manager.service.HackathonSearchService
 import com.hackathon.manager.service.HackathonService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -46,6 +50,9 @@ class HackathonControllerTest {
 
     @MockBean
     lateinit var hackathonService: HackathonService
+
+    @MockBean
+    lateinit var hackathonSearchService: HackathonSearchService
 
     @MockBean
     lateinit var jwtTokenProvider: JwtTokenProvider
@@ -342,6 +349,168 @@ class HackathonControllerTest {
                 .with(user(createUserPrincipal()))
         )
             .andExpect(status().isBadRequest)
+    }
+
+    // --- Search endpoint tests ---
+
+    private fun createTestSearchResult(
+        name: String = "Test Hackathon",
+        relevanceScore: Double? = null
+    ) = HackathonSearchResult(
+        id = UUID.randomUUID(),
+        name = name,
+        slug = "test-hackathon",
+        description = "A test hackathon",
+        status = HackathonStatus.registration_open,
+        location = "Virtual",
+        isVirtual = true,
+        timezone = "UTC",
+        registrationOpensAt = OffsetDateTime.now().minusDays(1),
+        registrationClosesAt = OffsetDateTime.now().plusDays(1),
+        startsAt = OffsetDateTime.now().plusDays(7),
+        endsAt = OffsetDateTime.now().plusDays(9),
+        judgingStartsAt = null,
+        judgingEndsAt = null,
+        maxTeamSize = 5,
+        minTeamSize = 1,
+        maxParticipants = 100,
+        participantCount = 50,
+        bannerUrl = null,
+        logoUrl = null,
+        relevanceScore = relevanceScore
+    )
+
+    private fun createTestSearchResponse(
+        results: List<HackathonSearchResult> = listOf(createTestSearchResult()),
+        page: Int = 0,
+        size: Int = 20,
+        totalElements: Long = 1,
+        totalPages: Int = 1
+    ) = HackathonSearchResponse(
+        results = results,
+        page = page,
+        size = size,
+        totalElements = totalElements,
+        totalPages = totalPages
+    )
+
+    @Test
+    fun `searchHackathons should return 200 with no parameters`() {
+        val searchResponse = createTestSearchResponse()
+
+        whenever(hackathonSearchService.search(
+            query = anyOrNull(),
+            timeFrame = anyOrNull(),
+            startDate = anyOrNull(),
+            endDate = anyOrNull(),
+            status = anyOrNull(),
+            page = any(),
+            size = any()
+        )).thenReturn(searchResponse)
+
+        mockMvc.perform(
+            get("/api/hackathons/search")
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.results").isArray)
+            .andExpect(jsonPath("$.results[0].name").value("Test Hackathon"))
+            .andExpect(jsonPath("$.page").value(0))
+            .andExpect(jsonPath("$.size").value(20))
+            .andExpect(jsonPath("$.totalElements").value(1))
+            .andExpect(jsonPath("$.totalPages").value(1))
+    }
+
+    @Test
+    fun `searchHackathons should pass query parameters to service`() {
+        val searchResponse = createTestSearchResponse()
+
+        whenever(hackathonSearchService.search(
+            query = eq("AI"),
+            timeFrame = eq("upcoming"),
+            startDate = eq("2024-01-15"),
+            endDate = eq("2024-06-30"),
+            status = eq("registration_open"),
+            page = eq(1),
+            size = eq(10)
+        )).thenReturn(searchResponse)
+
+        mockMvc.perform(
+            get("/api/hackathons/search")
+                .param("query", "AI")
+                .param("timeFrame", "upcoming")
+                .param("startDate", "2024-01-15")
+                .param("endDate", "2024-06-30")
+                .param("status", "registration_open")
+                .param("page", "1")
+                .param("size", "10")
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `searchHackathons should return 400 when validation fails`() {
+        whenever(hackathonSearchService.search(
+            query = anyOrNull(),
+            timeFrame = anyOrNull(),
+            startDate = anyOrNull(),
+            endDate = anyOrNull(),
+            status = anyOrNull(),
+            page = any(),
+            size = any()
+        )).thenThrow(ValidationException("Page size must not exceed 100"))
+
+        mockMvc.perform(
+            get("/api/hackathons/search")
+                .param("size", "200")
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `searchHackathons should use default page and size`() {
+        val searchResponse = createTestSearchResponse()
+
+        whenever(hackathonSearchService.search(
+            query = anyOrNull(),
+            timeFrame = anyOrNull(),
+            startDate = anyOrNull(),
+            endDate = anyOrNull(),
+            status = anyOrNull(),
+            page = eq(0),
+            size = eq(20)
+        )).thenReturn(searchResponse)
+
+        mockMvc.perform(
+            get("/api/hackathons/search")
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `searchHackathons result should not contain createdBy field`() {
+        val searchResponse = createTestSearchResponse()
+
+        whenever(hackathonSearchService.search(
+            query = anyOrNull(),
+            timeFrame = anyOrNull(),
+            startDate = anyOrNull(),
+            endDate = anyOrNull(),
+            status = anyOrNull(),
+            page = any(),
+            size = any()
+        )).thenReturn(searchResponse)
+
+        mockMvc.perform(
+            get("/api/hackathons/search")
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.results[0].createdBy").doesNotExist())
+            .andExpect(jsonPath("$.results[0].userRole").doesNotExist())
     }
 
     private fun HackathonResponse.copy(
