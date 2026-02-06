@@ -1,105 +1,104 @@
-# PRD: Archive Projects
+# PRD: Hackathon Search API Endpoint
 
 ## Introduction
 
-Add the ability to archive projects (team submissions) within hackathons. Archiving a project completely removes it from hackathon and team associations, effectively soft-deleting it from the UI while retaining the data in the database. This allows teams and organizers to clean up unwanted or invalid submissions without losing historical data.
+Add a public search API endpoint that allows querying hackathons by name, time frame, and registration status. The endpoint returns only public hackathon data (no personal information, participant details, or project details). The API is designed with flat, self-descriptive parameters so it can be directly exposed as an MCP tool with no modifications.
 
 ## Goals
 
-- Enable permanent removal of projects from hackathon/team views
-- Allow both team members and hackathon organizers to archive projects
-- Retain archived project data in database for records/auditing
-- Allow teams to create new projects after archiving their current one
-- Completely hide archived projects from all user-facing views
+- Provide a single public endpoint for searching hackathons with flexible filtering
+- Support full-text search with relevance scoring on hackathon name and description
+- Support filtering by predefined time frame categories (upcoming, ongoing, past) and custom date ranges
+- Support filtering by hackathon status (e.g., registration_open, in_progress)
+- Return only public hackathon data — no personal information, names, emails, or project details
+- Design the API with flat parameters suitable for direct MCP tool exposure
+- Paginate results with sensible defaults (page 0, size 20, max 100)
+- Always exclude archived and draft hackathons from search results
 
 ## User Stories
 
-### US-001: Add archived timestamp to projects table
-**Description:** As a developer, I need to mark projects as archived so the system can filter them from queries.
+### US-001: Add full-text search infrastructure to database
+**Description:** As a developer, I need PostgreSQL full-text search support on the hackathons table so that search queries return relevance-ranked results.
 
 **Acceptance Criteria:**
-- [x] Add `archivedAt` timestamp column to projects table (nullable)
-- [x] Generate and run database migration successfully
-- [x] Column defaults to NULL for active projects
-- [x] Unit tests added for database schema validation
+- [x] Flyway migration adds `search_vector tsvector` column to `hackathons` table
+- [x] GIN index created on `search_vector` column
+- [x] Database trigger auto-updates `search_vector` from `name` (weight A) and `description` (weight B) on INSERT and UPDATE
+- [x] Existing hackathon records are backfilled with search vectors
+- [x] Migration runs successfully against a clean database
+- [x] Migration runs successfully against an existing database with data
 - [x] Unit tests pass
 - [x] Typecheck passes
 
-### US-002: Add archive project server action
-**Description:** As a developer, I need a server action to archive projects with proper permission checks.
+### US-002: Add public search response DTO and repository query
+**Description:** As a developer, I need a response DTO that contains only public hackathon data and a repository method that performs full-text search with filtering, so the search endpoint can return safe, relevant results.
 
 **Acceptance Criteria:**
-- [x] Server action `archiveProject(projectId)` sets archivedAt to current timestamp
-- [x] Validates user is either team member OR hackathon organizer
-- [x] Returns error if user lacks permission
-- [x] Returns error if project is already archived
-- [x] Unit tests added for archive logic and permission checks
-- [x] Unit tests pass
-- [x] Typecheck passes
+- [ ] `HackathonSearchResult` DTO includes: id, name, slug, description, status, location, isVirtual, timezone, registrationOpensAt, registrationClosesAt, startsAt, endsAt, judgingStartsAt, judgingEndsAt, maxTeamSize, minTeamSize, maxParticipants, participantCount, bannerUrl, logoUrl, relevanceScore
+- [ ] `HackathonSearchResult` DTO does NOT include: createdBy, userRole, participant/organizer details, or any user personal information
+- [ ] `HackathonSearchResponse` wrapper DTO includes: results list, page, size, totalElements, totalPages
+- [ ] Repository method supports full-text search with `ts_rank` scoring via native query
+- [ ] Repository method supports filtering by status, time frame category (upcoming/ongoing/past), and custom date range (startDate/endDate)
+- [ ] Repository method always excludes archived hackathons and draft hackathons
+- [ ] Unit tests added for DTO construction
+- [ ] Unit tests pass
+- [ ] Typecheck passes
 
-### US-003: Filter archived projects from all queries
-**Description:** As a user, I should not see archived projects in any lists or views.
-
-**Acceptance Criteria:**
-- [x] All project list queries filter WHERE archivedAt IS NULL
-- [x] Archived projects excluded from hackathon project lists
-- [x] Archived projects excluded from team project views
-- [x] Archived projects excluded from search results
-- [x] Attempting to view archived project directly shows 404 or error
-- [x] Unit tests added for query filtering logic
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-004: Add archive button to project UI
-**Description:** As a team member or organizer, I want to archive a project so I can remove it from the hackathon.
+### US-003: Add search service and public controller endpoint
+**Description:** As an API consumer, I want a public `GET /api/hackathons/search` endpoint with flat query parameters so I can search for hackathons without authentication, and so this endpoint can later be exposed as an MCP tool.
 
 **Acceptance Criteria:**
-- [x] Archive button appears in project settings or actions menu
-- [x] Button only visible to team members and hackathon organizers
-- [x] Clicking shows confirmation dialog with warning about permanence
-- [x] Successful archive redirects to appropriate page (hackathon or team view)
-- [x] Shows error message if archive fails
-- [x] Unit tests added for UI component and button visibility logic
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] `GET /api/hackathons/search` endpoint exists on `HackathonController`
+- [ ] Endpoint accepts these optional query parameters: `query` (string), `timeFrame` (string: upcoming|ongoing|past), `startDate` (ISO date), `endDate` (ISO date), `status` (string: registration_open|registration_closed|in_progress|judging|completed|cancelled), `page` (int, default 0), `size` (int, default 20, max 100)
+- [ ] All parameters are optional; omitting all returns all non-archived, non-draft hackathons
+- [ ] Results sorted by relevance score when `query` is provided, by `startsAt` descending otherwise
+- [ ] `SecurityConfig` updated to permit `GET /api/hackathons/search` without authentication
+- [ ] Returns 200 with `HackathonSearchResponse` body
+- [ ] Returns 400 if `size` exceeds 100 or date params are invalid
+- [ ] Service layer validates parameter combinations (e.g., `endDate` without `startDate` is allowed and treated as "before endDate")
+- [ ] Unit tests added for search service logic
+- [ ] Unit tests added for controller endpoint (WebMvcTest)
+- [ ] Unit tests pass
+- [ ] Typecheck passes
 
-### US-005: Verify team can create new project after archiving
-**Description:** As a team member, I want to create a new project after archiving our old one.
-
-**Acceptance Criteria:**
-- [x] Team can access project creation after archiving
-- [x] No validation errors about existing projects
-- [x] New project appears normally in lists
-- [x] Unit tests added for project creation logic after archive
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-006: Add UI system tests for project archive workflow
-**Description:** As a developer, I need end-to-end tests to ensure the complete archive workflow functions correctly.
+### US-004: Add repository integration tests for search
+**Description:** As a developer, I need integration tests using TestContainers to verify the full-text search query, filtering, and pagination work correctly against a real PostgreSQL database.
 
 **Acceptance Criteria:**
-- [x] UI system test: Team member archives project → Verify project disappears from lists
-- [x] UI system test: Organizer archives project → Verify project disappears from lists
-- [x] UI system test: Archive project → Team creates new project → Verify new project appears
-- [x] UI system test: Attempt to view archived project directly → Verify 404 or error
-- [x] UI system tests pass
-- [x] Typecheck passes
+- [ ] Integration test: full-text search by name returns matching hackathons ranked by relevance
+- [ ] Integration test: full-text search by description returns matching hackathons
+- [ ] Integration test: filter by `timeFrame=upcoming` returns only future hackathons
+- [ ] Integration test: filter by `timeFrame=ongoing` returns only currently running hackathons
+- [ ] Integration test: filter by `timeFrame=past` returns only completed hackathons
+- [ ] Integration test: filter by custom date range returns hackathons within range
+- [ ] Integration test: filter by `status=registration_open` returns only matching hackathons
+- [ ] Integration test: combining `query` + `status` filters returns correct intersection
+- [ ] Integration test: archived hackathons are never returned
+- [ ] Integration test: draft hackathons are never returned
+- [ ] Integration test: pagination returns correct page/size/totalElements/totalPages
+- [ ] Integration test: no personal information (createdBy details) appears in results
+- [ ] All tests pass
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- No ability to unarchive/restore archived projects (archiving is permanent)
-- No separate "archived projects" view or admin panel
-- No email notifications when projects are archived
-- Archiving a project does NOT affect the team status or members
-- Archiving a project does NOT affect hackathon registrations or other hackathon data
-- No archive reason or audit log (just timestamp)
+- No MCP server implementation (API is designed for future MCP exposure, not built now)
+- No frontend UI for search (backend API only)
+- No authentication or user-specific results
+- No search on project details, team names, or participant information
+- No saved searches or search history
+- No autocomplete or search suggestions
+- No geographic/location-based search (location is returned but not searchable)
+- No sorting options beyond relevance/date (no sort parameter)
 
 ## Technical Considerations
 
-- Similar to existing hackathon archive functionality (refer to recent commits)
-- Use `archivedAt` timestamp pattern for consistency with hackathon archives
-- Ensure all project queries include archive filter to prevent leaks
-- Consider adding database index on `archivedAt` column for query performance
-- Permission check should validate against both team membership and hackathon organizer role
+- Use PostgreSQL's built-in full-text search (`tsvector`, `tsquery`, `ts_rank`) — no external search service needed
+- The `search_vector` column should index both `name` (weight A) and `description` (weight B) for weighted relevance
+- Use `plainto_tsquery` for user-friendly query parsing (handles natural language input without requiring special syntax)
+- Native SQL queries via `@Query(nativeQuery = true)` in the repository since JPA/JPQL doesn't support `tsvector`
+- Use Spring Data's `Pageable` for pagination support
+- The existing `HackathonResponse` DTO includes `createdBy: UserResponse` — the new `HackathonSearchResult` DTO must NOT include this field
+- Draft hackathons (`status = draft`) should always be excluded since they are not publicly visible
+- The `timeFrame` parameter maps to date-based filters on `starts_at` and `ends_at`: upcoming = `starts_at > now`, ongoing = `starts_at <= now AND ends_at >= now`, past = `ends_at < now`
+- For MCP tool compatibility: all parameters are simple scalar types (string, int), no arrays or nested objects
