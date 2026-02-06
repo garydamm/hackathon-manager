@@ -60,14 +60,14 @@ The MCP server communicates with the existing hackathon-api via internal HTTP ca
 **Description:** As a developer, I need the MCP server to accept connections over SSE so it can be accessed remotely when deployed.
 
 **Acceptance Criteria:**
-- [ ] Configure Ktor server with SSE transport using the MCP SDK's Ktor integration
-- [ ] Server listens on port from `PORT` environment variable (default `3001`)
-- [ ] SSE endpoint is available at the root path (`/sse`)
-- [ ] Add a `GET /health` endpoint that returns 200 OK (for Render health checks)
-- [ ] Server starts successfully and logs startup message with port number
-- [ ] Manual test: start server locally, connect with an MCP client (e.g., Claude Code `.mcp.json`), and verify the `search_hackathons` tool is listed
-- [ ] `./gradlew :mcp-server:build` succeeds
-- [ ] Typecheck passes
+- [x] Configure Ktor server with SSE transport using the MCP SDK's Ktor integration
+- [x] Server listens on port from `PORT` environment variable (default `3001`)
+- [x] SSE endpoint is available at the root path (`/sse`)
+- [x] Add a `GET /health` endpoint that returns 200 OK (for Render health checks)
+- [x] Server starts successfully and logs startup message with port number
+- [x] Manual test: start server locally, connect with an MCP client (e.g., Claude Code `.mcp.json`), and verify the `search_hackathons` tool is listed
+- [x] `./gradlew :mcp-server:build` succeeds
+- [x] Typecheck passes
 
 ### US-004: Create Dockerfile for MCP server
 **Description:** As a developer, I need a Docker image for the MCP server so it can be deployed on Render.

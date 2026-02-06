@@ -1,7 +1,15 @@
 package com.hackathon.mcp
 
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.sse.*
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
+import io.modelcontextprotocol.kotlin.sdk.server.mcp
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.types.Implementation
 import io.modelcontextprotocol.kotlin.sdk.types.ServerCapabilities
@@ -100,7 +108,22 @@ fun createServer(apiClient: HackathonApiClient): Server {
 
 fun main() {
     val apiBaseUrl = System.getenv("API_BASE_URL") ?: "http://localhost:8080"
+    val port = System.getenv("PORT")?.toIntOrNull() ?: 3001
     val apiClient = HackathonApiClient(apiBaseUrl)
-    val server = createServer(apiClient)
-    // SSE transport will be configured in US-003
+
+    println("Starting MCP server on port $port")
+
+    embeddedServer(Netty, port = port) {
+        install(SSE)
+
+        routing {
+            get("/health") {
+                call.respondText("OK", ContentType.Text.Plain, HttpStatusCode.OK)
+            }
+
+            mcp("/sse") {
+                createServer(apiClient)
+            }
+        }
+    }.start(wait = true)
 }

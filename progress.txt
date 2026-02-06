@@ -52,3 +52,22 @@
   - Ktor mock engine captures request URLs for assertion — great for verifying param mapping
   - `CallToolResult.isError` is nullable Boolean — common gotcha in assertions
 ---
+
+## Iteration 3 - US-003: Add SSE transport and server entry point
+- Updated `Main.kt` to configure Ktor embedded server with Netty engine
+- Added `install(SSE)` plugin for Server-Sent Events support
+- Added `mcp("/sse") { createServer(apiClient) }` routing — uses MCP SDK's Ktor extension which sets up SSE + POST endpoints
+- Added `GET /health` endpoint returning 200 OK for Render health checks
+- Port read from `PORT` env var, defaults to 3001
+- Server logs startup message before blocking on `start(wait = true)`
+- Manual test confirmed: health returns 200 OK, SSE endpoint returns `event: endpoint` with sessionId
+- Files changed:
+  - mcp-server/src/main/kotlin/com/hackathon/mcp/Main.kt (added Ktor server setup, SSE transport, health endpoint)
+  - PRD.md (marked US-003 complete)
+- All existing tests pass, build succeeds
+- Learnings for future iterations:
+  - `mcp(path)` extension on Routing creates sub-route with SSE + POST endpoints — no need to manually wire transport
+  - `mcp(Application, block)` overload auto-installs SSE plugin — `mcp(Routing, path, block)` does NOT, must `install(SSE)` yourself
+  - SSE endpoint returns `event: endpoint` with `data: ?sessionId=...` — POST endpoint receives MCP JSON-RPC messages at same path
+  - `start(wait = true)` blocks the main thread — log startup message before calling it
+---
