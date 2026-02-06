@@ -65,20 +65,20 @@ Add a public search API endpoint that allows querying hackathons by name, time f
 **Description:** As a developer, I need integration tests using TestContainers to verify the full-text search query, filtering, and pagination work correctly against a real PostgreSQL database.
 
 **Acceptance Criteria:**
-- [ ] Integration test: full-text search by name returns matching hackathons ranked by relevance
-- [ ] Integration test: full-text search by description returns matching hackathons
-- [ ] Integration test: filter by `timeFrame=upcoming` returns only future hackathons
-- [ ] Integration test: filter by `timeFrame=ongoing` returns only currently running hackathons
-- [ ] Integration test: filter by `timeFrame=past` returns only completed hackathons
-- [ ] Integration test: filter by custom date range returns hackathons within range
-- [ ] Integration test: filter by `status=registration_open` returns only matching hackathons
-- [ ] Integration test: combining `query` + `status` filters returns correct intersection
-- [ ] Integration test: archived hackathons are never returned
-- [ ] Integration test: draft hackathons are never returned
-- [ ] Integration test: pagination returns correct page/size/totalElements/totalPages
-- [ ] Integration test: no personal information (createdBy details) appears in results
-- [ ] All tests pass
-- [ ] Typecheck passes
+- [x] Integration test: full-text search by name returns matching hackathons ranked by relevance
+- [x] Integration test: full-text search by description returns matching hackathons
+- [x] Integration test: filter by `timeFrame=upcoming` returns only future hackathons
+- [x] Integration test: filter by `timeFrame=ongoing` returns only currently running hackathons
+- [x] Integration test: filter by `timeFrame=past` returns only completed hackathons
+- [x] Integration test: filter by custom date range returns hackathons within range
+- [x] Integration test: filter by `status=registration_open` returns only matching hackathons
+- [x] Integration test: combining `query` + `status` filters returns correct intersection
+- [x] Integration test: archived hackathons are never returned
+- [x] Integration test: draft hackathons are never returned
+- [x] Integration test: pagination returns correct page/size/totalElements/totalPages
+- [x] Integration test: no personal information (createdBy details) appears in results
+- [x] All tests pass
+- [x] Typecheck passes
 
 ## Non-Goals
 

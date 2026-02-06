@@ -8,7 +8,9 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
+import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 @Repository
 class HackathonSearchRepository(
@@ -38,7 +40,7 @@ class HackathonSearchRepository(
 
         // Status filter
         if (status != null) {
-            conditions.add("h.status = :status")
+            conditions.add("CAST(h.status AS text) = :status")
             params["status"] = status.name
         }
 
@@ -67,7 +69,7 @@ class HackathonSearchRepository(
         val relevanceSelect = if (!query.isNullOrBlank()) {
             "ts_rank(h.search_vector, plainto_tsquery('english', :query)) AS relevance_score"
         } else {
-            "NULL::float AS relevance_score"
+            "CAST(NULL AS float) AS relevance_score"
         }
 
         val orderBy = if (!query.isNullOrBlank()) {
@@ -77,7 +79,7 @@ class HackathonSearchRepository(
         }
 
         val selectSql = """
-            SELECT h.id, h.name, h.slug, h.description, h.status::text,
+            SELECT h.id, h.name, h.slug, h.description, CAST(h.status AS text),
                    h.location, h.is_virtual, h.timezone,
                    h.registration_opens_at, h.registration_closes_at,
                    h.starts_at, h.ends_at,
@@ -121,12 +123,12 @@ class HackathonSearchRepository(
                 location = row[5] as String?,
                 isVirtual = row[6] as Boolean,
                 timezone = row[7] as String,
-                registrationOpensAt = row[8] as OffsetDateTime?,
-                registrationClosesAt = row[9] as OffsetDateTime?,
-                startsAt = row[10] as OffsetDateTime,
-                endsAt = row[11] as OffsetDateTime,
-                judgingStartsAt = row[12] as OffsetDateTime?,
-                judgingEndsAt = row[13] as OffsetDateTime?,
+                registrationOpensAt = toOffsetDateTime(row[8]),
+                registrationClosesAt = toOffsetDateTime(row[9]),
+                startsAt = toOffsetDateTime(row[10])!!,
+                endsAt = toOffsetDateTime(row[11])!!,
+                judgingStartsAt = toOffsetDateTime(row[12]),
+                judgingEndsAt = toOffsetDateTime(row[13]),
                 maxTeamSize = (row[14] as Number).toInt(),
                 minTeamSize = (row[15] as Number).toInt(),
                 maxParticipants = (row[16] as Number?)?.toInt(),
@@ -138,5 +140,14 @@ class HackathonSearchRepository(
         }
 
         return PageImpl(results, pageable, totalElements)
+    }
+
+    private fun toOffsetDateTime(value: Any?): OffsetDateTime? {
+        return when (value) {
+            null -> null
+            is OffsetDateTime -> value
+            is Instant -> value.atOffset(ZoneOffset.UTC)
+            else -> throw IllegalArgumentException("Cannot convert ${value::class.java} to OffsetDateTime")
+        }
     }
 }

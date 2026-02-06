@@ -9,7 +9,10 @@
 - Migration pattern: ALTER TABLE, CREATE INDEX, CREATE FUNCTION, CREATE TRIGGER, then backfill UPDATE
 - HackathonSearchRepository uses EntityManager with dynamic native SQL (not @Query) for complex search queries
 - Native SQL results come back as Array<Any?> rows that need manual mapping to DTOs
-- Status enum is stored as PostgreSQL named enum; use h.status::text in SELECT and compare with string in WHERE
+- Status enum is stored as PostgreSQL named enum; use CAST(h.status AS text) in SELECT (NOT ::text which Hibernate interprets as named parameter)
+- PostgreSQL :: cast syntax CANNOT be used in native queries via Hibernate EntityManager — Hibernate treats :name as a named parameter. Use CAST(x AS type) instead
+- JDBC driver returns timestamptz columns as java.time.Instant, NOT OffsetDateTime — need conversion helper in native query result mapping
+- For status WHERE comparison with named enum column, use CAST(h.status AS text) = :status to avoid type mismatch
 - participantCount derived via subquery: SELECT COUNT(*) FROM hackathon_users WHERE hackathon_id = h.id
 
 ---
@@ -65,4 +68,23 @@
   - The controller uses @RequestParam with defaultValue for page/size, and passes String dates to the service for parsing
   - @WebMvcTest for controller tests needs @MockBean for both HackathonService AND HackathonSearchService
   - US-004 still needs integration tests with TestContainers
+---
+
+## Iteration 4 - US-004: Add repository integration tests for search
+- Created HackathonSearchRepositoryTest with 12 integration tests using TestContainers
+- Fixed 3 bugs in HackathonSearchRepository discovered by real PostgreSQL execution:
+  1. h.status::text → CAST(h.status AS text) — Hibernate treats :: as named parameter prefix
+  2. NULL::float → CAST(NULL AS float) — same Hibernate :: issue
+  3. h.status = :status → CAST(h.status AS text) = :status — PG named enum can't compare to varchar
+  4. Added toOffsetDateTime() helper — JDBC driver returns Instant not OffsetDateTime for timestamptz
+- Tests cover: full-text search by name (with relevance ranking), search by description, timeFrame filters (upcoming/ongoing/past), custom date range, status filter, combined query+status, archived exclusion, draft exclusion, pagination, no personal info leakage
+- Files changed:
+  - src/test/kotlin/com/hackathon/manager/repository/HackathonSearchRepositoryTest.kt (new)
+  - src/main/kotlin/com/hackathon/manager/repository/HackathonSearchRepository.kt (fixed 3 SQL issues + added Instant conversion)
+- Learnings for future iterations:
+  - @DataJpaTest does NOT auto-discover plain @Repository classes (only JpaRepository interfaces) — must use @Import(HackathonSearchRepository::class)
+  - entityManager.flush() + entityManager.entityManager.clear() needed after persist to ensure DB triggers (like search_vector) fire and JPA cache doesn't interfere
+  - Hibernate native queries treat :word as named parameters — never use PostgreSQL :: cast syntax in them
+  - JDBC PostgreSQL driver returns timestamptz as java.time.Instant, not OffsetDateTime — always handle both types
+  - Integration tests are essential for catching SQL issues that unit tests with mocks can't find
 ---
