@@ -71,3 +71,23 @@
   - SSE endpoint returns `event: endpoint` with `data: ?sessionId=...` — POST endpoint receives MCP JSON-RPC messages at same path
   - `start(wait = true)` blocks the main thread — log startup message before calling it
 ---
+
+## Iteration 4 - US-004: Create Dockerfile for MCP server
+- Created `mcp-server/Dockerfile` with multi-stage build
+  - Builder stage: `eclipse-temurin:17-jdk`, copies gradlew + gradle wrapper + root build files + mcp-server subproject
+  - Runs `./gradlew :mcp-server:shadowJar --no-daemon` to produce fat JAR
+  - Runtime stage: `eclipse-temurin:17-jre`, copies `hackathon-mcp-server.jar`
+  - Memory flags: `-Xmx256m -Xms128m` for Render free tier
+  - Port configured via `PORT` env var
+- Verified: `docker build -f mcp-server/Dockerfile -t hackathon-mcp .` succeeds
+- Verified: container starts, logs startup message, health check at `/health` returns 200 OK
+- Verified: `./gradlew build -x test` succeeds (typecheck passes)
+- Files changed:
+  - mcp-server/Dockerfile (new)
+  - PRD.md (marked US-004 complete)
+- Learnings for future iterations:
+  - The `.dockerignore` at repo root applies when building from repo root context — `frontend/` is excluded which keeps the build context small
+  - Shadow JAR name is `hackathon-mcp-server.jar` (no version/classifier) due to shadowJar config in build.gradle.kts
+  - Docker build context needs root build.gradle.kts + settings.gradle.kts because Gradle multi-project resolves the root project first
+  - No need to copy root `src/` — `shadowJar` task only compiles the mcp-server subproject
+---

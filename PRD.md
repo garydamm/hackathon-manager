@@ -73,14 +73,14 @@ The MCP server communicates with the existing hackathon-api via internal HTTP ca
 **Description:** As a developer, I need a Docker image for the MCP server so it can be deployed on Render.
 
 **Acceptance Criteria:**
-- [ ] Create `mcp-server/Dockerfile` with multi-stage build:
+- [x] Create `mcp-server/Dockerfile` with multi-stage build:
   - Builder stage: `eclipse-temurin:17-jdk`, copies Gradle wrapper + subproject files, runs `./gradlew :mcp-server:shadowJar --no-daemon`
   - Runtime stage: `eclipse-temurin:17-jre`, copies fat JAR
-- [ ] Memory flags sized for Render free tier: `-Xmx256m -Xms128m`
-- [ ] Port configured via `PORT` env var (Render sets this automatically)
-- [ ] `docker build -f mcp-server/Dockerfile -t hackathon-mcp .` succeeds from repo root
-- [ ] Container starts and responds to health check requests
-- [ ] Typecheck passes
+- [x] Memory flags sized for Render free tier: `-Xmx256m -Xms128m`
+- [x] Port configured via `PORT` env var (Render sets this automatically)
+- [x] `docker build -f mcp-server/Dockerfile -t hackathon-mcp .` succeeds from repo root
+- [x] Container starts and responds to health check requests
+- [x] Typecheck passes
 
 ### US-005: Add MCP server to Render blueprint
 **Description:** As a developer, I need the MCP server in the Render blueprint so it deploys automatically alongside the existing services.
