@@ -34,15 +34,15 @@ Add a public search API endpoint that allows querying hackathons by name, time f
 **Description:** As a developer, I need a response DTO that contains only public hackathon data and a repository method that performs full-text search with filtering, so the search endpoint can return safe, relevant results.
 
 **Acceptance Criteria:**
-- [ ] `HackathonSearchResult` DTO includes: id, name, slug, description, status, location, isVirtual, timezone, registrationOpensAt, registrationClosesAt, startsAt, endsAt, judgingStartsAt, judgingEndsAt, maxTeamSize, minTeamSize, maxParticipants, participantCount, bannerUrl, logoUrl, relevanceScore
-- [ ] `HackathonSearchResult` DTO does NOT include: createdBy, userRole, participant/organizer details, or any user personal information
-- [ ] `HackathonSearchResponse` wrapper DTO includes: results list, page, size, totalElements, totalPages
-- [ ] Repository method supports full-text search with `ts_rank` scoring via native query
-- [ ] Repository method supports filtering by status, time frame category (upcoming/ongoing/past), and custom date range (startDate/endDate)
-- [ ] Repository method always excludes archived hackathons and draft hackathons
-- [ ] Unit tests added for DTO construction
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] `HackathonSearchResult` DTO includes: id, name, slug, description, status, location, isVirtual, timezone, registrationOpensAt, registrationClosesAt, startsAt, endsAt, judgingStartsAt, judgingEndsAt, maxTeamSize, minTeamSize, maxParticipants, participantCount, bannerUrl, logoUrl, relevanceScore
+- [x] `HackathonSearchResult` DTO does NOT include: createdBy, userRole, participant/organizer details, or any user personal information
+- [x] `HackathonSearchResponse` wrapper DTO includes: results list, page, size, totalElements, totalPages
+- [x] Repository method supports full-text search with `ts_rank` scoring via native query
+- [x] Repository method supports filtering by status, time frame category (upcoming/ongoing/past), and custom date range (startDate/endDate)
+- [x] Repository method always excludes archived hackathons and draft hackathons
+- [x] Unit tests added for DTO construction
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-003: Add search service and public controller endpoint
 **Description:** As an API consumer, I want a public `GET /api/hackathons/search` endpoint with flat query parameters so I can search for hackathons without authentication, and so this endpoint can later be exposed as an MCP tool.
