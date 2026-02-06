@@ -2,89 +2,27 @@
 
 ## Learnings
 (Patterns discovered during implementation)
-
-- Repository tests use TestContainers with postgres:16-alpine and @DataJpaTest + AbstractRepositoryTest base class
-- Flyway migrations are V1-V7 now; next migration is V8
-- Hackathon entity does NOT have a search_vector JPA field (it's managed purely at DB level via trigger)
-- Migration pattern: ALTER TABLE, CREATE INDEX, CREATE FUNCTION, CREATE TRIGGER, then backfill UPDATE
-- HackathonSearchRepository uses EntityManager with dynamic native SQL (not @Query) for complex search queries
-- Native SQL results come back as Array<Any?> rows that need manual mapping to DTOs
-- Status enum is stored as PostgreSQL named enum; use CAST(h.status AS text) in SELECT (NOT ::text which Hibernate interprets as named parameter)
-- PostgreSQL :: cast syntax CANNOT be used in native queries via Hibernate EntityManager — Hibernate treats :name as a named parameter. Use CAST(x AS type) instead
-- JDBC driver returns timestamptz columns as java.time.Instant, NOT OffsetDateTime — need conversion helper in native query result mapping
-- For status WHERE comparison with named enum column, use CAST(h.status AS text) = :status to avoid type mismatch
-- participantCount derived via subquery: SELECT COUNT(*) FROM hackathon_users WHERE hackathon_id = h.id
+- MCP SDK 0.8.3 requires Kotlin 2.2.0+ and Ktor 3.2.3 — metadata version 2.2.0 is unreadable by Kotlin < 2.2
+- Gradle multi-project builds share Kotlin plugin version — can't have root at 1.9.22 and subproject at 2.2.0
+- Kotlin 2.2.0 makes `kotlinOptions` an error — must use `compilerOptions` DSL with `JvmTarget.JVM_17`
+- `jvmToolchain(17)` fails if JDK 17 isn't installed — use `compilerOptions { jvmTarget }` instead for cross-compilation
+- Shadow plugin moved from `com.github.johnrengelman.shadow` to `com.gradleup.shadow` for Gradle 8.x compatibility
+- The `kotlin-sdk` artifact is a BOM/aggregate; actual server code is in `kotlin-sdk-server` (pulled transitively)
+- `kotlin("plugin.serialization")` must be declared `apply false` in root for subproject to use it without version
 
 ---
 
-## Iteration 1 - US-001: Add full-text search infrastructure to database
-- Created V7__add_fulltext_search_to_hackathons.sql migration
-- Adds search_vector tsvector column, GIN index, trigger function, and backfill
-- Trigger fires on INSERT or UPDATE of name/description columns
-- Weight A for name, Weight B for description
-- Files changed: src/main/resources/db/migration/V7__add_fulltext_search_to_hackathons.sql
-- Learnings for future iterations:
-  - The search_vector column is not mapped in the Hackathon JPA entity — it's DB-only
-  - Native SQL queries (@Query(nativeQuery=true)) will be needed for full-text search in the repository
-  - Use plainto_tsquery for user-friendly query parsing per PRD
-  - Existing tests all pass with the new migration (TestContainers runs Flyway automatically)
----
-
-## Iteration 2 - US-002: Add public search response DTO and repository query
-- Created HackathonSearchResult and HackathonSearchResponse DTOs in HackathonSearchDtos.kt
-- Created HackathonSearchRepository with dynamic native SQL search method
-- Created unit tests for DTO construction (HackathonSearchDtosTest.kt)
+## Iteration 1 - US-001: Set up MCP server Gradle subproject
+- Added `include("mcp-server")` to settings.gradle.kts
+- Created `mcp-server/build.gradle.kts` with Kotlin 2.2.0, MCP SDK 0.8.3, Ktor 3.2.3, Shadow plugin
+- Created placeholder `mcp-server/src/main/kotlin/com/hackathon/mcp/Main.kt`
+- Upgraded root project Kotlin from 1.9.22 → 2.2.0 (required for MCP SDK compatibility)
+- Migrated root `kotlinOptions` → `compilerOptions` DSL (required by Kotlin 2.2.0)
+- Added `kotlin("plugin.serialization") version "2.2.0" apply false` to root plugins
 - Files changed:
-  - src/main/kotlin/com/hackathon/manager/dto/HackathonSearchDtos.kt (new)
-  - src/main/kotlin/com/hackathon/manager/repository/HackathonSearchRepository.kt (new)
-  - src/test/kotlin/com/hackathon/manager/dto/HackathonSearchDtosTest.kt (new)
-- Learnings for future iterations:
-  - HackathonSearchRepository is a standalone @Repository class (not extending JpaRepository) using EntityManager
-  - The search method returns Page<HackathonSearchResult> using PageImpl
-  - Query dynamically builds WHERE clause from optional parameters
-  - Full-text search uses plainto_tsquery('english', :query) and ts_rank for relevance scoring
-  - Always filters out archived=true and status='draft'
-  - US-003 will need to create a service layer and controller that uses HackathonSearchRepository
-  - US-004 will need integration tests with TestContainers (run individually per testing strategy)
----
-
-## Iteration 3 - US-003: Add search service and public controller endpoint
-- Created HackathonSearchService with validation for query params (size, page, timeFrame, status, date format)
-- Added GET /api/hackathons/search endpoint to HackathonController with all optional params
-- Updated SecurityConfig to permit GET /api/hackathons/search without authentication
-- Added unit tests for HackathonSearchServiceTest (13 tests: all param passing, blank query, validation errors)
-- Added controller tests for search endpoint (5 tests: basic search, param forwarding, validation 400, defaults, no createdBy)
-- Files changed:
-  - src/main/kotlin/com/hackathon/manager/service/HackathonSearchService.kt (new)
-  - src/main/kotlin/com/hackathon/manager/controller/HackathonController.kt (modified - added search endpoint + HackathonSearchService dependency)
-  - src/main/kotlin/com/hackathon/manager/config/SecurityConfig.kt (modified - added /api/hackathons/search permitAll)
-  - src/test/kotlin/com/hackathon/manager/service/HackathonSearchServiceTest.kt (new)
-  - src/test/kotlin/com/hackathon/manager/controller/HackathonControllerTest.kt (modified - added search tests + MockBean)
-- Learnings for future iterations:
-  - Search endpoint must be defined BEFORE /{slug} route in the controller to avoid route conflicts
-  - SecurityConfig needs /api/hackathons/search BEFORE /api/hackathons/{slug} in requestMatchers ordering
-  - HackathonSearchService parses ISO date strings (e.g., "2024-01-15") into OffsetDateTime at UTC
-  - ValidationException from DomainExceptions.kt is handled by GlobalExceptionHandler → 400 BAD_REQUEST
-  - The controller uses @RequestParam with defaultValue for page/size, and passes String dates to the service for parsing
-  - @WebMvcTest for controller tests needs @MockBean for both HackathonService AND HackathonSearchService
-  - US-004 still needs integration tests with TestContainers
----
-
-## Iteration 4 - US-004: Add repository integration tests for search
-- Created HackathonSearchRepositoryTest with 12 integration tests using TestContainers
-- Fixed 3 bugs in HackathonSearchRepository discovered by real PostgreSQL execution:
-  1. h.status::text → CAST(h.status AS text) — Hibernate treats :: as named parameter prefix
-  2. NULL::float → CAST(NULL AS float) — same Hibernate :: issue
-  3. h.status = :status → CAST(h.status AS text) = :status — PG named enum can't compare to varchar
-  4. Added toOffsetDateTime() helper — JDBC driver returns Instant not OffsetDateTime for timestamptz
-- Tests cover: full-text search by name (with relevance ranking), search by description, timeFrame filters (upcoming/ongoing/past), custom date range, status filter, combined query+status, archived exclusion, draft exclusion, pagination, no personal info leakage
-- Files changed:
-  - src/test/kotlin/com/hackathon/manager/repository/HackathonSearchRepositoryTest.kt (new)
-  - src/main/kotlin/com/hackathon/manager/repository/HackathonSearchRepository.kt (fixed 3 SQL issues + added Instant conversion)
-- Learnings for future iterations:
-  - @DataJpaTest does NOT auto-discover plain @Repository classes (only JpaRepository interfaces) — must use @Import(HackathonSearchRepository::class)
-  - entityManager.flush() + entityManager.entityManager.clear() needed after persist to ensure DB triggers (like search_vector) fire and JPA cache doesn't interfere
-  - Hibernate native queries treat :word as named parameters — never use PostgreSQL :: cast syntax in them
-  - JDBC PostgreSQL driver returns timestamptz as java.time.Instant, not OffsetDateTime — always handle both types
-  - Integration tests are essential for catching SQL issues that unit tests with mocks can't find
+  - settings.gradle.kts (added include)
+  - build.gradle.kts (Kotlin 2.2.0, compilerOptions DSL, serialization plugin)
+  - mcp-server/build.gradle.kts (new)
+  - mcp-server/src/main/kotlin/com/hackathon/mcp/Main.kt (new)
+- All backend tests pass, both builds succeed
 ---

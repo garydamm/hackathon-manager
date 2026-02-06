@@ -1,104 +1,118 @@
-# PRD: Hackathon Search API Endpoint
+# PRD: MCP Server for Hackathon Search
 
 ## Introduction
 
-Add a public search API endpoint that allows querying hackathons by name, time frame, and registration status. The endpoint returns only public hackathon data (no personal information, participant details, or project details). The API is designed with flat, self-descriptive parameters so it can be directly exposed as an MCP tool with no modifications.
+Expose the existing hackathon search API (`GET /api/hackathons/search`) as an MCP (Model Context Protocol) server so that AI assistants can discover and search hackathons. The MCP server will be a separate Kotlin/Ktor service in the same repository, packaged as a Docker container, and deployed on Render alongside the existing backend and frontend services.
+
+The MCP server communicates with the existing hackathon-api via internal HTTP calls on Render, keeping the architecture clean — no direct database access, no code duplication.
 
 ## Goals
 
-- Provide a single public endpoint for searching hackathons with flexible filtering
-- Support full-text search with relevance scoring on hackathon name and description
-- Support filtering by predefined time frame categories (upcoming, ongoing, past) and custom date ranges
-- Support filtering by hackathon status (e.g., registration_open, in_progress)
-- Return only public hackathon data — no personal information, names, emails, or project details
-- Design the API with flat parameters suitable for direct MCP tool exposure
-- Paginate results with sensible defaults (page 0, size 20, max 100)
-- Always exclude archived and draft hackathons from search results
+- Expose a single `search_hackathons` MCP tool that mirrors the existing `/api/hackathons/search` endpoint
+- Use the official Kotlin MCP SDK (`io.modelcontextprotocol:kotlin-sdk`) with SSE transport via Ktor
+- Package as a standalone Docker container deployable on Render free tier
+- Add the MCP server to the existing `render.yaml` blueprint
+- No authentication required (search is read-only public data)
 
 ## User Stories
 
-### US-001: Add full-text search infrastructure to database
-**Description:** As a developer, I need PostgreSQL full-text search support on the hackathons table so that search queries return relevance-ranked results.
+### US-001: Set up MCP server Gradle subproject
+**Description:** As a developer, I need a separate Gradle subproject for the MCP server so it builds independently from the Spring Boot backend.
 
 **Acceptance Criteria:**
-- [x] Flyway migration adds `search_vector tsvector` column to `hackathons` table
-- [x] GIN index created on `search_vector` column
-- [x] Database trigger auto-updates `search_vector` from `name` (weight A) and `description` (weight B) on INSERT and UPDATE
-- [x] Existing hackathon records are backfilled with search vectors
-- [x] Migration runs successfully against a clean database
-- [x] Migration runs successfully against an existing database with data
-- [x] Unit tests pass
+- [x] Add `mcp-server` to `settings.gradle.kts` as an included project
+- [x] Create `mcp-server/build.gradle.kts` with Kotlin JVM plugin and dependencies:
+  - `io.modelcontextprotocol:kotlin-sdk` (latest stable, currently 0.8.3)
+  - `io.ktor:ktor-server-sse` for SSE transport
+  - `io.ktor:ktor-server-netty` as the server engine
+  - `io.ktor:ktor-client-cio` for HTTP calls to the backend API
+  - `io.ktor:ktor-client-content-negotiation` + `io.ktor:ktor-serialization-kotlinx-json` for JSON parsing
+- [x] Configure the Shadow plugin (`com.github.johnrengelman.shadow`) for fat JAR packaging
+- [x] Create placeholder `Main.kt` with an empty `main()` function that compiles
+- [x] `./gradlew :mcp-server:build` succeeds
+- [x] Root project `./gradlew build` still succeeds (existing backend unaffected)
 - [x] Typecheck passes
 
-### US-002: Add public search response DTO and repository query
-**Description:** As a developer, I need a response DTO that contains only public hackathon data and a repository method that performs full-text search with filtering, so the search endpoint can return safe, relevant results.
+### US-002: Implement search_hackathons MCP tool
+**Description:** As an AI assistant user, I want to search hackathons via MCP so I can find relevant events without using the web UI.
 
 **Acceptance Criteria:**
-- [x] `HackathonSearchResult` DTO includes: id, name, slug, description, status, location, isVirtual, timezone, registrationOpensAt, registrationClosesAt, startsAt, endsAt, judgingStartsAt, judgingEndsAt, maxTeamSize, minTeamSize, maxParticipants, participantCount, bannerUrl, logoUrl, relevanceScore
-- [x] `HackathonSearchResult` DTO does NOT include: createdBy, userRole, participant/organizer details, or any user personal information
-- [x] `HackathonSearchResponse` wrapper DTO includes: results list, page, size, totalElements, totalPages
-- [x] Repository method supports full-text search with `ts_rank` scoring via native query
-- [x] Repository method supports filtering by status, time frame category (upcoming/ongoing/past), and custom date range (startDate/endDate)
-- [x] Repository method always excludes archived hackathons and draft hackathons
-- [x] Unit tests added for DTO construction
-- [x] Unit tests pass
-- [x] Typecheck passes
+- [ ] Create MCP server in `Main.kt` using the Kotlin MCP SDK `Server` builder
+- [ ] Server name: `"hackathon-search"`, version: `"1.0.0"`
+- [ ] Register a single tool `search_hackathons` with the following input schema parameters:
+  - `query` (string, optional) — full-text search on name/description
+  - `timeFrame` (string, optional, enum: upcoming/ongoing/past)
+  - `status` (string, optional, enum: registration_open/registration_closed/in_progress/judging/completed/cancelled)
+  - `startDate` (string, optional) — ISO date format
+  - `endDate` (string, optional) — ISO date format
+  - `page` (integer, optional, default 0)
+  - `size` (integer, optional, default 20)
+- [ ] Tool handler makes HTTP GET request to `${API_BASE_URL}/api/hackathons/search` with the provided parameters as query params
+- [ ] `API_BASE_URL` read from environment variable (defaults to `http://localhost:8080` for local dev)
+- [ ] Response from backend is parsed and returned as formatted text content in the MCP tool result
+- [ ] Tool result includes: hackathon name, status, dates, location, participant count for each result, plus pagination summary
+- [ ] Error responses from the backend are caught and returned as MCP error content (isError = true)
+- [ ] Unit tests for request parameter mapping and response formatting
+- [ ] `./gradlew :mcp-server:test` passes
+- [ ] Typecheck passes
 
-### US-003: Add search service and public controller endpoint
-**Description:** As an API consumer, I want a public `GET /api/hackathons/search` endpoint with flat query parameters so I can search for hackathons without authentication, and so this endpoint can later be exposed as an MCP tool.
-
-**Acceptance Criteria:**
-- [x] `GET /api/hackathons/search` endpoint exists on `HackathonController`
-- [x] Endpoint accepts these optional query parameters: `query` (string), `timeFrame` (string: upcoming|ongoing|past), `startDate` (ISO date), `endDate` (ISO date), `status` (string: registration_open|registration_closed|in_progress|judging|completed|cancelled), `page` (int, default 0), `size` (int, default 20, max 100)
-- [x] All parameters are optional; omitting all returns all non-archived, non-draft hackathons
-- [x] Results sorted by relevance score when `query` is provided, by `startsAt` descending otherwise
-- [x] `SecurityConfig` updated to permit `GET /api/hackathons/search` without authentication
-- [x] Returns 200 with `HackathonSearchResponse` body
-- [x] Returns 400 if `size` exceeds 100 or date params are invalid
-- [x] Service layer validates parameter combinations (e.g., `endDate` without `startDate` is allowed and treated as "before endDate")
-- [x] Unit tests added for search service logic
-- [x] Unit tests added for controller endpoint (WebMvcTest)
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-004: Add repository integration tests for search
-**Description:** As a developer, I need integration tests using TestContainers to verify the full-text search query, filtering, and pagination work correctly against a real PostgreSQL database.
+### US-003: Add SSE transport and server entry point
+**Description:** As a developer, I need the MCP server to accept connections over SSE so it can be accessed remotely when deployed.
 
 **Acceptance Criteria:**
-- [x] Integration test: full-text search by name returns matching hackathons ranked by relevance
-- [x] Integration test: full-text search by description returns matching hackathons
-- [x] Integration test: filter by `timeFrame=upcoming` returns only future hackathons
-- [x] Integration test: filter by `timeFrame=ongoing` returns only currently running hackathons
-- [x] Integration test: filter by `timeFrame=past` returns only completed hackathons
-- [x] Integration test: filter by custom date range returns hackathons within range
-- [x] Integration test: filter by `status=registration_open` returns only matching hackathons
-- [x] Integration test: combining `query` + `status` filters returns correct intersection
-- [x] Integration test: archived hackathons are never returned
-- [x] Integration test: draft hackathons are never returned
-- [x] Integration test: pagination returns correct page/size/totalElements/totalPages
-- [x] Integration test: no personal information (createdBy details) appears in results
-- [x] All tests pass
-- [x] Typecheck passes
+- [ ] Configure Ktor server with SSE transport using the MCP SDK's Ktor integration
+- [ ] Server listens on port from `PORT` environment variable (default `3001`)
+- [ ] SSE endpoint is available at the root path (`/sse`)
+- [ ] Add a `GET /health` endpoint that returns 200 OK (for Render health checks)
+- [ ] Server starts successfully and logs startup message with port number
+- [ ] Manual test: start server locally, connect with an MCP client (e.g., Claude Code `.mcp.json`), and verify the `search_hackathons` tool is listed
+- [ ] `./gradlew :mcp-server:build` succeeds
+- [ ] Typecheck passes
+
+### US-004: Create Dockerfile for MCP server
+**Description:** As a developer, I need a Docker image for the MCP server so it can be deployed on Render.
+
+**Acceptance Criteria:**
+- [ ] Create `mcp-server/Dockerfile` with multi-stage build:
+  - Builder stage: `eclipse-temurin:17-jdk`, copies Gradle wrapper + subproject files, runs `./gradlew :mcp-server:shadowJar --no-daemon`
+  - Runtime stage: `eclipse-temurin:17-jre`, copies fat JAR
+- [ ] Memory flags sized for Render free tier: `-Xmx256m -Xms128m`
+- [ ] Port configured via `PORT` env var (Render sets this automatically)
+- [ ] `docker build -f mcp-server/Dockerfile -t hackathon-mcp .` succeeds from repo root
+- [ ] Container starts and responds to health check requests
+- [ ] Typecheck passes
+
+### US-005: Add MCP server to Render blueprint
+**Description:** As a developer, I need the MCP server in the Render blueprint so it deploys automatically alongside the existing services.
+
+**Acceptance Criteria:**
+- [ ] Add `hackathon-mcp` web service to `render.yaml`:
+  - Type: `web`, runtime: `docker`
+  - Dockerfile path: `mcp-server/Dockerfile`
+  - Plan: `free`
+  - Health check path: `/health`
+  - Environment variable `API_BASE_URL` referencing the `hackathon-api` service's external URL via `fromService`
+- [ ] Existing services in `render.yaml` remain unchanged
+- [ ] Blueprint YAML is valid (no syntax errors)
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- No MCP server implementation (API is designed for future MCP exposure, not built now)
-- No frontend UI for search (backend API only)
-- No authentication or user-specific results
-- No search on project details, team names, or participant information
-- No saved searches or search history
-- No autocomplete or search suggestions
-- No geographic/location-based search (location is returned but not searchable)
-- No sorting options beyond relevance/date (no sort parameter)
+- No authentication or authorization on the MCP server
+- No additional MCP tools beyond `search_hackathons` (no CRUD, no get-by-id)
+- No MCP resources or prompts — tools only
+- No Streamable HTTP transport (SSE only for now)
+- No WebSocket transport
+- No CI/CD pipeline changes (Render auto-deploys from branch)
+- No frontend changes
+- No changes to the existing backend API
 
 ## Technical Considerations
 
-- Use PostgreSQL's built-in full-text search (`tsvector`, `tsquery`, `ts_rank`) — no external search service needed
-- The `search_vector` column should index both `name` (weight A) and `description` (weight B) for weighted relevance
-- Use `plainto_tsquery` for user-friendly query parsing (handles natural language input without requiring special syntax)
-- Native SQL queries via `@Query(nativeQuery = true)` in the repository since JPA/JPQL doesn't support `tsvector`
-- Use Spring Data's `Pageable` for pagination support
-- The existing `HackathonResponse` DTO includes `createdBy: UserResponse` — the new `HackathonSearchResult` DTO must NOT include this field
-- Draft hackathons (`status = draft`) should always be excluded since they are not publicly visible
-- The `timeFrame` parameter maps to date-based filters on `starts_at` and `ends_at`: upcoming = `starts_at > now`, ongoing = `starts_at <= now AND ends_at >= now`, past = `ends_at < now`
-- For MCP tool compatibility: all parameters are simple scalar types (string, int), no arrays or nested objects
+- **Kotlin MCP SDK:** Use `io.modelcontextprotocol:kotlin-sdk:0.8.3` — the official SDK maintained with JetBrains. It provides Ktor SSE integration out of the box.
+- **Ktor version:** Must match the version used by the MCP SDK (check its transitive dependencies). Currently Ktor 3.x.
+- **Fat JAR:** Use the Shadow plugin (`com.github.johnrengelman.shadow`) to produce a single fat JAR for simpler Docker packaging.
+- **Render internal networking:** On Render, services on the same blueprint can communicate via internal or external URLs. Use `fromService` with `envVarKey: RENDER_EXTERNAL_URL` to wire `API_BASE_URL`.
+- **Gradle subproject:** The `mcp-server/` directory is a Gradle subproject. It shares the root `gradlew` wrapper but has its own `build.gradle.kts`. The root project's existing build tasks should not be affected.
+- **Port:** Render assigns the port via the `PORT` env var. The MCP server must read this at startup.
+- **Health checks:** Add a dedicated `/health` GET endpoint in the Ktor server that returns 200 OK, since SSE endpoints don't respond to simple health check probes.
