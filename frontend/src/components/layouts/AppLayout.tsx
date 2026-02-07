@@ -22,12 +22,13 @@ import { useBreadcrumbs } from "@/hooks/useBreadcrumbs"
 
 interface AppLayoutProps {
   children: React.ReactNode
+  breadcrumbOverrides?: Record<string, string>
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children, breadcrumbOverrides }: AppLayoutProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const segments = useBreadcrumbs()
+  const segments = useBreadcrumbs(breadcrumbOverrides)
 
   const handleLogout = async () => {
     await logout()

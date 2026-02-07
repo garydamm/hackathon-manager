@@ -42,3 +42,21 @@
   - Hackathon name detection uses exclusion of known static labels (Dashboard, Schedule, Teams, etc.)
   - BreadcrumbSeparator placed inside BreadcrumbItem for each non-first segment (avoids key issues)
 ---
+
+## Iteration 4 - US-004: Wire breadcrumb overrides into hackathon pages
+- Added `breadcrumbOverrides` optional prop to `AppLayout` component, which passes it to `useBreadcrumbs()`
+- Wired overrides into 6 pages that have dynamic data:
+  - `HackathonDetailPage`: `{ [slug]: hackathon.name }`
+  - `SchedulePage`: `{ [slug]: hackathon.name }`
+  - `TeamsListPage`: `{ [slug]: hackathon.name }`
+  - `TeamDetailPage`: `{ [slug]: hackathon.name, [teamId]: team.name }`
+  - `JudgeDashboardPage`: `{ [slug]: hackathon.name }`
+  - `ProjectScoringPage`: `{ [slug]: hackathon.name, [projectId]: project.name }`
+- `CreateHackathonPage` and `SessionManagementPage` need no changes — static labels handle them
+- While data is loading, `useBreadcrumbs` falls back to `formatSlug()` (title-case the slug), so no "undefined" flash
+- Files changed: AppLayout.tsx, HackathonDetail.tsx, Schedule.tsx, TeamsListPage.tsx, TeamDetailPage.tsx, JudgeDashboard.tsx, ProjectScoring.tsx, PRD.md
+- Learnings for future iterations:
+  - Prop-based approach (AppLayout accepts `breadcrumbOverrides`) is simpler than React context — each page already renders `<AppLayout>` directly
+  - Back links are NOT removed in this task — that's US-005. Only override wiring was done here
+  - `useBreadcrumbs` hook already handles the fallback gracefully: if no override exists for a slug, it formats it as title case
+---

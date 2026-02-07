@@ -156,8 +156,10 @@ export function SchedulePage() {
   const groupedEvents = groupEventsByDay(events)
   const hasEvents = events.length > 0
 
+  const breadcrumbOverrides = slug && hackathon ? { [slug]: hackathon.name } : undefined
+
   return (
-    <AppLayout>
+    <AppLayout breadcrumbOverrides={breadcrumbOverrides}>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">
           <Link to={`/hackathons/${slug}`} className="inline-flex items-center text-blue-600 hover:underline mb-4">

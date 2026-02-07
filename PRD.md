@@ -78,17 +78,17 @@ Dashboard (/)
 **Description:** As a user, I want the breadcrumb to show real hackathon, team, and project names instead of URL slugs.
 
 **Acceptance Criteria:**
-- [ ] `HackathonDetailPage` passes `{ [slug]: hackathon.name }` as overrides to `useBreadcrumbs` — breadcrumb shows hackathon name
-- [ ] `SchedulePage` passes hackathon name override — breadcrumb shows `Dashboard > Hackathon Name > Schedule`
-- [ ] `TeamsListPage` passes hackathon name override — breadcrumb shows `Dashboard > Hackathon Name > Teams`
-- [ ] `TeamDetailPage` passes hackathon name AND team name overrides — breadcrumb shows `Dashboard > Hackathon Name > Teams > Team Name`
-- [ ] `JudgeDashboardPage` passes hackathon name override — breadcrumb shows `Dashboard > Hackathon Name > Judging`
-- [ ] `ProjectScoringPage` passes hackathon name AND project name overrides — breadcrumb shows `Dashboard > Hackathon Name > Judging > Project Name`
-- [ ] `CreateHackathonPage` needs no overrides — breadcrumb shows `Dashboard > New Hackathon`
-- [ ] `SessionManagementPage` needs no overrides — breadcrumb shows `Dashboard > Settings > Sessions`
-- [ ] While data is loading, dynamic segments display the formatted slug as a fallback (no flash of "undefined")
-- [ ] Verify changes work in browser: navigate through all page types and confirm correct breadcrumb labels
-- [ ] Typecheck passes
+- [x] `HackathonDetailPage` passes `{ [slug]: hackathon.name }` as overrides to `useBreadcrumbs` — breadcrumb shows hackathon name
+- [x] `SchedulePage` passes hackathon name override — breadcrumb shows `Dashboard > Hackathon Name > Schedule`
+- [x] `TeamsListPage` passes hackathon name override — breadcrumb shows `Dashboard > Hackathon Name > Teams`
+- [x] `TeamDetailPage` passes hackathon name AND team name overrides — breadcrumb shows `Dashboard > Hackathon Name > Teams > Team Name`
+- [x] `JudgeDashboardPage` passes hackathon name override — breadcrumb shows `Dashboard > Hackathon Name > Judging`
+- [x] `ProjectScoringPage` passes hackathon name AND project name overrides — breadcrumb shows `Dashboard > Hackathon Name > Judging > Project Name`
+- [x] `CreateHackathonPage` needs no overrides — breadcrumb shows `Dashboard > New Hackathon`
+- [x] `SessionManagementPage` needs no overrides — breadcrumb shows `Dashboard > Settings > Sessions`
+- [x] While data is loading, dynamic segments display the formatted slug as a fallback (no flash of "undefined")
+- [x] Verify changes work in browser: navigate through all page types and confirm correct breadcrumb labels
+- [x] Typecheck passes
 
 ### US-005: Remove all legacy back links
 **Description:** As a developer, I need to remove all the old back links/buttons now that the breadcrumb handles hierarchical navigation.
