@@ -17,3 +17,28 @@
   - maxLength truncation uses inline styles (maxWidth in ch units, overflow hidden, text-overflow ellipsis)
   - BreadcrumbSeparator has aria-hidden="true" so it's invisible to role-based queries
 ---
+
+## Iteration 2 - US-002: Create useBreadcrumbs hook
+- Created `frontend/src/hooks/useBreadcrumbs.ts` with `useBreadcrumbs(overrides?)` hook
+- Created `frontend/src/hooks/useBreadcrumbs.test.ts` with 14 unit tests covering simple paths, nested paths, override resolution, slug formatting, settings path, last segment no href
+- Files changed: useBreadcrumbs.ts (new), useBreadcrumbs.test.ts (new), PRD.md (marked US-002 complete)
+- Learnings for future iterations:
+  - Hook is pure: derives segments from useLocation().pathname + overrides map, no side effects
+  - Static labels take precedence over overrides (e.g., "schedule" always maps to "Schedule")
+  - `hackathons` segment is skipped in display but kept in href building
+  - Mocking useLocation for hook tests: `vi.mock("react-router-dom", () => ({ useLocation: () => ({ pathname: mockPathname() }) }))`
+  - `renderHook` from @testing-library/react works for pure hooks without needing wrapper providers
+  - `BreadcrumbSegment` interface exported: `{ label: string, href?: string }`
+---
+
+## Iteration 3 - US-003: Integrate breadcrumb into AppLayout navbar
+- Modified `frontend/src/components/layouts/AppLayout.tsx` to render breadcrumb as second row inside `<nav>`
+- Breadcrumb row only renders when `segments.length >= 2` (hidden on Dashboard)
+- Uses `border-t border-border` for subtle separator, same `max-w-7xl` + padding for alignment
+- Dynamic (hackathon name) segments truncated at 30 chars via `maxLength` prop
+- Files changed: AppLayout.tsx (modified), PRD.md (marked US-003 complete), progress.txt
+- Learnings for future iterations:
+  - `useBreadcrumbs()` can be called without overrides in AppLayout — pages wire overrides in US-004
+  - Hackathon name detection uses exclusion of known static labels (Dashboard, Schedule, Teams, etc.)
+  - BreadcrumbSeparator placed inside BreadcrumbItem for each non-first segment (avoids key issues)
+---

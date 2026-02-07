@@ -65,14 +65,14 @@ Dashboard (/)
 **Description:** As a user, I want to see the breadcrumb integrated into the sticky navbar so I always know where I am and can navigate up the hierarchy.
 
 **Acceptance Criteria:**
-- [ ] Breadcrumb renders inside the existing `<nav>` element in `AppLayout.tsx`, below the logo/user row, as a second row within the navbar
-- [ ] Breadcrumb row only renders when there are 2+ segments (i.e., hidden on Dashboard `/`)
-- [ ] Breadcrumb row has a subtle top border (`border-t border-border`) separating it from the main navbar row
-- [ ] Breadcrumb row uses the same `max-w-7xl` and horizontal padding as the main navbar row for alignment
-- [ ] Hackathon name segments are truncated at 30 characters with ellipsis
-- [ ] Breadcrumb is responsive — on small screens, text sizes adjust and long names truncate more aggressively
-- [ ] Verify changes work in browser: breadcrumb appears on nested pages, is hidden on Dashboard
-- [ ] Typecheck passes
+- [x] Breadcrumb renders inside the existing `<nav>` element in `AppLayout.tsx`, below the logo/user row, as a second row within the navbar
+- [x] Breadcrumb row only renders when there are 2+ segments (i.e., hidden on Dashboard `/`)
+- [x] Breadcrumb row has a subtle top border (`border-t border-border`) separating it from the main navbar row
+- [x] Breadcrumb row uses the same `max-w-7xl` and horizontal padding as the main navbar row for alignment
+- [x] Hackathon name segments are truncated at 30 characters with ellipsis
+- [x] Breadcrumb is responsive — on small screens, text sizes adjust and long names truncate more aggressively
+- [x] Verify changes work in browser: breadcrumb appears on nested pages, is hidden on Dashboard
+- [x] Typecheck passes
 
 ### US-004: Wire breadcrumb overrides into hackathon pages
 **Description:** As a user, I want the breadcrumb to show real hackathon, team, and project names instead of URL slugs.

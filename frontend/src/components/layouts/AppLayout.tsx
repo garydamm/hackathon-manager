@@ -10,6 +10,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb"
+import { useBreadcrumbs } from "@/hooks/useBreadcrumbs"
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -18,11 +27,14 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const segments = useBreadcrumbs()
 
   const handleLogout = async () => {
     await logout()
     navigate("/login")
   }
+
+  const HACKATHON_NAME_MAX_LENGTH = 30
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,6 +77,48 @@ export function AppLayout({ children }: AppLayoutProps) {
             </div>
           </div>
         </div>
+        {segments.length >= 2 && (
+          <div className="border-t border-border">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2">
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {segments.map((segment, index) => {
+                    const isLast = index === segments.length - 1
+                    const isHackathonName =
+                      segment.label !== "Dashboard" &&
+                      segment.label !== "New Hackathon" &&
+                      segment.label !== "Schedule" &&
+                      segment.label !== "Teams" &&
+                      segment.label !== "Judging" &&
+                      segment.label !== "Settings" &&
+                      segment.label !== "Sessions"
+                    const maxLen = isHackathonName
+                      ? HACKATHON_NAME_MAX_LENGTH
+                      : undefined
+
+                    return (
+                      <BreadcrumbItem key={segment.href ?? segment.label}>
+                        {index > 0 && <BreadcrumbSeparator />}
+                        {isLast ? (
+                          <BreadcrumbPage maxLength={maxLen}>
+                            {segment.label}
+                          </BreadcrumbPage>
+                        ) : (
+                          <BreadcrumbLink
+                            to={segment.href!}
+                            maxLength={maxLen}
+                          >
+                            {segment.label}
+                          </BreadcrumbLink>
+                        )}
+                      </BreadcrumbItem>
+                    )
+                  })}
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Main content */}
