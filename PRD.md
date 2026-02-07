@@ -94,17 +94,17 @@ Dashboard (/)
 **Description:** As a developer, I need to remove all the old back links/buttons now that the breadcrumb handles hierarchical navigation.
 
 **Acceptance Criteria:**
-- [ ] Remove back button (`navigate(-1)`) and cancel back-navigation from `CreateHackathonPage`
-- [ ] Remove "Back to Hackathon" link from `SchedulePage`
-- [ ] Remove "Back to {hackathon.name}" link from `TeamsListPage`
-- [ ] Remove "Back to Teams" link from `TeamDetailPage`
-- [ ] Remove "Back to Hackathon" button from `JudgeDashboardPage`
-- [ ] Remove "Back to Judging" button from `ProjectScoringPage`
-- [ ] Unused `ArrowLeft` imports are removed from each file
-- [ ] Error-state fallback navigation buttons (e.g., "Go Back" on error) are kept — these are not back links, they are recovery actions
-- [ ] No `navigate(-1)` calls remain in any page component (except error recovery)
-- [ ] Verify changes work in browser: no duplicate navigation controls, breadcrumb is the sole hierarchical nav
-- [ ] Typecheck passes
+- [x] Remove back button (`navigate(-1)`) and cancel back-navigation from `CreateHackathonPage`
+- [x] Remove "Back to Hackathon" link from `SchedulePage`
+- [x] Remove "Back to {hackathon.name}" link from `TeamsListPage`
+- [x] Remove "Back to Teams" link from `TeamDetailPage`
+- [x] Remove "Back to Hackathon" button from `JudgeDashboardPage`
+- [x] Remove "Back to Judging" button from `ProjectScoringPage`
+- [x] Unused `ArrowLeft` imports are removed from each file
+- [x] Error-state fallback navigation buttons (e.g., "Go Back" on error) are kept — these are not back links, they are recovery actions
+- [x] No `navigate(-1)` calls remain in any page component (except error recovery)
+- [x] Verify changes work in browser: no duplicate navigation controls, breadcrumb is the sole hierarchical nav
+- [x] Typecheck passes
 
 ## Non-Goals
 

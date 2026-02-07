@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import {
   Loader2,
-  ArrowLeft,
   Gavel,
   CheckCircle2,
   Clock,
@@ -196,14 +195,6 @@ export function JudgeDashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => navigate(`/hackathons/${slug}`)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Hackathon
-            </Button>
-          </div>
-
           {/* Header */}
           <div className="space-y-2">
             <div className="flex items-center gap-3">

@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket, FolderKanban, FolderPlus, Send, Undo2, Archive } from "lucide-react"
+import { Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket, FolderKanban, FolderPlus, Send, Undo2, Archive } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -324,16 +324,6 @@ export function TeamDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <Link to={`/hackathons/${slug}/teams`}>
-              <Button variant="ghost">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Teams
-              </Button>
-            </Link>
-          </div>
-
           {/* Header */}
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-4">

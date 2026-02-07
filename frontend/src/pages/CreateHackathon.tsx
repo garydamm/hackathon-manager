@@ -7,7 +7,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import {
   Loader2,
-  ArrowLeft,
   Calendar,
   Users,
   Globe,
@@ -147,21 +146,11 @@ export function CreateHackathonPage() {
           className="space-y-8"
         >
           {/* Header */}
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">Create Hackathon</h1>
-              <p className="text-muted-foreground">
-                Set up a new hackathon for participants to join
-              </p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold">Create Hackathon</h1>
+            <p className="text-muted-foreground">
+              Set up a new hackathon for participants to join
+            </p>
           </div>
 
           {error && (
@@ -468,7 +457,7 @@ export function CreateHackathonPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/")}
               >
                 Cancel
               </Button>

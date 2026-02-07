@@ -1,6 +1,6 @@
-import { Link, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import { ArrowLeft, Calendar, MapPin, Clock, Video, AlertCircle, Users } from "lucide-react"
+import { Calendar, MapPin, Clock, Video, AlertCircle, Users } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -162,10 +162,6 @@ export function SchedulePage() {
     <AppLayout breadcrumbOverrides={breadcrumbOverrides}>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <Link to={`/hackathons/${slug}`} className="inline-flex items-center text-blue-600 hover:underline mb-4">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Hackathon
-          </Link>
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="h-8 w-8 text-blue-600" />
             <h1 className="text-3xl font-bold">Schedule</h1>

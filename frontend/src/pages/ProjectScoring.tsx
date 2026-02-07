@@ -7,7 +7,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import {
   Loader2,
-  ArrowLeft,
   CheckCircle2,
   Save,
   ExternalLink,
@@ -263,14 +262,6 @@ export function ProjectScoringPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => navigate(`/hackathons/${slug}/judge`)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </div>
-
           {/* Project Details Card */}
           <Card>
             <CardHeader>

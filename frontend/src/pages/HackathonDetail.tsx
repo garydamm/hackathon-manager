@@ -927,19 +927,15 @@ export function HackathonDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          {/* Navigation & Actions */}
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            {canEdit && !isEditing && (
+          {/* Actions */}
+          {canEdit && !isEditing && (
+            <div className="flex justify-end">
               <Button onClick={() => setIsEditing(true)}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
-            )}
-          </div>
+            </div>
+          )}
 
           {error && (
             <motion.div

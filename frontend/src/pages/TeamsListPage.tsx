@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useParams, Link, useSearchParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
-import { ArrowLeft, Loader2, Search, Users, Plus, Ticket } from "lucide-react"
+import { Loader2, Search, Users, Plus, Ticket } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -138,16 +138,6 @@ export function TeamsListPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <Link to={`/hackathons/${slug}`}>
-              <Button variant="ghost">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to {hackathon.name}
-              </Button>
-            </Link>
-          </div>
-
           {/* Header */}
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
