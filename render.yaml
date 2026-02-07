@@ -3,7 +3,7 @@
 
 databases:
   - name: hackathon-db
-    plan: basic_256mb
+    plan: basic-256mb
     databaseName: hackathon_manager
     user: hackathon_user
 
