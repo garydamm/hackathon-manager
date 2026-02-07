@@ -1,109 +1,19 @@
 # Progress Log
 
 ## Learnings
-(Patterns discovered during implementation)
-- MCP SDK 0.8.3 requires Kotlin 2.2.0+ and Ktor 3.2.3 — metadata version 2.2.0 is unreadable by Kotlin < 2.2
-- MCP SDK types are in `io.modelcontextprotocol.kotlin.sdk.types.*` (Tool, ToolSchema, CallToolResult, TextContent, etc.)
-- `io.modelcontextprotocol.kotlin.sdk.Tool` is a companion object with `Input()`/`Output()` factory methods — NOT the Tool data class
-- `server.addTool(Tool, handler)` overload is simplest — takes a `types.Tool` directly
-- `CallToolResult.isError` is `Boolean?` (nullable), defaults to null not false — test with `!= true` not `== false`
-- `ToolSchema.properties` is `JsonObject?` (nullable) — use `!!` in tests
-- `CallToolRequest.arguments` returns `JsonObject?` — need null check
-- Gradle multi-project builds share Kotlin plugin version — can't have root at 1.9.22 and subproject at 2.2.0
-- Kotlin 2.2.0 makes `kotlinOptions` an error — must use `compilerOptions` DSL with `JvmTarget.JVM_17`
-- `jvmToolchain(17)` fails if JDK 17 isn't installed — use `compilerOptions { jvmTarget }` instead for cross-compilation
-- Shadow plugin moved from `com.github.johnrengelman.shadow` to `com.gradleup.shadow` for Gradle 8.x compatibility
-- The `kotlin-sdk` artifact is a BOM/aggregate; actual server code is in `kotlin-sdk-server` (pulled transitively)
-- `kotlin("plugin.serialization")` must be declared `apply false` in root for subproject to use it without version
+- `aria-hidden="true"` removes elements from the accessibility tree — can't use `getByRole` on them; use `data-testid` instead
+- Frontend has no dedicated `typecheck` script — use `npx tsc -b` directly
+- UI components follow shadcn/ui patterns: forwardRef, cn utility, displayName, extend HTML attributes
+- Testing uses vitest + @testing-library/react + MemoryRouter for components with react-router Links
 
 ---
 
-## Iteration 1 - US-001: Set up MCP server Gradle subproject
-- Added `include("mcp-server")` to settings.gradle.kts
-- Created `mcp-server/build.gradle.kts` with Kotlin 2.2.0, MCP SDK 0.8.3, Ktor 3.2.3, Shadow plugin
-- Created placeholder `mcp-server/src/main/kotlin/com/hackathon/mcp/Main.kt`
-- Upgraded root project Kotlin from 1.9.22 → 2.2.0 (required for MCP SDK compatibility)
-- Migrated root `kotlinOptions` → `compilerOptions` DSL (required by Kotlin 2.2.0)
-- Added `kotlin("plugin.serialization") version "2.2.0" apply false` to root plugins
-- Files changed:
-  - settings.gradle.kts (added include)
-  - build.gradle.kts (Kotlin 2.2.0, compilerOptions DSL, serialization plugin)
-  - mcp-server/build.gradle.kts (new)
-  - mcp-server/src/main/kotlin/com/hackathon/mcp/Main.kt (new)
-- All backend tests pass, both builds succeed
----
-
-## Iteration 2 - US-002: Implement search_hackathons MCP tool
-- Implemented MCP server with `search_hackathons` tool using Kotlin MCP SDK
-- Created `HackathonApiClient` — Ktor HTTP client that calls backend `/api/hackathons/search` with proper query params
-- Created `ResponseFormatter` — formats search results as readable text with hackathon details and pagination
-- Updated `Main.kt` — creates MCP Server with tool registration and handler that bridges MCP → backend API
-- 16 unit tests covering: response formatting, API client param mapping, tool handler integration, error handling
-- Files changed:
-  - mcp-server/src/main/kotlin/com/hackathon/mcp/Main.kt (MCP server + tool registration)
-  - mcp-server/src/main/kotlin/com/hackathon/mcp/HackathonApiClient.kt (new — HTTP client)
-  - mcp-server/src/main/kotlin/com/hackathon/mcp/ResponseFormatter.kt (new — text formatter)
-  - mcp-server/src/test/kotlin/com/hackathon/mcp/ResponseFormatterTest.kt (new — 7 tests)
-  - mcp-server/src/test/kotlin/com/hackathon/mcp/HackathonApiClientTest.kt (new — 5 tests)
-  - mcp-server/src/test/kotlin/com/hackathon/mcp/SearchToolTest.kt (new — 4 tests)
-  - mcp-server/build.gradle.kts (added test deps: ktor-client-mock, kotlinx-coroutines-test)
+## Iteration 1 - US-001: Create Breadcrumb UI component
+- Created `frontend/src/components/ui/breadcrumb.tsx` with 6 composable parts: Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage
+- Created `frontend/src/components/ui/breadcrumb.test.tsx` with 9 unit tests covering rendering, links, separators, truncation, className forwarding
+- Files changed: breadcrumb.tsx (new), breadcrumb.test.tsx (new), PRD.md (marked US-001 complete)
 - Learnings for future iterations:
-  - MCP SDK types vs companion objects have different packages — check with javap when unsure
-  - Ktor mock engine captures request URLs for assertion — great for verifying param mapping
-  - `CallToolResult.isError` is nullable Boolean — common gotcha in assertions
----
-
-## Iteration 3 - US-003: Add SSE transport and server entry point
-- Updated `Main.kt` to configure Ktor embedded server with Netty engine
-- Added `install(SSE)` plugin for Server-Sent Events support
-- Added `mcp("/sse") { createServer(apiClient) }` routing — uses MCP SDK's Ktor extension which sets up SSE + POST endpoints
-- Added `GET /health` endpoint returning 200 OK for Render health checks
-- Port read from `PORT` env var, defaults to 3001
-- Server logs startup message before blocking on `start(wait = true)`
-- Manual test confirmed: health returns 200 OK, SSE endpoint returns `event: endpoint` with sessionId
-- Files changed:
-  - mcp-server/src/main/kotlin/com/hackathon/mcp/Main.kt (added Ktor server setup, SSE transport, health endpoint)
-  - PRD.md (marked US-003 complete)
-- All existing tests pass, build succeeds
-- Learnings for future iterations:
-  - `mcp(path)` extension on Routing creates sub-route with SSE + POST endpoints — no need to manually wire transport
-  - `mcp(Application, block)` overload auto-installs SSE plugin — `mcp(Routing, path, block)` does NOT, must `install(SSE)` yourself
-  - SSE endpoint returns `event: endpoint` with `data: ?sessionId=...` — POST endpoint receives MCP JSON-RPC messages at same path
-  - `start(wait = true)` blocks the main thread — log startup message before calling it
----
-
-## Iteration 4 - US-004: Create Dockerfile for MCP server
-- Created `mcp-server/Dockerfile` with multi-stage build
-  - Builder stage: `eclipse-temurin:17-jdk`, copies gradlew + gradle wrapper + root build files + mcp-server subproject
-  - Runs `./gradlew :mcp-server:shadowJar --no-daemon` to produce fat JAR
-  - Runtime stage: `eclipse-temurin:17-jre`, copies `hackathon-mcp-server.jar`
-  - Memory flags: `-Xmx256m -Xms128m` for Render free tier
-  - Port configured via `PORT` env var
-- Verified: `docker build -f mcp-server/Dockerfile -t hackathon-mcp .` succeeds
-- Verified: container starts, logs startup message, health check at `/health` returns 200 OK
-- Verified: `./gradlew build -x test` succeeds (typecheck passes)
-- Files changed:
-  - mcp-server/Dockerfile (new)
-  - PRD.md (marked US-004 complete)
-- Learnings for future iterations:
-  - The `.dockerignore` at repo root applies when building from repo root context — `frontend/` is excluded which keeps the build context small
-  - Shadow JAR name is `hackathon-mcp-server.jar` (no version/classifier) due to shadowJar config in build.gradle.kts
-  - Docker build context needs root build.gradle.kts + settings.gradle.kts because Gradle multi-project resolves the root project first
-  - No need to copy root `src/` — `shadowJar` task only compiles the mcp-server subproject
----
-
-## Iteration 5 - US-005: Add MCP server to Render blueprint
-- Added `hackathon-mcp` web service to `render.yaml` between backend API and frontend
-- Configured: type `web`, runtime `docker`, dockerfilePath `mcp-server/Dockerfile`, plan `free`, healthCheckPath `/health`
-- Wired `API_BASE_URL` env var using `fromService` referencing `hackathon-api`'s `RENDER_EXTERNAL_URL`
-- Validated YAML syntax with `npx js-yaml` — parses correctly
-- Verified existing services (`hackathon-api`, `hackathon-app`) remain unchanged
-- Build/typecheck passes
-- Files changed:
-  - render.yaml (added hackathon-mcp service)
-  - PRD.md (marked US-005 complete)
-- Learnings for future iterations:
-  - Render blueprint `dockerfilePath` is relative to repo root
-  - `fromService` with `envVarKey: RENDER_EXTERNAL_URL` gives the public URL of another service — use for inter-service communication
-  - `npx -y js-yaml <file>` is a quick way to validate YAML when no local parser is available
+  - BreadcrumbLink uses react-router-dom `Link` component, needs `MemoryRouter` wrapper in tests
+  - maxLength truncation uses inline styles (maxWidth in ch units, overflow hidden, text-overflow ellipsis)
+  - BreadcrumbSeparator has aria-hidden="true" so it's invisible to role-based queries
 ---
