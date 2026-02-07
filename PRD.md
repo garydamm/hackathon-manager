@@ -50,16 +50,16 @@ Dashboard (/)
 **Description:** As a developer, I need a hook that derives breadcrumb segments from the current route so pages don't have to manually construct breadcrumbs.
 
 **Acceptance Criteria:**
-- [ ] Create `frontend/src/hooks/useBreadcrumbs.ts` that returns an array of `{ label: string, href?: string }` segments based on the current URL path
-- [ ] The hook accepts an optional `overrides` map of `{ [pathSegment: string]: string }` to replace URL slugs with human-readable names (e.g., `{ "my-hackathon-slug": "My Hackathon" }`)
-- [ ] Static segment mappings: `hackathons` → (skipped, not shown), `new` → `"New Hackathon"`, `schedule` → `"Schedule"`, `teams` → `"Teams"`, `judge` → `"Judging"`, `settings` → `"Settings"`, `sessions` → `"Sessions"`
-- [ ] Dynamic segments (`:slug`, `:teamId`, `:projectId`) use the `overrides` map to resolve display names; if no override provided, format the slug as title case (replace hyphens with spaces, capitalize words)
-- [ ] First segment is always `{ label: "Dashboard", href: "/" }`
-- [ ] Last segment has no `href` (it's the current page)
-- [ ] The `hackathons` path segment is skipped in display but kept in href construction (e.g., `/hackathons/my-hack/schedule` → `Dashboard > My Hack > Schedule`, not `Dashboard > Hackathons > My Hack > Schedule`)
-- [ ] Unit tests cover: simple paths, nested paths, override resolution, slug formatting, settings path
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `frontend/src/hooks/useBreadcrumbs.ts` that returns an array of `{ label: string, href?: string }` segments based on the current URL path
+- [x] The hook accepts an optional `overrides` map of `{ [pathSegment: string]: string }` to replace URL slugs with human-readable names (e.g., `{ "my-hackathon-slug": "My Hackathon" }`)
+- [x] Static segment mappings: `hackathons` → (skipped, not shown), `new` → `"New Hackathon"`, `schedule` → `"Schedule"`, `teams` → `"Teams"`, `judge` → `"Judging"`, `settings` → `"Settings"`, `sessions` → `"Sessions"`
+- [x] Dynamic segments (`:slug`, `:teamId`, `:projectId`) use the `overrides` map to resolve display names; if no override provided, format the slug as title case (replace hyphens with spaces, capitalize words)
+- [x] First segment is always `{ label: "Dashboard", href: "/" }`
+- [x] Last segment has no `href` (it's the current page)
+- [x] The `hackathons` path segment is skipped in display but kept in href construction (e.g., `/hackathons/my-hack/schedule` → `Dashboard > My Hack > Schedule`, not `Dashboard > Hackathons > My Hack > Schedule`)
+- [x] Unit tests cover: simple paths, nested paths, override resolution, slug formatting, settings path
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-003: Integrate breadcrumb into AppLayout navbar
 **Description:** As a user, I want to see the breadcrumb integrated into the sticky navbar so I always know where I am and can navigate up the hierarchy.
