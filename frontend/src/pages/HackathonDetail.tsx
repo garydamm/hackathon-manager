@@ -19,6 +19,7 @@ import {
   UsersRound,
   CheckCircle,
   FolderKanban,
+  FolderPlus,
   Gavel,
   User,
   Archive,
@@ -45,7 +46,8 @@ import { ParticipantsSection } from "@/components/ParticipantsSection"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { projectService } from "@/services/projects"
-import type { Project } from "@/types"
+import { ProjectForm } from "@/components/ProjectForm"
+import type { Project, CreateProjectRequest } from "@/types"
 import { ApiError } from "@/services/api"
 import type { Hackathon, HackathonStatus } from "@/types"
 
@@ -191,13 +193,49 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
 }
 
 function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
+  const queryClient = useQueryClient()
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [showProjectForm, setShowProjectForm] = useState(false)
 
   const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ["projects", "hackathon", hackathon.id],
     queryFn: () => projectService.getProjectsByHackathon(hackathon.id),
   })
 
+  const createProjectMutation = useMutation({
+    mutationFn: (request: CreateProjectRequest) => projectService.createProject(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon.id] })
+      setShowProjectForm(false)
+    },
+  })
+
+  const handleProjectFormSubmit = async (data: {
+    name: string
+    tagline?: string
+    description?: string
+    demoUrl?: string
+    videoUrl?: string
+    repositoryUrl?: string
+    presentationUrl?: string
+  }) => {
+    const cleanedData = {
+      name: data.name,
+      tagline: data.tagline || undefined,
+      description: data.description || undefined,
+      demoUrl: data.demoUrl || undefined,
+      videoUrl: data.videoUrl || undefined,
+      repositoryUrl: data.repositoryUrl || undefined,
+      presentationUrl: data.presentationUrl || undefined,
+    }
+
+    await createProjectMutation.mutateAsync({
+      hackathonId: hackathon.id,
+      ...cleanedData,
+    })
+  }
+
+  const isRegisteredParticipant = hackathon.userRole === "participant"
   const projectsCount = projects?.length ?? 0
 
   if (projectsLoading) {
@@ -222,16 +260,33 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FolderKanban className="h-5 w-5" />
-            Projects ({projectsCount})
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <FolderKanban className="h-5 w-5" />
+              Projects ({projectsCount})
+            </span>
+            {isRegisteredParticipant && (
+              <Button size="sm" onClick={() => setShowProjectForm(true)}>
+                <FolderPlus className="h-4 w-4 mr-2" />
+                Create Project
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {projectsCount === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              No projects have been submitted yet.
-            </p>
+            <div className="text-center py-8">
+              <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+              <p className="text-muted-foreground mb-4">
+                No projects have been created yet.
+              </p>
+              {isRegisteredParticipant && (
+                <Button onClick={() => setShowProjectForm(true)}>
+                  <FolderPlus className="h-4 w-4 mr-2" />
+                  Create Project
+                </Button>
+              )}
+            </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {projects!.map((project, index) => (
@@ -255,6 +310,14 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
           project={selectedProject}
         />
       )}
+
+      {/* Project Creation Form */}
+      <ProjectForm
+        isOpen={showProjectForm}
+        onClose={() => setShowProjectForm(false)}
+        onSubmit={handleProjectFormSubmit}
+        isLoading={createProjectMutation.isPending}
+      />
     </>
   )
 }

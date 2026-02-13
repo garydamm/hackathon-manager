@@ -98,13 +98,13 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 **Description:** As a hackathon participant, I want to create a project from the hackathon projects page (without needing a team) so I can start building immediately.
 
 **Acceptance Criteria:**
-- [ ] Add "Create Project" button on the hackathon projects list page (visible to registered participants)
-- [ ] Button opens a project creation form/modal that does NOT require a team
-- [ ] The form sends `hackathonId` and omits `teamId`
-- [ ] Existing team-context project creation on `TeamDetailPage` still works (sends both `teamId` and `hackathonId`)
-- [ ] After creation, the list refreshes to show the new project
+- [x] Add "Create Project" button on the hackathon projects list page (visible to registered participants)
+- [x] Button opens a project creation form/modal that does NOT require a team
+- [x] The form sends `hackathonId` and omits `teamId`
+- [x] Existing team-context project creation on `TeamDetailPage` still works (sends both `teamId` and `hackathonId`)
+- [x] After creation, the list refreshes to show the new project
 - [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] Typecheck passes
 
 ### US-007: Add team-project linking and unlinking UI
 **Description:** As a team member, I want to link an unlinked project to my team from the team detail page, and unlink it if needed.
