@@ -133,3 +133,39 @@
   - Jackson includes null values in JSON by default (`"teamId": null`), so `jsonPath("$[0].teamId").isEmpty` won't work — use `.value(null)` or assert a non-null field instead
   - Frontend `npm run typecheck` doesn't exist — use `npx tsc -b --noEmit` or the `build` script
 ---
+
+## Iteration 6 - US-006: Update project creation UI for independent projects
+- Added "Create Project" button to the `ProjectsSection` in `HackathonDetail.tsx`
+  - Button visible only to registered participants (`hackathon.userRole === "participant"`)
+  - Also shows as a CTA in the empty state when no projects exist
+- Reused existing `ProjectForm` modal component (same one used by TeamDetailPage)
+- Form submits with `hackathonId` only (no `teamId`), creating an independent project
+- Added `createProjectMutation` with React Query cache invalidation on `["projects", "hackathon", hackathon.id]`
+- TeamDetailPage project creation still works unchanged (sends both `hackathonId` and `teamId`)
+- Files changed:
+  - frontend/src/pages/HackathonDetail.tsx (added ProjectForm import, CreateProjectRequest type, mutation, button, form modal)
+  - PRD.md (marked US-006 criteria complete)
+- Learnings for future iterations:
+  - `ProjectForm` component is fully reusable — just pass `onSubmit` handler that builds the right `CreateProjectRequest` (with or without teamId)
+  - The `ProjectsSection` was previously a simple display component; it now has mutation state. `useQueryClient` was already imported at the file level.
+  - "Verify changes work in browser" is left unchecked as it requires manual testing
+---
+
+## Iteration 7 - US-007: Add team-project linking and unlinking UI
+- Added "Link Existing Project" button on TeamDetailPage when team has no linked project (alongside existing "Create Project" button)
+- "Link Existing Project" opens a modal that fetches and lists unlinked projects in the hackathon via `getUnlinkedProjects` API
+- User can select a project from the list and confirm to link it via `linkProjectToTeam` API
+- Added "Unlink Project" button in the project header actions when team has a linked project
+- "Unlink Project" shows a confirmation dialog, then calls `unlinkProjectFromTeam` API
+- React Query cache invalidation covers: `["project", "team", teamId]`, `["projects", "hackathon", hackathonId]`, `["projects", "unlinked", hackathonId]`, `["team", teamId]`
+- Updated empty-state text from "Your team hasn't created a project yet." to "Your team doesn't have a linked project yet."
+- Updated test to match new empty-state text
+- Files changed:
+  - frontend/src/pages/TeamDetailPage.tsx (link/unlink mutations, modals, buttons)
+  - frontend/src/pages/TeamDetailPage.test.tsx (updated empty-state text assertion)
+  - PRD.md (marked US-007 criteria complete)
+- Learnings for future iterations:
+  - Changing user-facing strings in components requires updating corresponding test assertions
+  - The unlinked projects query uses `enabled: showLinkProjectModal` to only fetch when the modal is open (lazy loading)
+  - Link/unlink errors display inline in the modal/dialog using the same error pattern as join/leave team
+---

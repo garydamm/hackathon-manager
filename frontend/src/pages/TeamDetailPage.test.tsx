@@ -141,7 +141,7 @@ describe("TeamDetailPage - Archive Project", () => {
     renderComponent()
 
     await waitFor(() => {
-      expect(screen.getByText("Your team hasn't created a project yet.")).toBeInTheDocument()
+      expect(screen.getByText("Your team doesn't have a linked project yet.")).toBeInTheDocument()
     })
 
     expect(screen.queryByText("Archive Project")).not.toBeInTheDocument()

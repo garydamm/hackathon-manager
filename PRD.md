@@ -110,14 +110,14 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 **Description:** As a team member, I want to link an unlinked project to my team from the team detail page, and unlink it if needed.
 
 **Acceptance Criteria:**
-- [ ] On `TeamDetailPage`, when the team has no linked project, show a "Link Project" button/section
-- [ ] "Link Project" opens a modal/dropdown listing unlinked projects in the hackathon that the current user created
-- [ ] Selecting a project and confirming calls `linkProjectToTeam` API
-- [ ] On `TeamDetailPage`, when the team has a linked project, show an "Unlink Project" option with confirmation dialog
-- [ ] Unlinking calls `unlinkProjectFromTeam` API and refreshes the team's project section
-- [ ] React Query caches are invalidated after link/unlink operations
+- [x] On `TeamDetailPage`, when the team has no linked project, show a "Link Project" button/section
+- [x] "Link Project" opens a modal/dropdown listing unlinked projects in the hackathon that the current user created
+- [x] Selecting a project and confirming calls `linkProjectToTeam` API
+- [x] On `TeamDetailPage`, when the team has a linked project, show an "Unlink Project" option with confirmation dialog
+- [x] Unlinking calls `unlinkProjectFromTeam` API and refreshes the team's project section
+- [x] React Query caches are invalidated after link/unlink operations
 - [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] Typecheck passes
 
 ### US-008: Update project display components for optional team
 **Description:** As a user, I want project cards and detail views to gracefully handle projects that have no team, showing the creator instead.

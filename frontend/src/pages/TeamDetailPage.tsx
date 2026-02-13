@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket, FolderKanban, FolderPlus, Send, Undo2, Archive } from "lucide-react"
+import { Loader2, Users, Crown, UserPlus, LogOut, X, Pencil, Copy, RefreshCw, Check, Ticket, FolderKanban, FolderPlus, Send, Undo2, Archive, Link2, Unlink } from "lucide-react"
 import { AppLayout } from "@/components/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -34,6 +34,11 @@ export function TeamDetailPage() {
   const [showUnsubmitConfirm, setShowUnsubmitConfirm] = useState(false)
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false)
   const [archiveError, setArchiveError] = useState<string | null>(null)
+  const [showLinkProjectModal, setShowLinkProjectModal] = useState(false)
+  const [selectedProjectToLink, setSelectedProjectToLink] = useState<string | null>(null)
+  const [linkError, setLinkError] = useState<string | null>(null)
+  const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false)
+  const [unlinkError, setUnlinkError] = useState<string | null>(null)
 
   const {
     data: hackathon,
@@ -72,6 +77,13 @@ export function TeamDetailPage() {
     queryKey: ["project", "team", teamId],
     queryFn: () => projectService.getProjectByTeam(teamId!),
     enabled: !!teamId,
+  })
+
+  // Fetch unlinked projects for link modal
+  const { data: unlinkedProjects, isLoading: isLoadingUnlinked } = useQuery({
+    queryKey: ["projects", "unlinked", hackathon?.id],
+    queryFn: () => projectService.getUnlinkedProjects(hackathon!.id),
+    enabled: !!hackathon?.id && showLinkProjectModal,
   })
 
   const joinMutation = useMutation({
@@ -179,6 +191,47 @@ export function TeamDetailPage() {
         setArchiveError(err.message)
       } else {
         setArchiveError("Failed to archive project. Please try again.")
+      }
+    },
+  })
+
+  const linkProjectMutation = useMutation({
+    mutationFn: ({ projectId, teamId }: { projectId: string; teamId: string }) =>
+      projectService.linkProjectToTeam(projectId, teamId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", "team", teamId] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon?.id] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "unlinked", hackathon?.id] })
+      queryClient.invalidateQueries({ queryKey: ["team", teamId] })
+      setShowLinkProjectModal(false)
+      setSelectedProjectToLink(null)
+      setLinkError(null)
+      refetchProject()
+    },
+    onError: (err) => {
+      if (err instanceof ApiError) {
+        setLinkError(err.message)
+      } else {
+        setLinkError("Failed to link project. Please try again.")
+      }
+    },
+  })
+
+  const unlinkProjectMutation = useMutation({
+    mutationFn: (projectId: string) => projectService.unlinkProjectFromTeam(projectId),
+    onSuccess: () => {
+      queryClient.setQueryData(["project", "team", teamId], null)
+      queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon?.id] })
+      queryClient.invalidateQueries({ queryKey: ["projects", "unlinked", hackathon?.id] })
+      queryClient.invalidateQueries({ queryKey: ["team", teamId] })
+      setShowUnlinkConfirm(false)
+      setUnlinkError(null)
+    },
+    onError: (err) => {
+      if (err instanceof ApiError) {
+        setUnlinkError(err.message)
+      } else {
+        setUnlinkError("Failed to unlink project. Please try again.")
       }
     },
   })
@@ -556,6 +609,19 @@ export function TeamDetailPage() {
                         Unsubmit Project
                       </Button>
                     )}
+                    {project && isOnThisTeam && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setUnlinkError(null)
+                          setShowUnlinkConfirm(true)
+                        }}
+                      >
+                        <Unlink className="h-4 w-4 mr-2" />
+                        Unlink Project
+                      </Button>
+                    )}
                     {canArchiveProject && (
                       <Button
                         variant="destructive"
@@ -579,12 +645,25 @@ export function TeamDetailPage() {
                   <div className="text-center py-8">
                     <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                     <p className="text-muted-foreground mb-4">
-                      Your team hasn't created a project yet.
+                      Your team doesn't have a linked project yet.
                     </p>
-                    <Button onClick={handleCreateProject}>
-                      <FolderPlus className="h-4 w-4 mr-2" />
-                      Create Project
-                    </Button>
+                    <div className="flex items-center justify-center gap-3">
+                      <Button onClick={handleCreateProject}>
+                        <FolderPlus className="h-4 w-4 mr-2" />
+                        Create Project
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setLinkError(null)
+                          setSelectedProjectToLink(null)
+                          setShowLinkProjectModal(true)
+                        }}
+                      >
+                        <Link2 className="h-4 w-4 mr-2" />
+                        Link Existing Project
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -1106,6 +1185,222 @@ export function TeamDetailPage() {
                       </>
                     ) : (
                       "Archive Project"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Link Project Modal */}
+      <AnimatePresence>
+        {showLinkProjectModal && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLinkProjectModal(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="bg-background rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                      <Link2 className="h-5 w-5 text-primary" />
+                    </div>
+                    <h2 className="text-xl font-semibold">Link Project</h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowLinkProjectModal(false)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <p className="text-muted-foreground">
+                  Select an unlinked project to link to your team.
+                </p>
+
+                {/* Project list */}
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {isLoadingUnlinked ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : unlinkedProjects && unlinkedProjects.length > 0 ? (
+                    unlinkedProjects.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setSelectedProjectToLink(p.id)}
+                        className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                          selectedProjectToLink === p.id
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:bg-muted/50"
+                        }`}
+                      >
+                        <p className="font-medium">{p.name}</p>
+                        {p.tagline && (
+                          <p className="text-sm text-muted-foreground line-clamp-1">{p.tagline}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          By {p.createdByName}
+                        </p>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">
+                        No unlinked projects available in this hackathon.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Error message */}
+                {linkError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                  >
+                    {linkError}
+                  </motion.div>
+                )}
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowLinkProjectModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (selectedProjectToLink && teamId) {
+                        linkProjectMutation.mutate({
+                          projectId: selectedProjectToLink,
+                          teamId,
+                        })
+                      }
+                    }}
+                    disabled={!selectedProjectToLink || linkProjectMutation.isPending}
+                  >
+                    {linkProjectMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Linking...
+                      </>
+                    ) : (
+                      "Link Project"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Unlink Project Confirmation Dialog */}
+      <AnimatePresence>
+        {showUnlinkConfirm && project && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowUnlinkConfirm(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+
+            {/* Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                className="bg-background rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
+                      <Unlink className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <h2 className="text-xl font-semibold">Unlink Project</h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowUnlinkConfirm(false)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <p className="text-muted-foreground">
+                  Are you sure you want to unlink <strong>{project.name}</strong> from your team?
+                  The project will still exist but won't be associated with any team.
+                </p>
+
+                {/* Error message */}
+                {unlinkError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                  >
+                    {unlinkError}
+                  </motion.div>
+                )}
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowUnlinkConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => unlinkProjectMutation.mutate(project.id)}
+                    disabled={unlinkProjectMutation.isPending}
+                  >
+                    {unlinkProjectMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Unlinking...
+                      </>
+                    ) : (
+                      "Unlink Project"
                     )}
                   </Button>
                 </div>
