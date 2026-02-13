@@ -86,13 +86,13 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 **Description:** As a developer, I need to update the TypeScript types and API service to support the new optional team association and link/unlink operations.
 
 **Acceptance Criteria:**
-- [ ] Update `Project` interface: make `teamId` and `teamName` optional (`string | null`), add `createdById: string` and `createdByName: string`
-- [ ] Update `CreateProjectRequest` interface: make `teamId` optional, add required `hackathonId: string`
-- [ ] Add `linkProjectToTeam(projectId: string, teamId: string): Promise<Project>` to `projectService`
-- [ ] Add `unlinkProjectFromTeam(projectId: string): Promise<Project>` to `projectService`
-- [ ] Add `getUnlinkedProjects(hackathonId: string): Promise<Project[]>` to `projectService`
-- [ ] Existing API calls still work correctly
-- [ ] Typecheck passes
+- [x] Update `Project` interface: make `teamId` and `teamName` optional (`string | null`), add `createdById: string` and `createdByName: string`
+- [x] Update `CreateProjectRequest` interface: make `teamId` optional, add required `hackathonId: string`
+- [x] Add `linkProjectToTeam(projectId: string, teamId: string): Promise<Project>` to `projectService`
+- [x] Add `unlinkProjectFromTeam(projectId: string): Promise<Project>` to `projectService`
+- [x] Add `getUnlinkedProjects(hackathonId: string): Promise<Project[]>` to `projectService`
+- [x] Existing API calls still work correctly
+- [x] Typecheck passes
 
 ### US-006: Update project creation UI for independent projects
 **Description:** As a hackathon participant, I want to create a project from the hackathon projects page (without needing a team) so I can start building immediately.

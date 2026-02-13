@@ -173,8 +173,8 @@ export type ProjectStatus = "draft" | "submitted" | "under_review" | "accepted" 
 
 export interface Project {
   id: string
-  teamId: string
-  teamName: string
+  teamId: string | null
+  teamName: string | null
   hackathonId: string
   name: string
   tagline?: string | null
@@ -188,10 +188,13 @@ export interface Project {
   technologies?: string[] | null
   submittedAt?: string | null
   createdAt?: string | null
+  createdById: string
+  createdByName: string
 }
 
 export interface CreateProjectRequest {
-  teamId: string
+  hackathonId: string
+  teamId?: string
   name: string
   tagline?: string
   description?: string

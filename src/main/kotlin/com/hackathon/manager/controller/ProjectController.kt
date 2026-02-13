@@ -30,6 +30,12 @@ class ProjectController(
         return ResponseEntity.ok(projects)
     }
 
+    @GetMapping("/hackathon/{hackathonId}/unlinked")
+    fun getUnlinkedProjects(@PathVariable hackathonId: UUID): ResponseEntity<List<ProjectResponse>> {
+        val projects = projectService.getUnlinkedProjectsByHackathon(hackathonId)
+        return ResponseEntity.ok(projects)
+    }
+
     @GetMapping("/{id}")
     fun getProjectById(@PathVariable id: UUID): ResponseEntity<ProjectResponse> {
         val project = projectService.getProjectById(id)

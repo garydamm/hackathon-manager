@@ -51,6 +51,12 @@ class ProjectService(
         return project?.let { foundProject -> ProjectResponse.fromEntity(foundProject) }
     }
 
+    @Transactional(readOnly = true)
+    fun getUnlinkedProjectsByHackathon(hackathonId: UUID): List<ProjectResponse> {
+        return projectRepository.findByHackathonIdAndTeamIsNullAndArchivedAtIsNull(hackathonId)
+            .map { project -> ProjectResponse.fromEntity(project) }
+    }
+
     @Transactional
     fun createProject(request: CreateProjectRequest, userId: UUID): ProjectResponse {
         val user = userRepository.findById(userId)

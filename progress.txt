@@ -104,3 +104,32 @@
   - Link/unlink are simple transactional operations — no new repository methods needed, just use `existsByTeamIdAndHackathonIdAndArchivedAtIsNull` for the team-has-project check
   - The `@InjectMocks` auto-injection means no test setup changes needed when adding new methods to existing services
 ---
+
+## Iteration 5 - US-005: Update frontend types and API service layer
+- Updated `Project` interface: `teamId: string` → `string | null`, `teamName: string` → `string | null`, added `createdById: string` and `createdByName: string`
+- Updated `CreateProjectRequest` interface: `teamId: string` → `string?` (optional), added required `hackathonId: string`
+- Added 3 new methods to `projectService`:
+  - `linkProjectToTeam(projectId, teamId)` — POST `/projects/{id}/link-team/{teamId}`
+  - `unlinkProjectFromTeam(projectId)` — POST `/projects/{id}/unlink-team`
+  - `getUnlinkedProjects(hackathonId)` — GET `/projects/hackathon/{hackathonId}/unlinked`
+- Added backend support for `getUnlinkedProjects`:
+  - `ProjectService.getUnlinkedProjectsByHackathon()` using existing `findByHackathonIdAndTeamIsNullAndArchivedAtIsNull` repository method
+  - `ProjectController` GET endpoint `/api/projects/hackathon/{hackathonId}/unlinked`
+  - Controller test for the new endpoint
+- Updated `TeamDetailPage.tsx` createProject call to include `hackathonId: hackathon!.id` (now required)
+- Updated `TeamDetailPage.test.tsx` mock Project to include `createdById` and `createdByName`
+- Updated `ProjectControllerTest` `createProjectResponse` helper to accept nullable `teamId`/`teamName` parameters
+- Files changed:
+  - frontend/src/types/index.ts
+  - frontend/src/services/projects.ts
+  - frontend/src/pages/TeamDetailPage.tsx
+  - frontend/src/pages/TeamDetailPage.test.tsx
+  - src/main/kotlin/com/hackathon/manager/service/ProjectService.kt
+  - src/main/kotlin/com/hackathon/manager/controller/ProjectController.kt
+  - src/test/kotlin/com/hackathon/manager/controller/ProjectControllerTest.kt
+- Learnings for future iterations:
+  - Adding required fields to `Project` interface requires updating ALL test files that construct Project objects (same pattern as backend)
+  - When adding `hackathonId` as required to `CreateProjectRequest`, all existing `createProject` call sites must be updated
+  - Jackson includes null values in JSON by default (`"teamId": null`), so `jsonPath("$[0].teamId").isEmpty` won't work — use `.value(null)` or assert a non-null field instead
+  - Frontend `npm run typecheck` doesn't exist — use `npx tsc -b --noEmit` or the `build` script
+---

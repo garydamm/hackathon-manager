@@ -41,4 +41,16 @@ export const projectService = {
   async archiveProject(id: string): Promise<void> {
     return api.post<void>(`/projects/${id}/archive`)
   },
+
+  async linkProjectToTeam(projectId: string, teamId: string): Promise<Project> {
+    return api.post<Project>(`/projects/${projectId}/link-team/${teamId}`)
+  },
+
+  async unlinkProjectFromTeam(projectId: string): Promise<Project> {
+    return api.post<Project>(`/projects/${projectId}/unlink-team`)
+  },
+
+  async getUnlinkedProjects(hackathonId: string): Promise<Project[]> {
+    return api.get<Project[]>(`/projects/hackathon/${hackathonId}/unlinked`)
+  },
 }

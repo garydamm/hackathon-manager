@@ -62,11 +62,13 @@ class ProjectControllerTest {
 
     private fun createProjectResponse(
         id: UUID = testProjectId,
-        status: SubmissionStatus = SubmissionStatus.draft
+        status: SubmissionStatus = SubmissionStatus.draft,
+        teamId: UUID? = testTeamId,
+        teamName: String? = "Test Team"
     ) = ProjectResponse(
         id = id,
-        teamId = testTeamId,
-        teamName = "Test Team",
+        teamId = teamId,
+        teamName = teamName,
         hackathonId = testHackathonId,
         createdById = testUserId,
         createdByName = "Test User",
@@ -109,6 +111,20 @@ class ProjectControllerTest {
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$[0].status").value("submitted"))
+    }
+
+    @Test
+    fun `getUnlinkedProjects should return unlinked projects`() {
+        whenever(projectService.getUnlinkedProjectsByHackathon(testHackathonId))
+            .thenReturn(listOf(createProjectResponse(teamId = null, teamName = null)))
+
+        mockMvc.perform(
+            get("/api/projects/hackathon/$testHackathonId/unlinked")
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").isArray)
+            .andExpect(jsonPath("$[0].name").value("Test Project"))
     }
 
     @Test

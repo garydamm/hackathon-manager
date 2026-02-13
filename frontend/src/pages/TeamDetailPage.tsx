@@ -306,6 +306,7 @@ export function TeamDetailPage() {
       })
     } else {
       await createProjectMutation.mutateAsync({
+        hackathonId: hackathon!.id,
         teamId: teamId!,
         ...cleanedData,
       })

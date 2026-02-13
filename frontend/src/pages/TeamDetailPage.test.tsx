@@ -78,6 +78,8 @@ describe("TeamDetailPage - Archive Project", () => {
     name: "Test Project",
     status: "draft",
     createdAt: "2024-01-01T00:00:00Z",
+    createdById: "user-1",
+    createdByName: "Test User",
   }
 
   beforeEach(() => {
