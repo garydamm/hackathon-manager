@@ -19,7 +19,8 @@ class ProjectService(
     private val teamRepository: TeamRepository,
     private val teamMemberRepository: TeamMemberRepository,
     private val hackathonRepository: HackathonRepository,
-    private val hackathonService: HackathonService
+    private val hackathonService: HackathonService,
+    private val userRepository: UserRepository
 ) {
 
     @Transactional(readOnly = true)
@@ -52,40 +53,79 @@ class ProjectService(
 
     @Transactional
     fun createProject(request: CreateProjectRequest, userId: UUID): ProjectResponse {
-        val teamId = request.teamId
-            ?: throw ValidationException("Team ID is required")
+        val user = userRepository.findById(userId)
+            .orElseThrow { NotFoundException("User not found") }
 
-        val team = teamRepository.findById(teamId)
-            .orElseThrow { NotFoundException("Team not found") }
+        if (request.teamId != null) {
+            // Team-context creation flow
+            val team = teamRepository.findById(request.teamId)
+                .orElseThrow { NotFoundException("Team not found") }
 
-        if (team.hackathon.archived) {
-            throw ValidationException("Cannot create a project in an archived hackathon")
+            if (team.hackathon.archived) {
+                throw ValidationException("Cannot create a project in an archived hackathon")
+            }
+
+            if (request.hackathonId != null && request.hackathonId != team.hackathon.id) {
+                throw ValidationException("Hackathon ID does not match the team's hackathon")
+            }
+
+            if (!teamMemberRepository.existsByTeamIdAndUserId(request.teamId, userId)) {
+                throw UnauthorizedException("Must be a team member to create a project")
+            }
+
+            if (projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(request.teamId, team.hackathon.id!!)) {
+                throw ConflictException("Team already has a project for this hackathon")
+            }
+
+            val project = Project(
+                team = team,
+                hackathon = team.hackathon,
+                createdBy = user,
+                name = request.name,
+                tagline = request.tagline,
+                description = request.description,
+                demoUrl = request.demoUrl,
+                videoUrl = request.videoUrl,
+                repositoryUrl = request.repositoryUrl,
+                presentationUrl = request.presentationUrl,
+                technologies = request.technologies?.toTypedArray()
+            )
+
+            val savedProject = projectRepository.save(project)
+            return ProjectResponse.fromEntity(savedProject)
+        } else {
+            // Independent project creation flow (no team)
+            val hackathonId = request.hackathonId
+                ?: throw ValidationException("Hackathon ID is required when creating a project without a team")
+
+            val hackathon = hackathonRepository.findById(hackathonId)
+                .orElseThrow { NotFoundException("Hackathon not found") }
+
+            if (hackathon.archived) {
+                throw ValidationException("Cannot create a project in an archived hackathon")
+            }
+
+            if (!hackathonService.isUserRegistered(hackathonId, userId)) {
+                throw UnauthorizedException("Must be registered in the hackathon to create a project")
+            }
+
+            val project = Project(
+                team = null,
+                hackathon = hackathon,
+                createdBy = user,
+                name = request.name,
+                tagline = request.tagline,
+                description = request.description,
+                demoUrl = request.demoUrl,
+                videoUrl = request.videoUrl,
+                repositoryUrl = request.repositoryUrl,
+                presentationUrl = request.presentationUrl,
+                technologies = request.technologies?.toTypedArray()
+            )
+
+            val savedProject = projectRepository.save(project)
+            return ProjectResponse.fromEntity(savedProject)
         }
-
-        if (!teamMemberRepository.existsByTeamIdAndUserId(teamId, userId)) {
-            throw UnauthorizedException("Must be a team member to create a project")
-        }
-
-        if (projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(teamId, team.hackathon.id!!)) {
-            throw ConflictException("Team already has a project for this hackathon")
-        }
-
-        val project = Project(
-            team = team,
-            hackathon = team.hackathon,
-            createdBy = team.createdBy,
-            name = request.name,
-            tagline = request.tagline,
-            description = request.description,
-            demoUrl = request.demoUrl,
-            videoUrl = request.videoUrl,
-            repositoryUrl = request.repositoryUrl,
-            presentationUrl = request.presentationUrl,
-            technologies = request.technologies?.toTypedArray()
-        )
-
-        val savedProject = projectRepository.save(project)
-        return ProjectResponse.fromEntity(savedProject)
     }
 
     @Transactional
@@ -93,8 +133,8 @@ class ProjectService(
         val project = projectRepository.findById(id)
             .orElseThrow { NotFoundException("Project not found") }
 
-        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team!!.id!!, userId)) {
-            throw UnauthorizedException("Must be a team member to update the project")
+        if (!isUserAuthorized(project, userId)) {
+            throw UnauthorizedException("Must be the project creator or a team member to update the project")
         }
 
         if (project.status == SubmissionStatus.submitted) {
@@ -124,8 +164,8 @@ class ProjectService(
             throw ValidationException("Cannot submit a project in an archived hackathon")
         }
 
-        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team!!.id!!, userId)) {
-            throw UnauthorizedException("Must be a team member to submit the project")
+        if (!isUserAuthorized(project, userId)) {
+            throw UnauthorizedException("Must be the project creator or a team member to submit the project")
         }
 
         if (project.status == SubmissionStatus.submitted) {
@@ -148,8 +188,8 @@ class ProjectService(
             throw ValidationException("Cannot unsubmit a project in an archived hackathon")
         }
 
-        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team!!.id!!, userId)) {
-            throw UnauthorizedException("Must be a team member to unsubmit the project")
+        if (!isUserAuthorized(project, userId)) {
+            throw UnauthorizedException("Must be the project creator or a team member to unsubmit the project")
         }
 
         if (project.status != SubmissionStatus.submitted) {
@@ -172,17 +212,22 @@ class ProjectService(
             throw ValidationException("Project is already archived")
         }
 
-        // Check if user is either a team member OR hackathon organizer
-        val isTeamMember = teamMemberRepository.existsByTeamIdAndUserId(project.team!!.id!!, userId)
+        val isCreatorOrTeamMember = isUserAuthorized(project, userId)
         val isOrganizer = hackathonService.isUserOrganizer(project.hackathon.id!!, userId)
 
-        if (!isTeamMember && !isOrganizer) {
-            throw UnauthorizedException("Must be a team member or hackathon organizer to archive the project")
+        if (!isCreatorOrTeamMember && !isOrganizer) {
+            throw UnauthorizedException("Must be the project creator, a team member, or hackathon organizer to archive the project")
         }
 
         project.archivedAt = OffsetDateTime.now()
 
         val savedProject = projectRepository.save(project)
         return ProjectResponse.fromEntity(savedProject)
+    }
+
+    private fun isUserAuthorized(project: Project, userId: UUID): Boolean {
+        if (project.createdBy.id == userId) return true
+        val team = project.team ?: return false
+        return teamMemberRepository.existsByTeamIdAndUserId(team.id!!, userId)
     }
 }

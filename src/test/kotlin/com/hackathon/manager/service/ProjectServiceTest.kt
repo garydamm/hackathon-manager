@@ -37,14 +37,19 @@ class ProjectServiceTest {
     @Mock
     lateinit var hackathonService: HackathonService
 
+    @Mock
+    lateinit var userRepository: UserRepository
+
     @InjectMocks
     lateinit var projectService: ProjectService
 
     private lateinit var testUser: User
+    private lateinit var otherUser: User
     private lateinit var testHackathon: Hackathon
     private lateinit var testTeam: Team
     private lateinit var testProject: Project
     private val testUserId = UUID.randomUUID()
+    private val otherUserId = UUID.randomUUID()
     private val testHackathonId = UUID.randomUUID()
     private val testTeamId = UUID.randomUUID()
     private val testProjectId = UUID.randomUUID()
@@ -56,6 +61,14 @@ class ProjectServiceTest {
             email = "test@example.com",
             passwordHash = "hashedpassword",
             firstName = "Test",
+            lastName = "User"
+        )
+
+        otherUser = User(
+            id = otherUserId,
+            email = "other@example.com",
+            passwordHash = "hashedpassword",
+            firstName = "Other",
             lastName = "User"
         )
 
@@ -90,6 +103,8 @@ class ProjectServiceTest {
         )
     }
 
+    // --- getProjectsByHackathon ---
+
     @Test
     fun `getProjectsByHackathon should return all projects`() {
         whenever(projectRepository.findByHackathonIdAndArchivedAtIsNull(testHackathonId)).thenReturn(listOf(testProject))
@@ -103,23 +118,15 @@ class ProjectServiceTest {
 
     @Test
     fun `getProjectsByHackathon should exclude archived projects`() {
-        val archivedProject = Project(
-            id = UUID.randomUUID(),
-            team = testTeam,
-            hackathon = testHackathon,
-            createdBy = testUser,
-            name = "Archived Project",
-            archivedAt = OffsetDateTime.now()
-        )
-
         whenever(projectRepository.findByHackathonIdAndArchivedAtIsNull(testHackathonId)).thenReturn(listOf(testProject))
 
         val result = projectService.getProjectsByHackathon(testHackathonId)
 
         assertThat(result).hasSize(1)
         assertThat(result[0].name).isEqualTo("Test Project")
-        assertThat(result.none { it.name == "Archived Project" }).isTrue()
     }
+
+    // --- getSubmittedProjectsByHackathon ---
 
     @Test
     fun `getSubmittedProjectsByHackathon should return only submitted projects`() {
@@ -143,16 +150,6 @@ class ProjectServiceTest {
 
     @Test
     fun `getSubmittedProjectsByHackathon should exclude archived projects`() {
-        val archivedSubmittedProject = Project(
-            id = UUID.randomUUID(),
-            team = testTeam,
-            hackathon = testHackathon,
-            createdBy = testUser,
-            name = "Archived Submitted Project",
-            status = SubmissionStatus.submitted,
-            archivedAt = OffsetDateTime.now()
-        )
-
         whenever(projectRepository.findByHackathonIdAndStatusAndArchivedAtIsNull(testHackathonId, SubmissionStatus.submitted))
             .thenReturn(emptyList())
 
@@ -160,6 +157,8 @@ class ProjectServiceTest {
 
         assertThat(result).isEmpty()
     }
+
+    // --- getProjectById ---
 
     @Test
     fun `getProjectById should return project when found`() {
@@ -198,6 +197,8 @@ class ProjectServiceTest {
             .hasMessage("Project not found")
     }
 
+    // --- getProjectByTeam ---
+
     @Test
     fun `getProjectByTeam should return project when exists`() {
         whenever(projectRepository.findByTeamIdAndArchivedAtIsNull(testTeamId)).thenReturn(testProject)
@@ -226,8 +227,10 @@ class ProjectServiceTest {
         assertThat(result).isNull()
     }
 
+    // --- createProject with team ---
+
     @Test
-    fun `createProject should create project successfully`() {
+    fun `createProject with team should create project successfully`() {
         val request = CreateProjectRequest(
             teamId = testTeamId,
             name = "New Project",
@@ -236,6 +239,7 @@ class ProjectServiceTest {
             technologies = listOf("Kotlin", "Spring Boot")
         )
 
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
         whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
         whenever(projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(testTeamId, testHackathonId)).thenReturn(false)
@@ -259,8 +263,36 @@ class ProjectServiceTest {
         assertThat(result.tagline).isEqualTo("A new project")
         assertThat(result.technologies).containsExactly("Kotlin", "Spring Boot")
         assertThat(result.status).isEqualTo(SubmissionStatus.draft)
+        assertThat(result.createdById).isEqualTo(testUserId)
 
         verify(projectRepository).save(any<Project>())
+    }
+
+    @Test
+    fun `createProject with team should set createdBy to requesting user`() {
+        val request = CreateProjectRequest(
+            teamId = testTeamId,
+            name = "New Project"
+        )
+
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
+        whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
+        whenever(projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(testTeamId, testHackathonId)).thenReturn(false)
+        whenever(projectRepository.save(any<Project>())).thenAnswer { invocation ->
+            val project = invocation.arguments[0] as Project
+            Project(
+                id = UUID.randomUUID(),
+                team = project.team,
+                hackathon = project.hackathon,
+                createdBy = project.createdBy,
+                name = project.name
+            )
+        }
+
+        val result = projectService.createProject(request, testUserId)
+
+        assertThat(result.createdById).isEqualTo(testUserId)
     }
 
     @Test
@@ -270,6 +302,7 @@ class ProjectServiceTest {
             name = "New Project"
         )
 
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
         whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.empty())
 
         assertThatThrownBy { projectService.createProject(request, testUserId) }
@@ -284,6 +317,7 @@ class ProjectServiceTest {
             name = "New Project"
         )
 
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
         whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
 
@@ -299,6 +333,7 @@ class ProjectServiceTest {
             name = "New Project"
         )
 
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
         whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
         whenever(projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(testTeamId, testHackathonId)).thenReturn(true)
@@ -315,6 +350,7 @@ class ProjectServiceTest {
             name = "New Project After Archive"
         )
 
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
         whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
         whenever(projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(testTeamId, testHackathonId)).thenReturn(false)
@@ -336,7 +372,131 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `updateProject should update project fields`() {
+    fun `createProject with team should throw when hackathonId does not match team hackathon`() {
+        val mismatchedHackathonId = UUID.randomUUID()
+        val request = CreateProjectRequest(
+            teamId = testTeamId,
+            hackathonId = mismatchedHackathonId,
+            name = "New Project"
+        )
+
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
+        whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
+
+        assertThatThrownBy { projectService.createProject(request, testUserId) }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("Hackathon ID does not match the team's hackathon")
+    }
+
+    // --- createProject without team (independent) ---
+
+    @Test
+    fun `createProject without team should create independent project`() {
+        val request = CreateProjectRequest(
+            hackathonId = testHackathonId,
+            name = "Independent Project",
+            tagline = "Solo work",
+            description = "A project without a team"
+        )
+
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonService.isUserRegistered(testHackathonId, testUserId)).thenReturn(true)
+        whenever(projectRepository.save(any<Project>())).thenAnswer { invocation ->
+            val project = invocation.arguments[0] as Project
+            Project(
+                id = UUID.randomUUID(),
+                team = project.team,
+                hackathon = project.hackathon,
+                createdBy = project.createdBy,
+                name = project.name,
+                tagline = project.tagline,
+                description = project.description
+            )
+        }
+
+        val result = projectService.createProject(request, testUserId)
+
+        assertThat(result.name).isEqualTo("Independent Project")
+        assertThat(result.teamId).isNull()
+        assertThat(result.teamName).isNull()
+        assertThat(result.createdById).isEqualTo(testUserId)
+        verify(projectRepository).save(any<Project>())
+    }
+
+    @Test
+    fun `createProject without team should throw when hackathonId missing`() {
+        val request = CreateProjectRequest(
+            name = "No Team No Hackathon"
+        )
+
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
+
+        assertThatThrownBy { projectService.createProject(request, testUserId) }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("Hackathon ID is required when creating a project without a team")
+    }
+
+    @Test
+    fun `createProject without team should throw when hackathon not found`() {
+        val request = CreateProjectRequest(
+            hackathonId = testHackathonId,
+            name = "No Hackathon"
+        )
+
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy { projectService.createProject(request, testUserId) }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Hackathon not found")
+    }
+
+    @Test
+    fun `createProject without team should throw when hackathon archived`() {
+        val archivedHackathon = Hackathon(
+            id = testHackathonId,
+            name = "Archived Hackathon",
+            slug = "archived-hackathon",
+            status = HackathonStatus.completed,
+            startsAt = OffsetDateTime.now().minusDays(10),
+            endsAt = OffsetDateTime.now().minusDays(5),
+            createdBy = testUser,
+            archived = true
+        )
+        val request = CreateProjectRequest(
+            hackathonId = testHackathonId,
+            name = "Late Project"
+        )
+
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(archivedHackathon))
+
+        assertThatThrownBy { projectService.createProject(request, testUserId) }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("Cannot create a project in an archived hackathon")
+    }
+
+    @Test
+    fun `createProject without team should throw when user not registered in hackathon`() {
+        val request = CreateProjectRequest(
+            hackathonId = testHackathonId,
+            name = "Unregistered Project"
+        )
+
+        whenever(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser))
+        whenever(hackathonRepository.findById(testHackathonId)).thenReturn(Optional.of(testHackathon))
+        whenever(hackathonService.isUserRegistered(testHackathonId, testUserId)).thenReturn(false)
+
+        assertThatThrownBy { projectService.createProject(request, testUserId) }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Must be registered in the hackathon to create a project")
+    }
+
+    // --- updateProject ---
+
+    @Test
+    fun `updateProject should update project fields when user is team member`() {
         val request = UpdateProjectRequest(
             name = "Updated Project",
             tagline = "Updated tagline",
@@ -347,7 +507,19 @@ class ProjectServiceTest {
             technologies = listOf("Kotlin", "React")
         )
 
-        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        // Use otherUser who is a team member but not the creator
+        val projectByOther = Project(
+            id = testProjectId,
+            team = testTeam,
+            hackathon = testHackathon,
+            createdBy = otherUser,
+            name = "Test Project",
+            tagline = "A test project",
+            description = "Description",
+            status = SubmissionStatus.draft
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(projectByOther))
         whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
         whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
 
@@ -357,6 +529,38 @@ class ProjectServiceTest {
         assertThat(result.tagline).isEqualTo("Updated tagline")
         assertThat(result.description).isEqualTo("Updated description")
         assertThat(result.demoUrl).isEqualTo("https://demo.example.com")
+    }
+
+    @Test
+    fun `updateProject should allow project creator to update`() {
+        val request = UpdateProjectRequest(name = "Updated by Creator")
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        val result = projectService.updateProject(testProjectId, request, testUserId)
+
+        assertThat(result.name).isEqualTo("Updated by Creator")
+    }
+
+    @Test
+    fun `updateProject should allow creator of independent project to update`() {
+        val independentProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Independent Project",
+            status = SubmissionStatus.draft
+        )
+        val request = UpdateProjectRequest(name = "Updated Independent")
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentProject))
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        val result = projectService.updateProject(testProjectId, request, testUserId)
+
+        assertThat(result.name).isEqualTo("Updated Independent")
     }
 
     @Test
@@ -371,15 +575,16 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `updateProject should throw exception when not a team member`() {
+    fun `updateProject should throw exception when not creator or team member`() {
         val request = UpdateProjectRequest(name = "Updated")
+        val unauthorizedUserId = UUID.randomUUID()
 
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, unauthorizedUserId)).thenReturn(false)
 
-        assertThatThrownBy { projectService.updateProject(testProjectId, request, testUserId) }
+        assertThatThrownBy { projectService.updateProject(testProjectId, request, unauthorizedUserId) }
             .isInstanceOf(UnauthorizedException::class.java)
-            .hasMessage("Must be a team member to update the project")
+            .hasMessage("Must be the project creator or a team member to update the project")
     }
 
     @Test
@@ -395,23 +600,42 @@ class ProjectServiceTest {
         val request = UpdateProjectRequest(name = "Updated")
 
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(submittedProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
 
         assertThatThrownBy { projectService.updateProject(testProjectId, request, testUserId) }
             .isInstanceOf(ValidationException::class.java)
             .hasMessage("Cannot update a submitted project")
     }
 
+    // --- submitProject ---
+
     @Test
-    fun `submitProject should submit project successfully`() {
+    fun `submitProject should submit project successfully as team member`() {
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
         whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
 
         val result = projectService.submitProject(testProjectId, testUserId)
 
         assertThat(result.status).isEqualTo(SubmissionStatus.submitted)
         assertThat(result.submittedAt).isNotNull()
+    }
+
+    @Test
+    fun `submitProject should allow creator of independent project to submit`() {
+        val independentProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Independent Project",
+            status = SubmissionStatus.draft
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentProject))
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        val result = projectService.submitProject(testProjectId, testUserId)
+
+        assertThat(result.status).isEqualTo(SubmissionStatus.submitted)
     }
 
     @Test
@@ -424,13 +648,15 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `submitProject should throw exception when not a team member`() {
-        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
+    fun `submitProject should throw exception when not creator or team member`() {
+        val unauthorizedUserId = UUID.randomUUID()
 
-        assertThatThrownBy { projectService.submitProject(testProjectId, testUserId) }
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, unauthorizedUserId)).thenReturn(false)
+
+        assertThatThrownBy { projectService.submitProject(testProjectId, unauthorizedUserId) }
             .isInstanceOf(UnauthorizedException::class.java)
-            .hasMessage("Must be a team member to submit the project")
+            .hasMessage("Must be the project creator or a team member to submit the project")
     }
 
     @Test
@@ -445,12 +671,13 @@ class ProjectServiceTest {
         )
 
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(submittedProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
 
         assertThatThrownBy { projectService.submitProject(testProjectId, testUserId) }
             .isInstanceOf(ValidationException::class.java)
             .hasMessage("Project already submitted")
     }
+
+    // --- unsubmitProject ---
 
     @Test
     fun `unsubmitProject should unsubmit project successfully`() {
@@ -465,13 +692,32 @@ class ProjectServiceTest {
         )
 
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(submittedProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
         whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
 
         val result = projectService.unsubmitProject(testProjectId, testUserId)
 
         assertThat(result.status).isEqualTo(SubmissionStatus.draft)
         assertThat(result.submittedAt).isNull()
+    }
+
+    @Test
+    fun `unsubmitProject should allow creator of independent project to unsubmit`() {
+        val independentSubmittedProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Independent Submitted",
+            status = SubmissionStatus.submitted,
+            submittedAt = OffsetDateTime.now()
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentSubmittedProject))
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        val result = projectService.unsubmitProject(testProjectId, testUserId)
+
+        assertThat(result.status).isEqualTo(SubmissionStatus.draft)
     }
 
     @Test
@@ -484,7 +730,8 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `unsubmitProject should throw exception when not a team member`() {
+    fun `unsubmitProject should throw exception when not creator or team member`() {
+        val unauthorizedUserId = UUID.randomUUID()
         val submittedProject = Project(
             id = testProjectId,
             team = testTeam,
@@ -495,34 +742,77 @@ class ProjectServiceTest {
         )
 
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(submittedProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, unauthorizedUserId)).thenReturn(false)
 
-        assertThatThrownBy { projectService.unsubmitProject(testProjectId, testUserId) }
+        assertThatThrownBy { projectService.unsubmitProject(testProjectId, unauthorizedUserId) }
             .isInstanceOf(UnauthorizedException::class.java)
-            .hasMessage("Must be a team member to unsubmit the project")
+            .hasMessage("Must be the project creator or a team member to unsubmit the project")
     }
 
     @Test
     fun `unsubmitProject should throw exception when not submitted`() {
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
 
         assertThatThrownBy { projectService.unsubmitProject(testProjectId, testUserId) }
             .isInstanceOf(ValidationException::class.java)
             .hasMessage("Project is not submitted")
     }
 
+    // --- archiveProject ---
+
     @Test
-    fun `archiveProject should archive project successfully`() {
+    fun `archiveProject should archive project successfully as team member`() {
+        // Use a user who is a team member but not the creator
+        val teamMemberId = UUID.randomUUID()
+        val projectByOther = Project(
+            id = testProjectId,
+            team = testTeam,
+            hackathon = testHackathon,
+            createdBy = otherUser,
+            name = "Test Project",
+            status = SubmissionStatus.draft
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(projectByOther))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, teamMemberId)).thenReturn(true)
+        whenever(hackathonService.isUserOrganizer(testHackathonId, teamMemberId)).thenReturn(false)
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        projectService.archiveProject(testProjectId, teamMemberId)
+
+        assertThat(projectByOther.archivedAt).isNotNull()
+        verify(projectRepository).save(projectByOther)
+    }
+
+    @Test
+    fun `archiveProject should allow project creator to archive`() {
         whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
         whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(false)
         whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
 
         projectService.archiveProject(testProjectId, testUserId)
 
         assertThat(testProject.archivedAt).isNotNull()
-        verify(projectRepository).save(testProject)
+    }
+
+    @Test
+    fun `archiveProject should allow creator of independent project to archive`() {
+        val independentProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Independent Project",
+            status = SubmissionStatus.draft
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentProject))
+        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(false)
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        projectService.archiveProject(testProjectId, testUserId)
+
+        assertThat(independentProject.archivedAt).isNotNull()
     }
 
     @Test
@@ -535,14 +825,16 @@ class ProjectServiceTest {
     }
 
     @Test
-    fun `archiveProject should throw exception when not a team member or organizer`() {
-        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
-        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(false)
-        whenever(hackathonService.isUserOrganizer(testHackathonId, testUserId)).thenReturn(false)
+    fun `archiveProject should throw exception when not creator, team member, or organizer`() {
+        val unauthorizedUserId = UUID.randomUUID()
 
-        assertThatThrownBy { projectService.archiveProject(testProjectId, testUserId) }
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, unauthorizedUserId)).thenReturn(false)
+        whenever(hackathonService.isUserOrganizer(testHackathonId, unauthorizedUserId)).thenReturn(false)
+
+        assertThatThrownBy { projectService.archiveProject(testProjectId, unauthorizedUserId) }
             .isInstanceOf(UnauthorizedException::class.java)
-            .hasMessage("Must be a team member or hackathon organizer to archive the project")
+            .hasMessage("Must be the project creator, a team member, or hackathon organizer to archive the project")
     }
 
     @Test

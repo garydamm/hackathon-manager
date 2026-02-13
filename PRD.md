@@ -51,17 +51,17 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 **Description:** As a user, I want to create a project within a hackathon without needing to be on a team, so that I can start working on my idea independently.
 
 **Acceptance Criteria:**
-- [ ] `createProject` handles two flows:
+- [x] `createProject` handles two flows:
   - **With teamId**: validates user is team member, links project to team (existing behavior), sets `createdBy` to the requesting user
   - **Without teamId**: validates user is registered in hackathon, creates project with null team, sets `createdBy` to the requesting user
-- [ ] When creating with a team, hackathonId from request must match the team's hackathon (or is derived from team)
-- [ ] `updateProject` authorization: allow if user is project creator OR a member of the linked team
-- [ ] `submitProject` / `unsubmitProject` / `archiveProject`: allow if user is project creator OR a member of the linked team
-- [ ] `getProjectsByHackathon` returns all non-archived projects (both linked and unlinked)
-- [ ] Unit tests added for independent project creation flow
-- [ ] Unit tests added for updated authorization logic (creator vs team member)
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] When creating with a team, hackathonId from request must match the team's hackathon (or is derived from team)
+- [x] `updateProject` authorization: allow if user is project creator OR a member of the linked team
+- [x] `submitProject` / `unsubmitProject` / `archiveProject`: allow if user is project creator OR a member of the linked team
+- [x] `getProjectsByHackathon` returns all non-archived projects (both linked and unlinked)
+- [x] Unit tests added for independent project creation flow
+- [x] Unit tests added for updated authorization logic (creator vs team member)
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-004: Add team-project link and unlink API endpoints
 **Description:** As a team member, I want to link an unlinked project to my team (or unlink it) so that our team can claim a project for the hackathon.

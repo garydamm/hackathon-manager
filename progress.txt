@@ -35,3 +35,45 @@
   - Entity changes ripple broadly — always grep for constructor usage across ALL tests
   - The `team!!.id!!` pattern is temporary — US-003 will properly handle null-team authorization
 ---
+
+## Iteration 2 - US-002: Update Project entity, DTOs, and repository
+- Most entity/DTO changes were already done in Iteration 1 (entity nullable team, createdBy, DTO nullable teamId/teamName, CreateProjectRequest nullable teamId + hackathonId)
+- Added `createdById: UUID` and `createdByName: String` to `ProjectResponse`
+- Updated `fromEntity()` to populate createdBy fields using `displayName ?: "$firstName $lastName"`
+- Added 2 new repository methods:
+  - `findByHackathonIdAndCreatedByIdAndArchivedAtIsNull` — query user's projects in a hackathon
+  - `findByHackathonIdAndTeamIsNullAndArchivedAtIsNull` — query unlinked projects in a hackathon
+- Added 4 repository tests for the new methods (user projects, unlinked projects, archived exclusion)
+- Updated `ProjectControllerTest`: added `createdById`/`createdByName` to `createProjectResponse()` and `copy()`
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/dto/ProjectDtos.kt
+  - src/main/kotlin/com/hackathon/manager/repository/ProjectRepository.kt
+  - src/test/kotlin/com/hackathon/manager/controller/ProjectControllerTest.kt
+  - src/test/kotlin/com/hackathon/manager/repository/ProjectRepositoryTest.kt
+- Learnings for future iterations:
+  - When adding fields to `ProjectResponse`, also update the `copy()` extension in `ProjectControllerTest`
+  - The `ProjectControllerTest` is the only test that directly constructs `ProjectResponse` — service tests use `fromEntity()` via mocked entities
+---
+
+## Iteration 3 - US-003: Update ProjectService for independent project creation
+- Rewrote `createProject` with two flows:
+  - **With teamId**: validates team membership, hackathonId match (if provided), sets `createdBy` to requesting user (not team.createdBy)
+  - **Without teamId**: requires `hackathonId`, validates hackathon exists/not archived, validates user is registered via `hackathonService.isUserRegistered()`, creates project with null team
+- Added `UserRepository` dependency to `ProjectService` to look up the requesting user for `createdBy`
+- Extracted `isUserAuthorized(project, userId)` private helper: checks `project.createdBy.id == userId` first, then falls back to team member check (handles null team gracefully)
+- Updated `updateProject`, `submitProject`, `unsubmitProject`, `archiveProject` to use `isUserAuthorized()` — no more `project.team!!.id!!` crashes on independent projects
+- Updated error messages to reflect "creator or team member" authorization
+- Updated `ProjectServiceTest` comprehensively:
+  - Added `@Mock UserRepository` and `userRepository.findById()` mocks for all `createProject` tests
+  - Added `otherUser` fixture for tests that need a non-creator user
+  - New tests: independent project creation (success, missing hackathonId, hackathon not found, archived hackathon, unregistered user), hackathonId mismatch with team, createdBy set to requesting user
+  - New tests: creator can update/submit/unsubmit/archive independent projects (no team)
+  - Refactored auth denial tests to use `unauthorizedUserId` (not `testUserId`, which is the creator)
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/ProjectService.kt
+  - src/test/kotlin/com/hackathon/manager/service/ProjectServiceTest.kt
+- Learnings for future iterations:
+  - When testing authorization denial, use a userId that is NEITHER the creator NOR a team member — otherwise `isUserAuthorized` will pass via the creator check
+  - `HackathonService.isUserRegistered()` exists and delegates to `HackathonUserRepository.existsByHackathonIdAndUserId()`
+  - Adding a new repo dependency to a service only affects `@InjectMocks` tests (they auto-inject) — `@WebMvcTest` controller tests mock the service directly
+---
