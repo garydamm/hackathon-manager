@@ -1,5 +1,5 @@
 import { motion } from "framer-motion"
-import { Users, Calendar, Globe, Video, Github, Presentation } from "lucide-react"
+import { Users, User, Calendar, Globe, Video, Github, Presentation } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import type { Project, ProjectStatus } from "@/types"
 
@@ -81,10 +81,19 @@ export function ProjectCard({ project, index, onClick }: ProjectCardProps) {
         </CardHeader>
 
         <CardContent className="space-y-3">
-          {/* Team name */}
+          {/* Team name or creator */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span>{project.teamName}</span>
+            {project.teamName ? (
+              <>
+                <Users className="h-4 w-4" />
+                <span>{project.teamName}</span>
+              </>
+            ) : (
+              <>
+                <User className="h-4 w-4" />
+                <span>By {project.createdByName}</span>
+              </>
+            )}
           </div>
 
           {/* Submitted date */}

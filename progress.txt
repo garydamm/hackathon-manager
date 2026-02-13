@@ -169,3 +169,25 @@
   - The unlinked projects query uses `enabled: showLinkProjectModal` to only fetch when the modal is open (lazy loading)
   - Link/unlink errors display inline in the modal/dialog using the same error pattern as join/leave team
 ---
+
+## Iteration 8 - US-008: Update project display components for optional team
+- Updated `ProjectCard` to show "By [createdByName]" with User icon when `teamName` is null, vs team name with Users icon when linked
+- Updated `ProjectDetailModal`:
+  - Added `hackathonSlug` optional prop to enable team detail links
+  - When team linked: shows team name as clickable link to team detail page
+  - When no team: shows "By [createdByName]" with User icon instead
+- Updated `ProjectsSection` in `HackathonDetail.tsx`:
+  - Added filter tabs: "All" / "Team Projects" / "Independent"
+  - Filter uses `project.teamId` null check to categorize
+  - Empty state message adapts to show "No team projects found" or "No independent projects found"
+- Passed `hackathonSlug={hackathon.slug}` to `ProjectDetailModal` from `ProjectsSection`
+- Files changed:
+  - frontend/src/components/ProjectCard.tsx (conditional team/creator display)
+  - frontend/src/components/ProjectDetailModal.tsx (hackathonSlug prop, team link, creator fallback)
+  - frontend/src/pages/HackathonDetail.tsx (filter state, filteredProjects, filter tabs UI)
+  - PRD.md (marked US-008 criteria complete)
+- Learnings for future iterations:
+  - Adding props to shared components like `ProjectDetailModal` requires updating all call sites (only one in this case: ProjectsSection)
+  - The filter tab pattern (bg-muted container with selectable bg-background items) matches shadcn's pill/tab style
+  - "Verify changes work in browser" is left unchecked as it requires manual testing
+---

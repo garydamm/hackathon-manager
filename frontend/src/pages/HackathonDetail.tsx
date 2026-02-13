@@ -192,10 +192,13 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
   )
 }
 
+type ProjectFilter = "all" | "team" | "independent"
+
 function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
   const queryClient = useQueryClient()
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [showProjectForm, setShowProjectForm] = useState(false)
+  const [filter, setFilter] = useState<ProjectFilter>("all")
 
   const { data: projects, isLoading: projectsLoading } = useQuery({
     queryKey: ["projects", "hackathon", hackathon.id],
@@ -236,6 +239,12 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
   }
 
   const isRegisteredParticipant = hackathon.userRole === "participant"
+
+  const filteredProjects = (projects ?? []).filter((p) => {
+    if (filter === "team") return p.teamId !== null
+    if (filter === "independent") return p.teamId === null
+    return true
+  })
   const projectsCount = projects?.length ?? 0
 
   if (projectsLoading) {
@@ -273,7 +282,31 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* Filter tabs */}
+          {projectsCount > 0 && (
+            <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
+              {([
+                { value: "all" as const, label: "All" },
+                { value: "team" as const, label: "Team Projects" },
+                { value: "independent" as const, label: "Independent" },
+              ]).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setFilter(option.value)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    filter === option.value
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           {projectsCount === 0 ? (
             <div className="text-center py-8">
               <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
@@ -287,9 +320,15 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
                 </Button>
               )}
             </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                No {filter === "team" ? "team" : "independent"} projects found.
+              </p>
+            </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {projects!.map((project, index) => (
+              {filteredProjects.map((project, index) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
@@ -308,6 +347,7 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
           isOpen={!!selectedProject}
           onClose={() => setSelectedProject(null)}
           project={selectedProject}
+          hackathonSlug={hackathon.slug}
         />
       )}
 

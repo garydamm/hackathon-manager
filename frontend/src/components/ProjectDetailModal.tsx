@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Users, Calendar, Globe, Video, Github, Presentation, ExternalLink } from "lucide-react"
+import { X, Users, User, Calendar, Globe, Video, Github, Presentation, ExternalLink } from "lucide-react"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import type { Project, ProjectStatus } from "@/types"
 
@@ -7,6 +8,7 @@ interface ProjectDetailModalProps {
   isOpen: boolean
   onClose: () => void
   project: Project
+  hackathonSlug?: string
 }
 
 function getStatusColor(status: ProjectStatus): string {
@@ -38,7 +40,7 @@ function formatDate(dateString: string): string {
   })
 }
 
-export function ProjectDetailModal({ isOpen, onClose, project }: ProjectDetailModalProps) {
+export function ProjectDetailModal({ isOpen, onClose, project, hackathonSlug }: ProjectDetailModalProps) {
   const urlLinks = [
     { url: project.demoUrl, label: "Demo", icon: Globe },
     { url: project.videoUrl, label: "Video", icon: Video },
@@ -99,12 +101,29 @@ export function ProjectDetailModal({ isOpen, onClose, project }: ProjectDetailMo
                 </span>
               </div>
 
-              {/* Team and Submission Info */}
+              {/* Team/Creator and Submission Info */}
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  <span>{project.teamName}</span>
-                </div>
+                {project.teamName ? (
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    {hackathonSlug && project.teamId ? (
+                      <Link
+                        to={`/hackathons/${hackathonSlug}/teams/${project.teamId}`}
+                        className="text-primary hover:underline"
+                        onClick={onClose}
+                      >
+                        {project.teamName}
+                      </Link>
+                    ) : (
+                      <span>{project.teamName}</span>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>By {project.createdByName}</span>
+                  </div>
+                )}
                 {project.submittedAt && (
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />

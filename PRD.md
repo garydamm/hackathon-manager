@@ -123,12 +123,12 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 **Description:** As a user, I want project cards and detail views to gracefully handle projects that have no team, showing the creator instead.
 
 **Acceptance Criteria:**
-- [ ] `ProjectCard` component: when `teamName` is null, display "By [createdByName]" instead of team name
-- [ ] Project detail view: when no team linked, show creator info and hide team-specific actions
-- [ ] Project detail view: when team is linked, show team name with link to team detail page
-- [ ] Projects list page: add filter option to show "All" / "Team Projects" / "Independent Projects"
+- [x] `ProjectCard` component: when `teamName` is null, display "By [createdByName]" instead of team name
+- [x] Project detail view: when no team linked, show creator info and hide team-specific actions
+- [x] Project detail view: when team is linked, show team name with link to team detail page
+- [x] Projects list page: add filter option to show "All" / "Team Projects" / "Independent Projects"
 - [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] Typecheck passes
 
 ### US-009: UI system tests for decoupled project-team workflow
 **Description:** As a developer, I need end-to-end tests to verify the complete project-team decoupling workflow.
