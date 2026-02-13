@@ -37,15 +37,15 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 **Description:** As a developer, I need to update the Kotlin entity, DTOs, and repository to support nullable team and new created_by field.
 
 **Acceptance Criteria:**
-- [ ] Update `Project` entity: make `team` property nullable (`var team: Team?`), add `createdBy` ManyToOne relationship to `User`
-- [ ] Update `ProjectResponse` DTO: make `teamId` and `teamName` nullable, add `createdById: UUID` and `createdByName: String` fields
-- [ ] Update `ProjectResponse.fromEntity()` to handle null team and include createdBy info
-- [ ] Update `CreateProjectRequest`: make `teamId` nullable (`val teamId: UUID?`), add required `hackathonId: UUID` field
-- [ ] Update `ProjectRepository`:
+- [x] Update `Project` entity: make `team` property nullable (`var team: Team?`), add `createdBy` ManyToOne relationship to `User`
+- [x] Update `ProjectResponse` DTO: make `teamId` and `teamName` nullable, add `createdById: UUID` and `createdByName: String` fields
+- [x] Update `ProjectResponse.fromEntity()` to handle null team and include createdBy info
+- [x] Update `CreateProjectRequest`: make `teamId` nullable (`val teamId: UUID?`), add required `hackathonId: UUID` field
+- [x] Update `ProjectRepository`:
   - Add `findByHackathonIdAndCreatedByIdAndArchivedAtIsNull(hackathonId: UUID, userId: UUID): List<Project>` for user's projects
   - Add `findByHackathonIdAndTeamIsNullAndArchivedAtIsNull(hackathonId: UUID): List<Project>` for unlinked projects
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-003: Update ProjectService for independent project creation
 **Description:** As a user, I want to create a project within a hackathon without needing to be on a team, so that I can start working on my idea independently.

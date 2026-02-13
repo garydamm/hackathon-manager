@@ -317,6 +317,112 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
     }
 
     @Test
+    fun `findByHackathonIdAndCreatedById should return user projects`() {
+        val otherUser = User(
+            email = "other@example.com",
+            passwordHash = "hashedpassword",
+            firstName = "Other",
+            lastName = "User",
+            displayName = "OtherUser"
+        )
+        entityManager.persist(otherUser)
+
+        val project1 = Project(
+            team = testTeam,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "User Project"
+        )
+        entityManager.persist(project1)
+
+        val otherTeam = Team(
+            hackathon = testHackathon,
+            name = "Other Team",
+            createdBy = otherUser
+        )
+        entityManager.persist(otherTeam)
+
+        val project2 = Project(
+            team = otherTeam,
+            hackathon = testHackathon,
+            createdBy = otherUser,
+            name = "Other User Project"
+        )
+        entityManager.persist(project2)
+        entityManager.flush()
+
+        val found = projectRepository.findByHackathonIdAndCreatedByIdAndArchivedAtIsNull(
+            testHackathon.id!!, testUser.id!!
+        )
+
+        assertThat(found).hasSize(1)
+        assertThat(found[0].name).isEqualTo("User Project")
+    }
+
+    @Test
+    fun `findByHackathonIdAndCreatedById should exclude archived projects`() {
+        val project = Project(
+            team = testTeam,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Archived Project",
+            archivedAt = OffsetDateTime.now()
+        )
+        entityManager.persist(project)
+        entityManager.flush()
+
+        val found = projectRepository.findByHackathonIdAndCreatedByIdAndArchivedAtIsNull(
+            testHackathon.id!!, testUser.id!!
+        )
+
+        assertThat(found).isEmpty()
+    }
+
+    @Test
+    fun `findByHackathonIdAndTeamIsNull should return unlinked projects`() {
+        // Project with team
+        val linkedProject = Project(
+            team = testTeam,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Linked Project"
+        )
+        entityManager.persist(linkedProject)
+
+        // Project without team
+        val unlinkedProject = Project(
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Unlinked Project"
+        )
+        entityManager.persist(unlinkedProject)
+        entityManager.flush()
+
+        val found = projectRepository.findByHackathonIdAndTeamIsNullAndArchivedAtIsNull(testHackathon.id!!)
+
+        assertThat(found).hasSize(1)
+        assertThat(found[0].name).isEqualTo("Unlinked Project")
+    }
+
+    @Test
+    fun `findByHackathonIdAndTeamIsNull should exclude archived projects`() {
+        val project = Project(
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Archived Unlinked",
+            archivedAt = OffsetDateTime.now()
+        )
+        entityManager.persist(project)
+        entityManager.flush()
+
+        val found = projectRepository.findByHackathonIdAndTeamIsNullAndArchivedAtIsNull(testHackathon.id!!)
+
+        assertThat(found).isEmpty()
+    }
+
+    @Test
     fun `archivedAt field should be nullable and persist correctly`() {
         // Create project without archivedAt (should default to null)
         val project = Project(

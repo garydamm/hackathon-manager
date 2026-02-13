@@ -12,4 +12,6 @@ interface ProjectRepository : JpaRepository<Project, UUID> {
     fun findByTeamIdAndArchivedAtIsNull(teamId: UUID): Project?
     fun findByHackathonIdAndStatusAndArchivedAtIsNull(hackathonId: UUID, status: SubmissionStatus): List<Project>
     fun existsByTeamIdAndHackathonIdAndArchivedAtIsNull(teamId: UUID, hackathonId: UUID): Boolean
+    fun findByHackathonIdAndCreatedByIdAndArchivedAtIsNull(hackathonId: UUID, userId: UUID): List<Project>
+    fun findByHackathonIdAndTeamIsNullAndArchivedAtIsNull(hackathonId: UUID): List<Project>
 }

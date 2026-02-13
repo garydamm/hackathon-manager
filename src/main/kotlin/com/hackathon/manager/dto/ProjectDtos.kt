@@ -12,6 +12,8 @@ data class ProjectResponse(
     val teamId: UUID?,
     val teamName: String?,
     val hackathonId: UUID,
+    val createdById: UUID,
+    val createdByName: String,
     val name: String,
     val tagline: String?,
     val description: String?,
@@ -27,11 +29,14 @@ data class ProjectResponse(
 ) {
     companion object {
         fun fromEntity(project: Project): ProjectResponse {
+            val creator = project.createdBy
             return ProjectResponse(
                 id = project.id!!,
                 teamId = project.team?.id,
                 teamName = project.team?.name,
                 hackathonId = project.hackathon.id!!,
+                createdById = creator.id!!,
+                createdByName = creator.displayName ?: "${creator.firstName} ${creator.lastName}",
                 name = project.name,
                 tagline = project.tagline,
                 description = project.description,
