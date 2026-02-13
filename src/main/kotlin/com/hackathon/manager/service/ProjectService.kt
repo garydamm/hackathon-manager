@@ -225,6 +225,52 @@ class ProjectService(
         return ProjectResponse.fromEntity(savedProject)
     }
 
+    @Transactional
+    fun linkProjectToTeam(projectId: UUID, teamId: UUID, userId: UUID): ProjectResponse {
+        val project = projectRepository.findById(projectId)
+            .orElseThrow { NotFoundException("Project not found") }
+
+        val team = teamRepository.findById(teamId)
+            .orElseThrow { NotFoundException("Team not found") }
+
+        if (!teamMemberRepository.existsByTeamIdAndUserId(teamId, userId)) {
+            throw UnauthorizedException("Must be a member of the target team to link a project")
+        }
+
+        if (project.hackathon.id != team.hackathon.id) {
+            throw ValidationException("Project and team must be in the same hackathon")
+        }
+
+        if (project.team != null) {
+            throw ConflictException("Project is already linked to a team")
+        }
+
+        if (projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(teamId, team.hackathon.id!!)) {
+            throw ConflictException("Team already has an active project")
+        }
+
+        project.team = team
+        val savedProject = projectRepository.save(project)
+        return ProjectResponse.fromEntity(savedProject)
+    }
+
+    @Transactional
+    fun unlinkProjectFromTeam(projectId: UUID, userId: UUID): ProjectResponse {
+        val project = projectRepository.findById(projectId)
+            .orElseThrow { NotFoundException("Project not found") }
+
+        val team = project.team
+            ?: throw ValidationException("Project is not linked to a team")
+
+        if (!teamMemberRepository.existsByTeamIdAndUserId(team.id!!, userId)) {
+            throw UnauthorizedException("Must be a member of the linked team to unlink a project")
+        }
+
+        project.team = null
+        val savedProject = projectRepository.save(project)
+        return ProjectResponse.fromEntity(savedProject)
+    }
+
     private fun isUserAuthorized(project: Project, userId: UUID): Boolean {
         if (project.createdBy.id == userId) return true
         val team = project.team ?: return false

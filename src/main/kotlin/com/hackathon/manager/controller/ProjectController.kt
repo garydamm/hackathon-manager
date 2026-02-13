@@ -87,4 +87,23 @@ class ProjectController(
         val project = projectService.archiveProject(id, principal.id)
         return ResponseEntity.ok(project)
     }
+
+    @PostMapping("/{id}/link-team/{teamId}")
+    fun linkProjectToTeam(
+        @PathVariable id: UUID,
+        @PathVariable teamId: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<ProjectResponse> {
+        val project = projectService.linkProjectToTeam(id, teamId, principal.id)
+        return ResponseEntity.ok(project)
+    }
+
+    @PostMapping("/{id}/unlink-team")
+    fun unlinkProjectFromTeam(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal principal: UserPrincipal
+    ): ResponseEntity<ProjectResponse> {
+        val project = projectService.unlinkProjectFromTeam(id, principal.id)
+        return ResponseEntity.ok(project)
+    }
 }

@@ -67,20 +67,20 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 **Description:** As a team member, I want to link an unlinked project to my team (or unlink it) so that our team can claim a project for the hackathon.
 
 **Acceptance Criteria:**
-- [ ] New service method `linkProjectToTeam(projectId: UUID, teamId: UUID, userId: UUID): ProjectResponse`
+- [x] New service method `linkProjectToTeam(projectId: UUID, teamId: UUID, userId: UUID): ProjectResponse`
   - Validates user is a member of the target team
   - Validates project exists and is in the same hackathon as the team
   - Validates project is not already linked to a team
   - Validates team does not already have an active (non-archived) project
   - Sets project's `team` to the target team
-- [ ] New service method `unlinkProjectFromTeam(projectId: UUID, userId: UUID): ProjectResponse`
+- [x] New service method `unlinkProjectFromTeam(projectId: UUID, userId: UUID): ProjectResponse`
   - Validates user is a member of the currently linked team
   - Sets project's `team` to null
-- [ ] New controller endpoint: `POST /api/projects/{id}/link-team/{teamId}` — links project to team
-- [ ] New controller endpoint: `POST /api/projects/{id}/unlink-team` — unlinks project from team
-- [ ] Unit tests added for link/unlink logic including all validation cases
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] New controller endpoint: `POST /api/projects/{id}/link-team/{teamId}` — links project to team
+- [x] New controller endpoint: `POST /api/projects/{id}/unlink-team` — unlinks project from team
+- [x] Unit tests added for link/unlink logic including all validation cases
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-005: Update frontend types and API service layer
 **Description:** As a developer, I need to update the TypeScript types and API service to support the new optional team association and link/unlink operations.

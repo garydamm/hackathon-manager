@@ -358,6 +358,108 @@ class ProjectControllerTest {
             .andExpect(status().isBadRequest)
     }
 
+    // --- linkProjectToTeam ---
+
+    @Test
+    fun `linkProjectToTeam should return 200 when successful`() {
+        whenever(projectService.linkProjectToTeam(eq(testProjectId), eq(testTeamId), eq(testUserId)))
+            .thenReturn(createProjectResponse())
+
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/link-team/$testTeamId")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.teamId").value(testTeamId.toString()))
+    }
+
+    @Test
+    fun `linkProjectToTeam should return 401 without authentication`() {
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/link-team/$testTeamId")
+                .with(csrf())
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `linkProjectToTeam should return 403 when not team member`() {
+        whenever(projectService.linkProjectToTeam(eq(testProjectId), eq(testTeamId), eq(testUserId)))
+            .thenThrow(ApiException("Must be a member of the target team to link a project", HttpStatus.FORBIDDEN))
+
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/link-team/$testTeamId")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
+    fun `linkProjectToTeam should return 409 when project already linked`() {
+        whenever(projectService.linkProjectToTeam(eq(testProjectId), eq(testTeamId), eq(testUserId)))
+            .thenThrow(ApiException("Project is already linked to a team", HttpStatus.CONFLICT))
+
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/link-team/$testTeamId")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isConflict)
+    }
+
+    // --- unlinkProjectFromTeam ---
+
+    @Test
+    fun `unlinkProjectFromTeam should return 200 when successful`() {
+        whenever(projectService.unlinkProjectFromTeam(eq(testProjectId), eq(testUserId)))
+            .thenReturn(createProjectResponse().copy(name = "Test Project"))
+
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/unlink-team")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.name").value("Test Project"))
+    }
+
+    @Test
+    fun `unlinkProjectFromTeam should return 401 without authentication`() {
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/unlink-team")
+                .with(csrf())
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `unlinkProjectFromTeam should return 403 when not team member`() {
+        whenever(projectService.unlinkProjectFromTeam(eq(testProjectId), eq(testUserId)))
+            .thenThrow(ApiException("Must be a member of the linked team to unlink a project", HttpStatus.FORBIDDEN))
+
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/unlink-team")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
+    fun `unlinkProjectFromTeam should return 400 when project not linked`() {
+        whenever(projectService.unlinkProjectFromTeam(eq(testProjectId), eq(testUserId)))
+            .thenThrow(ApiException("Project is not linked to a team", HttpStatus.BAD_REQUEST))
+
+        mockMvc.perform(
+            post("/api/projects/$testProjectId/unlink-team")
+                .with(csrf())
+                .with(user(createUserPrincipal()))
+        )
+            .andExpect(status().isBadRequest)
+    }
+
     private fun ProjectResponse.copy(
         name: String = this.name
     ) = ProjectResponse(

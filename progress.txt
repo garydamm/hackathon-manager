@@ -77,3 +77,30 @@
   - `HackathonService.isUserRegistered()` exists and delegates to `HackathonUserRepository.existsByHackathonIdAndUserId()`
   - Adding a new repo dependency to a service only affects `@InjectMocks` tests (they auto-inject) — `@WebMvcTest` controller tests mock the service directly
 ---
+
+## Iteration 4 - US-004: Add team-project link and unlink API endpoints
+- Added `linkProjectToTeam(projectId, teamId, userId)` service method with validations:
+  - User must be a member of the target team
+  - Project and team must be in the same hackathon
+  - Project must not already be linked to a team
+  - Team must not already have an active (non-archived) project
+  - Sets project's team to the target team
+- Added `unlinkProjectFromTeam(projectId, userId)` service method with validations:
+  - Project must be linked to a team
+  - User must be a member of the currently linked team
+  - Sets project's team to null
+- Added controller endpoints:
+  - `POST /api/projects/{id}/link-team/{teamId}` — links project to team
+  - `POST /api/projects/{id}/unlink-team` — unlinks project from team
+- Added 7 service unit tests covering all link validation cases (success, not found, not team member, different hackathons, already linked, team already has project)
+- Added 4 service unit tests covering all unlink validation cases (success, not found, not linked, not team member)
+- Added 8 controller tests for link/unlink endpoints (success, auth, forbidden, conflict, bad request)
+- Files changed:
+  - src/main/kotlin/com/hackathon/manager/service/ProjectService.kt
+  - src/main/kotlin/com/hackathon/manager/controller/ProjectController.kt
+  - src/test/kotlin/com/hackathon/manager/service/ProjectServiceTest.kt
+  - src/test/kotlin/com/hackathon/manager/controller/ProjectControllerTest.kt
+- Learnings for future iterations:
+  - Link/unlink are simple transactional operations — no new repository methods needed, just use `existsByTeamIdAndHackathonIdAndArchivedAtIsNull` for the team-has-project check
+  - The `@InjectMocks` auto-injection means no test setup changes needed when adding new methods to existing services
+---

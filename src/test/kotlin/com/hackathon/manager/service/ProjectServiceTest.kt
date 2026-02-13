@@ -869,4 +869,189 @@ class ProjectServiceTest {
         assertThat(testProject.archivedAt).isNotNull()
         verify(projectRepository).save(testProject)
     }
+
+    // --- linkProjectToTeam ---
+
+    @Test
+    fun `linkProjectToTeam should link unlinked project to team`() {
+        val independentProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Independent Project",
+            status = SubmissionStatus.draft
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentProject))
+        whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
+        whenever(projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(testTeamId, testHackathonId)).thenReturn(false)
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        val result = projectService.linkProjectToTeam(testProjectId, testTeamId, testUserId)
+
+        assertThat(result.teamId).isEqualTo(testTeamId)
+        assertThat(result.teamName).isEqualTo("Test Team")
+        verify(projectRepository).save(independentProject)
+    }
+
+    @Test
+    fun `linkProjectToTeam should throw when project not found`() {
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy { projectService.linkProjectToTeam(testProjectId, testTeamId, testUserId) }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Project not found")
+    }
+
+    @Test
+    fun `linkProjectToTeam should throw when team not found`() {
+        val independentProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Independent Project"
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentProject))
+        whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy { projectService.linkProjectToTeam(testProjectId, testTeamId, testUserId) }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Team not found")
+    }
+
+    @Test
+    fun `linkProjectToTeam should throw when user is not team member`() {
+        val independentProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Independent Project"
+        )
+        val unauthorizedUserId = UUID.randomUUID()
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentProject))
+        whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, unauthorizedUserId)).thenReturn(false)
+
+        assertThatThrownBy { projectService.linkProjectToTeam(testProjectId, testTeamId, unauthorizedUserId) }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Must be a member of the target team to link a project")
+    }
+
+    @Test
+    fun `linkProjectToTeam should throw when project and team are in different hackathons`() {
+        val otherHackathon = Hackathon(
+            id = UUID.randomUUID(),
+            name = "Other Hackathon",
+            slug = "other-hackathon",
+            status = HackathonStatus.in_progress,
+            startsAt = OffsetDateTime.now().minusDays(1),
+            endsAt = OffsetDateTime.now().plusDays(1),
+            createdBy = testUser
+        )
+        val independentProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = otherHackathon,
+            createdBy = testUser,
+            name = "Project in Other Hackathon"
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentProject))
+        whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
+
+        assertThatThrownBy { projectService.linkProjectToTeam(testProjectId, testTeamId, testUserId) }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("Project and team must be in the same hackathon")
+    }
+
+    @Test
+    fun `linkProjectToTeam should throw when project is already linked to a team`() {
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
+
+        assertThatThrownBy { projectService.linkProjectToTeam(testProjectId, testTeamId, testUserId) }
+            .isInstanceOf(ConflictException::class.java)
+            .hasMessage("Project is already linked to a team")
+    }
+
+    @Test
+    fun `linkProjectToTeam should throw when team already has an active project`() {
+        val independentProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Independent Project"
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentProject))
+        whenever(teamRepository.findById(testTeamId)).thenReturn(Optional.of(testTeam))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
+        whenever(projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(testTeamId, testHackathonId)).thenReturn(true)
+
+        assertThatThrownBy { projectService.linkProjectToTeam(testProjectId, testTeamId, testUserId) }
+            .isInstanceOf(ConflictException::class.java)
+            .hasMessage("Team already has an active project")
+    }
+
+    // --- unlinkProjectFromTeam ---
+
+    @Test
+    fun `unlinkProjectFromTeam should unlink project from team`() {
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, testUserId)).thenReturn(true)
+        whenever(projectRepository.save(any<Project>())).thenAnswer { it.arguments[0] }
+
+        val result = projectService.unlinkProjectFromTeam(testProjectId, testUserId)
+
+        assertThat(result.teamId).isNull()
+        assertThat(result.teamName).isNull()
+        verify(projectRepository).save(testProject)
+    }
+
+    @Test
+    fun `unlinkProjectFromTeam should throw when project not found`() {
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.empty())
+
+        assertThatThrownBy { projectService.unlinkProjectFromTeam(testProjectId, testUserId) }
+            .isInstanceOf(NotFoundException::class.java)
+            .hasMessage("Project not found")
+    }
+
+    @Test
+    fun `unlinkProjectFromTeam should throw when project is not linked to a team`() {
+        val independentProject = Project(
+            id = testProjectId,
+            team = null,
+            hackathon = testHackathon,
+            createdBy = testUser,
+            name = "Independent Project"
+        )
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(independentProject))
+
+        assertThatThrownBy { projectService.unlinkProjectFromTeam(testProjectId, testUserId) }
+            .isInstanceOf(ValidationException::class.java)
+            .hasMessage("Project is not linked to a team")
+    }
+
+    @Test
+    fun `unlinkProjectFromTeam should throw when user is not team member`() {
+        val unauthorizedUserId = UUID.randomUUID()
+
+        whenever(projectRepository.findById(testProjectId)).thenReturn(Optional.of(testProject))
+        whenever(teamMemberRepository.existsByTeamIdAndUserId(testTeamId, unauthorizedUserId)).thenReturn(false)
+
+        assertThatThrownBy { projectService.unlinkProjectFromTeam(testProjectId, unauthorizedUserId) }
+            .isInstanceOf(UnauthorizedException::class.java)
+            .hasMessage("Must be a member of the linked team to unlink a project")
+    }
 }
