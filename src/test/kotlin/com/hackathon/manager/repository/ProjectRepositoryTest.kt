@@ -68,6 +68,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val project = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Test Project"
         )
         entityManager.persist(project)
@@ -100,6 +101,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val project1 = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Project 1",
             status = SubmissionStatus.draft
         )
@@ -115,6 +117,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val project2 = Project(
             team = anotherTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Project 2",
             status = SubmissionStatus.submitted
         )
@@ -150,6 +153,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val draftProject = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Draft Project",
             status = SubmissionStatus.draft
         )
@@ -165,6 +169,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val submittedProject = Project(
             team = team2,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Submitted Project",
             status = SubmissionStatus.submitted
         )
@@ -180,6 +185,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val acceptedProject = Project(
             team = team3,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Accepted Project",
             status = SubmissionStatus.accepted
         )
@@ -214,6 +220,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val project = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Test Project",
             status = SubmissionStatus.draft
         )
@@ -233,6 +240,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val project = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "New Project",
             tagline = "An innovative solution",
             description = "This project aims to solve a problem",
@@ -254,7 +262,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         assertThat(saved.demoUrl).isEqualTo("https://demo.example.com")
         assertThat(saved.repositoryUrl).isEqualTo("https://github.com/example/project")
         assertThat(saved.technologies).containsExactly("Kotlin", "Spring Boot", "PostgreSQL")
-        assertThat(saved.team.id).isEqualTo(testTeam.id)
+        assertThat(saved.team?.id).isEqualTo(testTeam.id)
         assertThat(saved.hackathon.id).isEqualTo(testHackathon.id)
         assertThat(saved.createdAt).isNotNull()
         assertThat(saved.updatedAt).isNotNull()
@@ -265,6 +273,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val project = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Cascade Test Project"
         )
         entityManager.persist(project)
@@ -288,6 +297,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val project = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Cascade Test Project"
         )
         entityManager.persist(project)
@@ -312,6 +322,7 @@ class ProjectRepositoryTest : AbstractRepositoryTest() {
         val project = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Test Project"
         )
         entityManager.persist(project)

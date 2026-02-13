@@ -17,12 +17,16 @@ class Project(
     val id: UUID? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id", nullable = false)
-    var team: Team,
+    @JoinColumn(name = "team_id")
+    var team: Team? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hackathon_id", nullable = false)
     var hackathon: Hackathon,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", nullable = false)
+    var createdBy: User,
 
     @Column(nullable = false)
     var name: String,

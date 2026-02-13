@@ -1,78 +1,37 @@
 # Progress Log
 
 ## Learnings
-- `aria-hidden="true"` removes elements from the accessibility tree — can't use `getByRole` on them; use `data-testid` instead
-- Frontend has no dedicated `typecheck` script — use `npx tsc -b` directly
-- UI components follow shadcn/ui patterns: forwardRef, cn utility, displayName, extend HTML attributes
-- Testing uses vitest + @testing-library/react + MemoryRouter for components with react-router Links
+- When adding a new required field to an entity (like `createdBy`), ALL test files that construct that entity must be updated — not just the ones for the feature being changed. Search broadly with `= Project(` across all test files.
+- Making an entity field nullable (e.g., `team: Team` → `team: Team?`) requires updating every access site to use `?.` or `!!.`. Use `replace_all` where appropriate.
+- Hibernate `ddl-auto: validate` in repository tests (via TestContainers) means entity changes MUST align with migration changes — they can't be separated into different PRD tasks if the tests need to pass.
+- Use `:test` (with project qualifier) to avoid mcp-server subproject failing when filtering tests.
 
 ---
 
-## Iteration 1 - US-001: Create Breadcrumb UI component
-- Created `frontend/src/components/ui/breadcrumb.tsx` with 6 composable parts: Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage
-- Created `frontend/src/components/ui/breadcrumb.test.tsx` with 9 unit tests covering rendering, links, separators, truncation, className forwarding
-- Files changed: breadcrumb.tsx (new), breadcrumb.test.tsx (new), PRD.md (marked US-001 complete)
+## Iteration 1 - US-001: Database migration to decouple projects from teams
+- Created V8__decouple_projects_from_teams.sql migration:
+  - Makes team_id nullable, adds created_by column with FK to users
+  - Backfills created_by from teams.created_by before adding NOT NULL constraint
+  - Replaces partial unique index to include `WHERE team_id IS NOT NULL AND archived_at IS NULL`
+  - Adds indexes on created_by and (hackathon_id, created_by)
+- Updated Project entity: `team: Team` → `team: Team? = null`, added `createdBy: User` ManyToOne
+- Updated ProjectDtos: `teamId: UUID` → `UUID?`, `teamName: String` → `String?`, safe-null access in fromEntity()
+- Updated CreateProjectRequest: `teamId: UUID` → `UUID?`, added `hackathonId: UUID?`
+- Updated ProjectService.createProject: handles nullable teamId, passes createdBy from team.createdBy
+- Updated ProjectService (update/submit/unsubmit/archive): `project.team.id!!` → `project.team!!.id!!`
+- Updated LeaderboardService: same `!!` pattern for team access
+- Updated ALL test files constructing Project entities to include `createdBy = testUser`:
+  - ProjectRepositoryTest, ProjectServiceTest, ProjectControllerTest
+  - ScoringServiceTest, LeaderboardServiceTest, JudgeManagementServiceTest
+  - JudgeAssignmentRepositoryTest, ScoreRepositoryTest
+- Files changed:
+  - src/main/resources/db/migration/V8__decouple_projects_from_teams.sql (new)
+  - src/main/kotlin/com/hackathon/manager/entity/Project.kt
+  - src/main/kotlin/com/hackathon/manager/dto/ProjectDtos.kt
+  - src/main/kotlin/com/hackathon/manager/service/ProjectService.kt
+  - src/main/kotlin/com/hackathon/manager/service/LeaderboardService.kt
+  - 7 test files updated for createdBy parameter
 - Learnings for future iterations:
-  - BreadcrumbLink uses react-router-dom `Link` component, needs `MemoryRouter` wrapper in tests
-  - maxLength truncation uses inline styles (maxWidth in ch units, overflow hidden, text-overflow ellipsis)
-  - BreadcrumbSeparator has aria-hidden="true" so it's invisible to role-based queries
----
-
-## Iteration 2 - US-002: Create useBreadcrumbs hook
-- Created `frontend/src/hooks/useBreadcrumbs.ts` with `useBreadcrumbs(overrides?)` hook
-- Created `frontend/src/hooks/useBreadcrumbs.test.ts` with 14 unit tests covering simple paths, nested paths, override resolution, slug formatting, settings path, last segment no href
-- Files changed: useBreadcrumbs.ts (new), useBreadcrumbs.test.ts (new), PRD.md (marked US-002 complete)
-- Learnings for future iterations:
-  - Hook is pure: derives segments from useLocation().pathname + overrides map, no side effects
-  - Static labels take precedence over overrides (e.g., "schedule" always maps to "Schedule")
-  - `hackathons` segment is skipped in display but kept in href building
-  - Mocking useLocation for hook tests: `vi.mock("react-router-dom", () => ({ useLocation: () => ({ pathname: mockPathname() }) }))`
-  - `renderHook` from @testing-library/react works for pure hooks without needing wrapper providers
-  - `BreadcrumbSegment` interface exported: `{ label: string, href?: string }`
----
-
-## Iteration 3 - US-003: Integrate breadcrumb into AppLayout navbar
-- Modified `frontend/src/components/layouts/AppLayout.tsx` to render breadcrumb as second row inside `<nav>`
-- Breadcrumb row only renders when `segments.length >= 2` (hidden on Dashboard)
-- Uses `border-t border-border` for subtle separator, same `max-w-7xl` + padding for alignment
-- Dynamic (hackathon name) segments truncated at 30 chars via `maxLength` prop
-- Files changed: AppLayout.tsx (modified), PRD.md (marked US-003 complete), progress.txt
-- Learnings for future iterations:
-  - `useBreadcrumbs()` can be called without overrides in AppLayout — pages wire overrides in US-004
-  - Hackathon name detection uses exclusion of known static labels (Dashboard, Schedule, Teams, etc.)
-  - BreadcrumbSeparator placed inside BreadcrumbItem for each non-first segment (avoids key issues)
----
-
-## Iteration 4 - US-004: Wire breadcrumb overrides into hackathon pages
-- Added `breadcrumbOverrides` optional prop to `AppLayout` component, which passes it to `useBreadcrumbs()`
-- Wired overrides into 6 pages that have dynamic data:
-  - `HackathonDetailPage`: `{ [slug]: hackathon.name }`
-  - `SchedulePage`: `{ [slug]: hackathon.name }`
-  - `TeamsListPage`: `{ [slug]: hackathon.name }`
-  - `TeamDetailPage`: `{ [slug]: hackathon.name, [teamId]: team.name }`
-  - `JudgeDashboardPage`: `{ [slug]: hackathon.name }`
-  - `ProjectScoringPage`: `{ [slug]: hackathon.name, [projectId]: project.name }`
-- `CreateHackathonPage` and `SessionManagementPage` need no changes — static labels handle them
-- While data is loading, `useBreadcrumbs` falls back to `formatSlug()` (title-case the slug), so no "undefined" flash
-- Files changed: AppLayout.tsx, HackathonDetail.tsx, Schedule.tsx, TeamsListPage.tsx, TeamDetailPage.tsx, JudgeDashboard.tsx, ProjectScoring.tsx, PRD.md
-- Learnings for future iterations:
-  - Prop-based approach (AppLayout accepts `breadcrumbOverrides`) is simpler than React context — each page already renders `<AppLayout>` directly
-  - Back links are NOT removed in this task — that's US-005. Only override wiring was done here
-  - `useBreadcrumbs` hook already handles the fallback gracefully: if no override exists for a slug, it formats it as title case
----
-
-## Iteration 5 - US-005: Remove all legacy back links
-- Removed back button (ArrowLeft + navigate(-1)) from CreateHackathonPage header; changed cancel button from navigate(-1) to navigate("/")
-- Removed "Back to Hackathon" link from SchedulePage (also removed unused Link and ArrowLeft imports)
-- Removed "Back to {hackathon.name}" button from TeamsListPage (also removed ArrowLeft import)
-- Removed "Back to Teams" button from TeamDetailPage (also removed ArrowLeft import)
-- Removed "Back to Hackathon" button from JudgeDashboardPage (also removed ArrowLeft import)
-- Removed "Back to Dashboard" button from ProjectScoringPage (also removed ArrowLeft import)
-- Also removed back button (navigate(-1)) from HackathonDetailPage — not listed in PRD but caught by the "no navigate(-1) remains" criterion
-- Kept all error-state fallback navigation buttons ("Go Back" on error, "Back to Hackathon" on access denied)
-- Files changed: CreateHackathon.tsx, Schedule.tsx, TeamsListPage.tsx, TeamDetailPage.tsx, JudgeDashboard.tsx, ProjectScoring.tsx, HackathonDetail.tsx, PRD.md
-- Learnings for future iterations:
-  - HackathonDetail.tsx uses ArrowLeft rotated 180° as a forward arrow for "View Full Schedule" — don't remove it
-  - The "cancel" button on CreateHackathonPage was changed to navigate("/") instead of navigate(-1) to provide deterministic behavior
-  - Error recovery / access denied buttons are NOT back links — they're kept per PRD
+  - Entity changes ripple broadly — always grep for constructor usage across ALL tests
+  - The `team!!.id!!` pattern is temporary — US-003 will properly handle null-team authorization
 ---

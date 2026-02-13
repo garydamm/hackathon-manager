@@ -118,6 +118,7 @@ class LeaderboardServiceTest {
             id = testProjectId,
             hackathon = testHackathon,
             team = testTeam,
+            createdBy = testUser,
             name = "Test Project",
             status = SubmissionStatus.submitted
         )
@@ -310,6 +311,7 @@ class LeaderboardServiceTest {
             id = UUID.randomUUID(),
             hackathon = testHackathon,
             team = testTeam2,
+            createdBy = testUser,
             name = "Test Project 2",
             status = SubmissionStatus.submitted
         )

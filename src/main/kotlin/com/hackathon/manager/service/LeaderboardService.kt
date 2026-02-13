@@ -122,8 +122,8 @@ class LeaderboardService(
                 rank = index + 1,
                 projectId = data.project.id!!,
                 projectName = data.project.name,
-                teamId = data.project.team.id!!,
-                teamName = data.project.team.name,
+                teamId = data.project.team!!.id!!,
+                teamName = data.project.team!!.name,
                 totalScore = data.totalScore,
                 criteriaAverages = data.criteriaAverages
             )

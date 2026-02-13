@@ -82,6 +82,7 @@ class ProjectServiceTest {
             id = testProjectId,
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Test Project",
             tagline = "A test project",
             description = "Description",
@@ -106,6 +107,7 @@ class ProjectServiceTest {
             id = UUID.randomUUID(),
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Archived Project",
             archivedAt = OffsetDateTime.now()
         )
@@ -125,6 +127,7 @@ class ProjectServiceTest {
             id = UUID.randomUUID(),
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Submitted Project",
             status = SubmissionStatus.submitted
         )
@@ -144,6 +147,7 @@ class ProjectServiceTest {
             id = UUID.randomUUID(),
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Archived Submitted Project",
             status = SubmissionStatus.submitted,
             archivedAt = OffsetDateTime.now()
@@ -182,6 +186,7 @@ class ProjectServiceTest {
             id = testProjectId,
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Archived Project",
             archivedAt = OffsetDateTime.now()
         )
@@ -240,6 +245,7 @@ class ProjectServiceTest {
                 id = UUID.randomUUID(),
                 team = project.team,
                 hackathon = project.hackathon,
+                createdBy = project.createdBy,
                 name = project.name,
                 tagline = project.tagline,
                 description = project.description,
@@ -318,6 +324,7 @@ class ProjectServiceTest {
                 id = UUID.randomUUID(),
                 team = project.team,
                 hackathon = project.hackathon,
+                createdBy = project.createdBy,
                 name = project.name
             )
         }
@@ -381,6 +388,7 @@ class ProjectServiceTest {
             id = testProjectId,
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Submitted Project",
             status = SubmissionStatus.submitted
         )
@@ -431,6 +439,7 @@ class ProjectServiceTest {
             id = testProjectId,
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Submitted Project",
             status = SubmissionStatus.submitted
         )
@@ -449,6 +458,7 @@ class ProjectServiceTest {
             id = testProjectId,
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Submitted Project",
             status = SubmissionStatus.submitted,
             submittedAt = OffsetDateTime.now()
@@ -479,6 +489,7 @@ class ProjectServiceTest {
             id = testProjectId,
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Submitted Project",
             status = SubmissionStatus.submitted
         )
@@ -540,6 +551,7 @@ class ProjectServiceTest {
             id = testProjectId,
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Archived Project",
             archivedAt = OffsetDateTime.now()
         )

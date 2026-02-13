@@ -71,6 +71,7 @@ class JudgeAssignmentRepositoryTest : AbstractRepositoryTest() {
         testProject = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Test Project",
             status = SubmissionStatus.submitted
         )
@@ -100,6 +101,7 @@ class JudgeAssignmentRepositoryTest : AbstractRepositoryTest() {
         val anotherProject = Project(
             team = anotherTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Another Project",
             status = SubmissionStatus.submitted
         )
@@ -287,6 +289,7 @@ class JudgeAssignmentRepositoryTest : AbstractRepositoryTest() {
         val anotherProject = Project(
             team = anotherTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Another Project",
             status = SubmissionStatus.submitted
         )
@@ -338,6 +341,7 @@ class JudgeAssignmentRepositoryTest : AbstractRepositoryTest() {
         val anotherProject = Project(
             team = anotherTeam,
             hackathon = anotherHackathon,
+            createdBy = testUser,
             name = "Project in Another Hackathon",
             status = SubmissionStatus.submitted
         )

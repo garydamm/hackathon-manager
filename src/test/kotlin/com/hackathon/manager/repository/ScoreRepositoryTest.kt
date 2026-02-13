@@ -74,6 +74,7 @@ class ScoreRepositoryTest : AbstractRepositoryTest() {
         testProject = Project(
             team = testTeam,
             hackathon = testHackathon,
+            createdBy = testUser,
             name = "Test Project",
             status = SubmissionStatus.submitted
         )

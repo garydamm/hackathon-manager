@@ -127,6 +127,7 @@ class ScoringServiceTest {
             id = testProjectId,
             hackathon = testHackathon,
             team = testTeam,
+            createdBy = testUser,
             name = "Test Project",
             status = SubmissionStatus.submitted
         )

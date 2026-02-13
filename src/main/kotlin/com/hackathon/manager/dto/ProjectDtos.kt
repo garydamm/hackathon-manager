@@ -9,8 +9,8 @@ import java.util.*
 
 data class ProjectResponse(
     val id: UUID,
-    val teamId: UUID,
-    val teamName: String,
+    val teamId: UUID?,
+    val teamName: String?,
     val hackathonId: UUID,
     val name: String,
     val tagline: String?,
@@ -29,8 +29,8 @@ data class ProjectResponse(
         fun fromEntity(project: Project): ProjectResponse {
             return ProjectResponse(
                 id = project.id!!,
-                teamId = project.team.id!!,
-                teamName = project.team.name,
+                teamId = project.team?.id,
+                teamName = project.team?.name,
                 hackathonId = project.hackathon.id!!,
                 name = project.name,
                 tagline = project.tagline,
@@ -50,8 +50,9 @@ data class ProjectResponse(
 }
 
 data class CreateProjectRequest(
-    @field:NotNull(message = "Team ID is required")
-    val teamId: UUID,
+    val teamId: UUID? = null,
+
+    val hackathonId: UUID? = null,
 
     @field:NotBlank(message = "Project name is required")
     val name: String,

@@ -52,24 +52,28 @@ class ProjectService(
 
     @Transactional
     fun createProject(request: CreateProjectRequest, userId: UUID): ProjectResponse {
-        val team = teamRepository.findById(request.teamId)
+        val teamId = request.teamId
+            ?: throw ValidationException("Team ID is required")
+
+        val team = teamRepository.findById(teamId)
             .orElseThrow { NotFoundException("Team not found") }
 
         if (team.hackathon.archived) {
             throw ValidationException("Cannot create a project in an archived hackathon")
         }
 
-        if (!teamMemberRepository.existsByTeamIdAndUserId(request.teamId, userId)) {
+        if (!teamMemberRepository.existsByTeamIdAndUserId(teamId, userId)) {
             throw UnauthorizedException("Must be a team member to create a project")
         }
 
-        if (projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(request.teamId, team.hackathon.id!!)) {
+        if (projectRepository.existsByTeamIdAndHackathonIdAndArchivedAtIsNull(teamId, team.hackathon.id!!)) {
             throw ConflictException("Team already has a project for this hackathon")
         }
 
         val project = Project(
             team = team,
             hackathon = team.hackathon,
+            createdBy = team.createdBy,
             name = request.name,
             tagline = request.tagline,
             description = request.description,
@@ -89,7 +93,7 @@ class ProjectService(
         val project = projectRepository.findById(id)
             .orElseThrow { NotFoundException("Project not found") }
 
-        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
+        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team!!.id!!, userId)) {
             throw UnauthorizedException("Must be a team member to update the project")
         }
 
@@ -120,7 +124,7 @@ class ProjectService(
             throw ValidationException("Cannot submit a project in an archived hackathon")
         }
 
-        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
+        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team!!.id!!, userId)) {
             throw UnauthorizedException("Must be a team member to submit the project")
         }
 
@@ -144,7 +148,7 @@ class ProjectService(
             throw ValidationException("Cannot unsubmit a project in an archived hackathon")
         }
 
-        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)) {
+        if (!teamMemberRepository.existsByTeamIdAndUserId(project.team!!.id!!, userId)) {
             throw UnauthorizedException("Must be a team member to unsubmit the project")
         }
 
@@ -169,7 +173,7 @@ class ProjectService(
         }
 
         // Check if user is either a team member OR hackathon organizer
-        val isTeamMember = teamMemberRepository.existsByTeamIdAndUserId(project.team.id!!, userId)
+        val isTeamMember = teamMemberRepository.existsByTeamIdAndUserId(project.team!!.id!!, userId)
         val isOrganizer = hackathonService.isUserOrganizer(project.hackathon.id!!, userId)
 
         if (!isTeamMember && !isOrganizer) {
