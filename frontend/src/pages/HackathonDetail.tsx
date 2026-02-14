@@ -49,6 +49,7 @@ import { projectService } from "@/services/projects"
 import { ProjectForm } from "@/components/ProjectForm"
 import type { Project, CreateProjectRequest } from "@/types"
 import { ApiError } from "@/services/api"
+import { useAuth } from "@/contexts/AuthContext"
 import type { Hackathon, HackathonStatus } from "@/types"
 
 const updateHackathonSchema = z.object({
@@ -130,7 +131,7 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
     queryFn: () => teamService.getMyTeam(hackathon.id),
   })
 
-  const isRegisteredParticipant = hackathon.userRole === "participant"
+  const canCreateTeam = hackathon.userRole === "participant" || hackathon.userRole === "organizer"
   const teamsCount = teams?.length ?? 0
 
   if (teamsLoading || myTeamLoading) {
@@ -176,7 +177,7 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
               </Link>
             </Button>
           </div>
-        ) : isRegisteredParticipant ? (
+        ) : canCreateTeam ? (
           <Button asChild>
             <Link to={`/hackathons/${hackathon.slug}/teams?create=true`}>
               Create Team
@@ -195,8 +196,10 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
 type ProjectFilter = "all" | "team" | "independent"
 
 function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
+  const { user } = useAuth()
   const queryClient = useQueryClient()
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [filter, setFilter] = useState<ProjectFilter>("all")
 
@@ -210,6 +213,16 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon.id] })
       setShowProjectForm(false)
+    },
+  })
+
+  const updateProjectMutation = useMutation({
+    mutationFn: ({ id, ...request }: { id: string } & import("@/types").UpdateProjectRequest) =>
+      projectService.updateProject(id, request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects", "hackathon", hackathon.id] })
+      setEditingProject(null)
+      setSelectedProject(null)
     },
   })
 
@@ -238,11 +251,34 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
     })
   }
 
-  const isRegisteredParticipant = hackathon.userRole === "participant"
+  const handleEditFormSubmit = async (data: {
+    name: string
+    tagline?: string
+    description?: string
+    demoUrl?: string
+    videoUrl?: string
+    repositoryUrl?: string
+    presentationUrl?: string
+  }) => {
+    if (!editingProject) return
+    const cleanedData = {
+      name: data.name,
+      tagline: data.tagline || undefined,
+      description: data.description || undefined,
+      demoUrl: data.demoUrl || undefined,
+      videoUrl: data.videoUrl || undefined,
+      repositoryUrl: data.repositoryUrl || undefined,
+      presentationUrl: data.presentationUrl || undefined,
+    }
+    await updateProjectMutation.mutateAsync({ id: editingProject.id, ...cleanedData })
+  }
+
+  const canCreateProject = hackathon.userRole === "participant" || hackathon.userRole === "organizer"
+  const isOrganizer = hackathon.userRole === "organizer"
 
   const filteredProjects = (projects ?? []).filter((p) => {
-    if (filter === "team") return p.teamId !== null
-    if (filter === "independent") return p.teamId === null
+    if (filter === "team") return !!p.teamId
+    if (filter === "independent") return !p.teamId
     return true
   })
   const projectsCount = projects?.length ?? 0
@@ -274,7 +310,7 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
               <FolderKanban className="h-5 w-5" />
               Projects ({projectsCount})
             </span>
-            {isRegisteredParticipant && (
+            {canCreateProject && (
               <Button size="sm" onClick={() => setShowProjectForm(true)}>
                 <FolderPlus className="h-4 w-4 mr-2" />
                 Create Project
@@ -313,7 +349,7 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
               <p className="text-muted-foreground mb-4">
                 No projects have been created yet.
               </p>
-              {isRegisteredParticipant && (
+              {canCreateProject && (
                 <Button onClick={() => setShowProjectForm(true)}>
                   <FolderPlus className="h-4 w-4 mr-2" />
                   Create Project
@@ -348,6 +384,11 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
           onClose={() => setSelectedProject(null)}
           project={selectedProject}
           hackathonSlug={hackathon.slug}
+          canEdit={isOrganizer || selectedProject.createdById === user?.id}
+          onEdit={() => {
+            setEditingProject(selectedProject)
+            setSelectedProject(null)
+          }}
         />
       )}
 
@@ -357,6 +398,15 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
         onClose={() => setShowProjectForm(false)}
         onSubmit={handleProjectFormSubmit}
         isLoading={createProjectMutation.isPending}
+      />
+
+      {/* Project Edit Form */}
+      <ProjectForm
+        isOpen={!!editingProject}
+        onClose={() => setEditingProject(null)}
+        onSubmit={handleEditFormSubmit}
+        project={editingProject}
+        isLoading={updateProjectMutation.isPending}
       />
     </>
   )

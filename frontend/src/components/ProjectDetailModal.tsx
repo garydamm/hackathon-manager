@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Users, User, Calendar, Globe, Video, Github, Presentation, ExternalLink } from "lucide-react"
+import { X, Users, User, Calendar, Globe, Video, Github, Presentation, ExternalLink, Pencil } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import type { Project, ProjectStatus } from "@/types"
@@ -9,6 +9,8 @@ interface ProjectDetailModalProps {
   onClose: () => void
   project: Project
   hackathonSlug?: string
+  canEdit?: boolean
+  onEdit?: () => void
 }
 
 function getStatusColor(status: ProjectStatus): string {
@@ -40,7 +42,7 @@ function formatDate(dateString: string): string {
   })
 }
 
-export function ProjectDetailModal({ isOpen, onClose, project, hackathonSlug }: ProjectDetailModalProps) {
+export function ProjectDetailModal({ isOpen, onClose, project, hackathonSlug, canEdit, onEdit }: ProjectDetailModalProps) {
   const urlLinks = [
     { url: project.demoUrl, label: "Demo", icon: Globe },
     { url: project.videoUrl, label: "Video", icon: Video },
@@ -80,14 +82,26 @@ export function ProjectDetailModal({ isOpen, onClose, project, hackathonSlug }: 
                     <p className="text-muted-foreground">{project.tagline}</p>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="shrink-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  {canEdit && onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={onEdit}
+                      title="Edit project"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               {/* Status Badge */}
