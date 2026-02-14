@@ -68,3 +68,19 @@
   - The filter toggle pattern is identical between ProjectsSection and TeamsSection — could be extracted to a shared component if more sections need it
   - `myTeam` returns `Team | null` from the API — `!!myTeam` is the simplest way to check if user is on a team
 ---
+
+## Iteration 5 - US-005: Add E2E tests for enhanced Teams section
+- Created `frontend/e2e/enhanced-teams-section.spec.ts` with 4 serial E2E tests:
+  1. Verifies "Teams (0)" header when no teams exist
+  2. Creates team via API, verifies "Teams (1)" header, team thumbnail visible, clicking navigates to team detail
+  3. Leaves team, creates new team via UI modal, navigates back to detail, verifies new team in grid
+  4. Verifies My Team / All Teams toggle filter appears and filters correctly
+- Two-user setup: organizer (creates hackathon, sets registration_open via API) + participant (registers via API, creates/interacts with teams)
+- Files changed:
+  - `frontend/e2e/enhanced-teams-section.spec.ts` (new)
+  - `PRD.md` (US-005 marked complete)
+- Learnings for future iterations:
+  - TeamThumbnail renders team name in multiple elements (span for text, h3 for heading) — use `getByRole('link', { name: new RegExp(teamName) })` to target the wrapping Link instead of `getByText(teamName)` which hits strict mode violations
+  - The toggle filter buttons are `<button>` elements (not links), so `getByRole('button', { name: 'All Teams' })` works
+  - Setting hackathon status to `registration_open` via API: `PUT /api/hackathons/{id}` with `{ status: 'registration_open' }` is cleaner than UI-based status change
+---

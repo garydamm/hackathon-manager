@@ -74,12 +74,12 @@ The Teams section on the Hackathon Detail page currently shows minimal informati
 **Description:** As a developer, I need end-to-end tests for the enhanced Teams section to verify the complete user flow works correctly.
 
 **Acceptance Criteria:**
-- [ ] E2E test: Navigate to hackathon detail page → verify Teams section header shows "Teams (N)" with correct count
-- [ ] E2E test: Verify team thumbnails are displayed in grid layout and clicking one navigates to the team detail page
-- [ ] E2E test: Create a team → navigate back to hackathon detail → verify the new team appears in the Teams grid with updated count
-- [ ] E2E test: Toggle "My Team" filter → verify only user's team is shown; toggle "All Teams" → verify all teams are shown again
-- [ ] E2E tests pass
-- [ ] Typecheck passes
+- [x] E2E test: Navigate to hackathon detail page → verify Teams section header shows "Teams (N)" with correct count
+- [x] E2E test: Verify team thumbnails are displayed in grid layout and clicking one navigates to the team detail page
+- [x] E2E test: Create a team → navigate back to hackathon detail → verify the new team appears in the Teams grid with updated count
+- [x] E2E test: Toggle "My Team" filter → verify only user's team is shown; toggle "All Teams" → verify all teams are shown again
+- [x] E2E tests pass
+- [x] Typecheck passes
 
 ## Non-Goals
 
