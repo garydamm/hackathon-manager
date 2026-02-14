@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react"
+import { useRef, useCallback, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
 export interface SectionNavItem {
@@ -23,6 +23,30 @@ export function SectionNav({
   stickyTop = "top-16",
 }: SectionNavProps) {
   const navRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll the active tab into view within the horizontal nav bar
+  useEffect(() => {
+    if (!activeId || !scrollContainerRef.current) return
+    const container = scrollContainerRef.current
+    const activeButton = container.querySelector(
+      `[data-section-id="${activeId}"]`
+    ) as HTMLElement | null
+    if (!activeButton) return
+    const containerRect = container.getBoundingClientRect()
+    const buttonRect = activeButton.getBoundingClientRect()
+    // Only scroll if the button is not fully visible
+    if (
+      buttonRect.left < containerRect.left ||
+      buttonRect.right > containerRect.right
+    ) {
+      activeButton.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      })
+    }
+  }, [activeId])
 
   const handleClick = useCallback(
     (section: SectionNavItem) => {
@@ -44,6 +68,7 @@ export function SectionNav({
       aria-label="Page sections"
     >
       <div
+        ref={scrollContainerRef}
         className="flex overflow-x-auto"
         style={{
           scrollbarWidth: "none",
@@ -58,6 +83,7 @@ export function SectionNav({
           return (
             <button
               key={section.id}
+              data-section-id={section.id}
               role="tab"
               aria-selected={isActive}
               aria-disabled={isDisabled}

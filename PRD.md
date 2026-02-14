@@ -69,15 +69,15 @@ The nav bar consolidates the page's many sections into these tabs:
 **Description:** As a user, I want the active section tab to auto-update as I scroll through the page so that I always know which section I'm viewing.
 
 **Acceptance Criteria:**
-- [ ] New custom hook `useScrollSpy` in `frontend/src/hooks/useScrollSpy.ts`
-- [ ] Uses `IntersectionObserver` to observe all section elements by their IDs
-- [ ] Returns the currently active section ID based on which section is most visible in the viewport
-- [ ] Updates the active tab in SectionNav as the user scrolls
-- [ ] During programmatic scroll (click-to-jump), scrollspy updates are temporarily suppressed to prevent flickering
-- [ ] On mobile, the active tab auto-scrolls into view within the horizontally scrollable nav bar
-- [ ] Unit tests added for the useScrollSpy hook
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] New custom hook `useScrollSpy` in `frontend/src/hooks/useScrollSpy.ts`
+- [x] Uses `IntersectionObserver` to observe all section elements by their IDs
+- [x] Returns the currently active section ID based on which section is most visible in the viewport
+- [x] Updates the active tab in SectionNav as the user scrolls
+- [x] During programmatic scroll (click-to-jump), scrollspy updates are temporarily suppressed to prevent flickering
+- [x] On mobile, the active tab auto-scrolls into view within the horizontally scrollable nav bar
+- [x] Unit tests added for the useScrollSpy hook
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-004: E2E tests for section navigation

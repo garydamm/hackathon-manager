@@ -47,6 +47,7 @@ import { OrganizersSection } from "@/components/OrganizersSection"
 import { ParticipantsSection } from "@/components/ParticipantsSection"
 import { SectionNav } from "@/components/SectionNav"
 import type { SectionNavItem } from "@/components/SectionNav"
+import { useScrollSpy } from "@/hooks/useScrollSpy"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { projectService } from "@/services/projects"
@@ -519,15 +520,24 @@ function ViewMode({
     { id: "results", label: "Results", disabled: isOrganizer || (!isParticipant && !isCompleted) },
   ], [isAuthenticated, showTeamsSection, isOrganizer, isParticipant, isCompleted])
 
+  const sectionIds = useMemo(() => sections.map((s) => s.id), [sections])
+
+  const { activeId, suppressFor } = useScrollSpy({
+    sectionIds,
+    rootMargin: 120,
+  })
+
   const handleTabClick = useCallback((sectionId: string) => {
     const el = document.getElementById(sectionId)
     if (!el) return
+    // Suppress scrollspy during programmatic scroll to prevent flickering
+    suppressFor(1000)
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     el.scrollIntoView({
       behavior: prefersReducedMotion ? "auto" : "smooth",
       block: "start",
     })
-  }, [])
+  }, [suppressFor])
 
   return (
     <div className="space-y-8">
@@ -690,6 +700,7 @@ function ViewMode({
       {/* Section Navigation */}
       <SectionNav
         sections={sections}
+        activeId={activeId}
         onTabClick={handleTabClick}
       />
 
