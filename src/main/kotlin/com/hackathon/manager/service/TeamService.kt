@@ -24,7 +24,7 @@ class TeamService(
     @Transactional(readOnly = true)
     fun getTeamsByHackathon(hackathonId: UUID): List<TeamResponse> {
         return teamRepository.findByHackathonId(hackathonId)
-            .map { team -> TeamResponse.fromEntity(team) }
+            .map { team -> TeamResponse.fromEntity(team, includeMembers = true) }
     }
 
     @Transactional(readOnly = true)

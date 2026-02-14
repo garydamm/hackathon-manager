@@ -1,160 +1,100 @@
-# PRD: Decouple Projects from Teams
+# PRD: Enhanced Teams Section on Hackathon Detail Page
 
 ## Introduction
 
-Currently, projects are tightly coupled to teams — a project **requires** a `team_id` (NOT NULL) and can only be created from within a team context. This PRD updates the application end-to-end so that projects can exist independently within a hackathon, with an optional one-to-one association to a team. Any team member can link or unlink a project to their team, and projects can be created either independently or from within a team context.
+The Teams section on the Hackathon Detail page currently shows minimal information — just a count, a "My Team" link, and a "Browse Teams" button. This feature transforms it into a rich, visual grid of clickable team thumbnails (matching the style of the Projects section), with adaptive card sizing based on team count, a "My Team / All Teams" toggle filter, a persistent "Create Team" button, and a team count in the header.
 
 ## Goals
 
-- Make `team_id` on projects nullable so projects can exist without a team
-- Add `created_by` to projects to track the project creator independently of team ownership
-- Allow project creation from both hackathon context (no team) and team context
-- Enable any team member to link an unlinked project to their team (one-to-one: a team can have at most one project)
-- Enable team members to unlink a project from their team
-- Update all frontend pages and components to support the new independent project model
-- Maintain backward compatibility with existing data (migrate existing projects to populate `created_by`)
+- Display teams as a visual grid of clickable thumbnails on the Hackathon Detail page
+- Show detailed thumbnails (name, description, member count/max, open/closed status, member avatar row) when fewer than 10 teams
+- Show compact thumbnails (name and member count only) when 10 or more teams
+- Auto-adjust grid columns based on screen size and team count
+- Provide a toggle to filter between "All Teams" and "My Team"
+- Show team count next to the "Teams" header matching the Projects section format: "Teams (N)"
+- Always show the "Create Team" button for eligible users
+- Keep "View All Teams" link to the existing TeamsListPage
 
 ## User Stories
 
-### US-001: Database migration to decouple projects from teams
-**Description:** As a developer, I need to update the database schema so that projects can exist without a team and track their creator independently.
+### US-001: Include members in teams-by-hackathon API response
+**Description:** As a frontend developer, I need the teams list API to include member data so I can display member avatars on detailed team thumbnails.
 
 **Acceptance Criteria:**
-- [x] Add new migration file that:
-  - Makes `team_id` column nullable on `projects` table (ALTER COLUMN DROP NOT NULL)
-  - Adds `created_by` column (UUID, FK to `users`, NOT NULL for new rows)
-  - Backfills `created_by` for existing projects using the team's `created_by` value
-  - Drops existing unique constraint `uq_projects_team_hackathon` on `(team_id, hackathon_id)`
-  - Adds new partial unique index: `(team_id, hackathon_id) WHERE team_id IS NOT NULL AND archived_at IS NULL` — ensures one active project per team per hackathon, but allows unlinked projects
-  - Adds index on `created_by` column
-  - Adds index on `(hackathon_id, created_by)` for querying user's projects in a hackathon
-- [x] Migration runs successfully against existing data
-- [x] Existing projects retain their team associations and gain `created_by` values
+- [x] Update `TeamService.getTeamsByHackathon()` to call `TeamResponse.fromEntity(team, includeMembers = true)`
+- [x] `GET /api/teams/hackathon/{hackathonId}` response now includes `members` array on each team, with each member's `user` (containing `displayName`, `avatarUrl`, `firstName`, `lastName`) and `isLeader` flag
+- [x] Existing `TeamControllerTest` updated to verify members are included in the list response
 - [x] Unit tests pass
 - [x] Typecheck passes
 
-### US-002: Update Project entity, DTOs, and repository
-**Description:** As a developer, I need to update the Kotlin entity, DTOs, and repository to support nullable team and new created_by field.
+### US-002: Create TeamThumbnail component with detailed and compact variants
+**Description:** As a user, I want to see team thumbnails in the hackathon detail page so I can quickly browse teams and click through to their detail pages.
 
 **Acceptance Criteria:**
-- [x] Update `Project` entity: make `team` property nullable (`var team: Team?`), add `createdBy` ManyToOne relationship to `User`
-- [x] Update `ProjectResponse` DTO: make `teamId` and `teamName` nullable, add `createdById: UUID` and `createdByName: String` fields
-- [x] Update `ProjectResponse.fromEntity()` to handle null team and include createdBy info
-- [x] Update `CreateProjectRequest`: make `teamId` nullable (`val teamId: UUID?`), add required `hackathonId: UUID` field
-- [x] Update `ProjectRepository`:
-  - Add `findByHackathonIdAndCreatedByIdAndArchivedAtIsNull(hackathonId: UUID, userId: UUID): List<Project>` for user's projects
-  - Add `findByHackathonIdAndTeamIsNullAndArchivedAtIsNull(hackathonId: UUID): List<Project>` for unlinked projects
-- [x] Unit tests pass
-- [x] Typecheck passes
+- [ ] Create `frontend/src/components/TeamThumbnail.tsx` with a `variant` prop: `"detailed"` or `"compact"`
+- [ ] **Detailed variant** shows: gradient header with team initial (matching TeamCard/ProjectCard style), team name, description (truncated, 2-line clamp), member count / max team size, open/closed badge, row of member avatar circles (use `avatarUrl` or first-letter initials fallback, show max 5 with "+N" overflow indicator)
+- [ ] **Compact variant** shows: smaller card with team initial, team name, and member count — no description, no avatars, no open/closed badge
+- [ ] Both variants are wrapped in a `Link` to `/hackathons/{slug}/teams/{teamId}`
+- [ ] Both variants use motion animations consistent with existing ProjectCard (fade + slide-up, staggered by index)
+- [ ] Hover effects match existing cards (shadow increase, slight upward translation)
+- [ ] Unit tests pass
+- [ ] Typecheck passes
 
-### US-003: Update ProjectService for independent project creation
-**Description:** As a user, I want to create a project within a hackathon without needing to be on a team, so that I can start working on my idea independently.
-
-**Acceptance Criteria:**
-- [x] `createProject` handles two flows:
-  - **With teamId**: validates user is team member, links project to team (existing behavior), sets `createdBy` to the requesting user
-  - **Without teamId**: validates user is registered in hackathon, creates project with null team, sets `createdBy` to the requesting user
-- [x] When creating with a team, hackathonId from request must match the team's hackathon (or is derived from team)
-- [x] `updateProject` authorization: allow if user is project creator OR a member of the linked team
-- [x] `submitProject` / `unsubmitProject` / `archiveProject`: allow if user is project creator OR a member of the linked team
-- [x] `getProjectsByHackathon` returns all non-archived projects (both linked and unlinked)
-- [x] Unit tests added for independent project creation flow
-- [x] Unit tests added for updated authorization logic (creator vs team member)
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-004: Add team-project link and unlink API endpoints
-**Description:** As a team member, I want to link an unlinked project to my team (or unlink it) so that our team can claim a project for the hackathon.
+### US-003: Refactor TeamsSection with grid layout, count header, and adaptive thumbnails
+**Description:** As a user, I want the Teams section to display team thumbnails in a responsive grid so I can visually browse all teams without leaving the hackathon detail page.
 
 **Acceptance Criteria:**
-- [x] New service method `linkProjectToTeam(projectId: UUID, teamId: UUID, userId: UUID): ProjectResponse`
-  - Validates user is a member of the target team
-  - Validates project exists and is in the same hackathon as the team
-  - Validates project is not already linked to a team
-  - Validates team does not already have an active (non-archived) project
-  - Sets project's `team` to the target team
-- [x] New service method `unlinkProjectFromTeam(projectId: UUID, userId: UUID): ProjectResponse`
-  - Validates user is a member of the currently linked team
-  - Sets project's `team` to null
-- [x] New controller endpoint: `POST /api/projects/{id}/link-team/{teamId}` — links project to team
-- [x] New controller endpoint: `POST /api/projects/{id}/unlink-team` — unlinks project from team
-- [x] Unit tests added for link/unlink logic including all validation cases
-- [x] Unit tests pass
-- [x] Typecheck passes
+- [ ] Teams header shows count in parentheses: "Teams (N)" matching the Projects section format
+- [ ] "Create Team" button always visible in the header row (for participants and organizers), links to `/hackathons/${slug}/teams?create=true`
+- [ ] Teams displayed in a responsive grid using TeamThumbnail components
+- [ ] Automatically selects `"detailed"` variant when < 10 teams, `"compact"` variant when >= 10 teams
+- [ ] Grid columns auto-adjust: detailed mode uses responsive 1 col (sm) → 2 cols (md) → 3 cols (lg); compact mode uses responsive 2 cols (sm) → 3 cols (md) → 4 cols (lg)
+- [ ] "View All Teams" link preserved at bottom of section, linking to TeamsListPage
+- [ ] Loading state shows spinner (matching current behavior)
+- [ ] Empty state message when no teams exist (e.g., "No teams yet")
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-005: Update frontend types and API service layer
-**Description:** As a developer, I need to update the TypeScript types and API service to support the new optional team association and link/unlink operations.
+### US-004: Add My Team / All Teams toggle filter
+**Description:** As a user, I want to toggle between viewing all teams and just my team so I can quickly find my team in a large hackathon.
 
 **Acceptance Criteria:**
-- [x] Update `Project` interface: make `teamId` and `teamName` optional (`string | null`), add `createdById: string` and `createdByName: string`
-- [x] Update `CreateProjectRequest` interface: make `teamId` optional, add required `hackathonId: string`
-- [x] Add `linkProjectToTeam(projectId: string, teamId: string): Promise<Project>` to `projectService`
-- [x] Add `unlinkProjectFromTeam(projectId: string): Promise<Project>` to `projectService`
-- [x] Add `getUnlinkedProjects(hackathonId: string): Promise<Project[]>` to `projectService`
-- [x] Existing API calls still work correctly
-- [x] Typecheck passes
+- [ ] Toggle filter with two options: "All Teams" and "My Team"
+- [ ] Toggle uses the same pill/tab styling as the Projects section filter (`bg-muted rounded-lg` container with `bg-background shadow-sm` active state)
+- [ ] Default selection is "All Teams"
+- [ ] "My Team" filter shows only the user's team (filter the teams array using existing `myTeam` query data to match by ID)
+- [ ] "My Team" option is hidden when the user is not on a team (no `myTeam` data)
+- [ ] Toggle only appears when there is at least 1 team
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-006: Update project creation UI for independent projects
-**Description:** As a hackathon participant, I want to create a project from the hackathon projects page (without needing a team) so I can start building immediately.
-
-**Acceptance Criteria:**
-- [x] Add "Create Project" button on the hackathon projects list page (visible to registered participants)
-- [x] Button opens a project creation form/modal that does NOT require a team
-- [x] The form sends `hackathonId` and omits `teamId`
-- [x] Existing team-context project creation on `TeamDetailPage` still works (sends both `teamId` and `hackathonId`)
-- [x] After creation, the list refreshes to show the new project
-- [x] Verify changes work in browser
-- [x] Typecheck passes
-
-### US-007: Add team-project linking and unlinking UI
-**Description:** As a team member, I want to link an unlinked project to my team from the team detail page, and unlink it if needed.
+### US-005: Add E2E tests for enhanced Teams section
+**Description:** As a developer, I need end-to-end tests for the enhanced Teams section to verify the complete user flow works correctly.
 
 **Acceptance Criteria:**
-- [x] On `TeamDetailPage`, when the team has no linked project, show a "Link Project" button/section
-- [x] "Link Project" opens a modal/dropdown listing unlinked projects in the hackathon that the current user created
-- [x] Selecting a project and confirming calls `linkProjectToTeam` API
-- [x] On `TeamDetailPage`, when the team has a linked project, show an "Unlink Project" option with confirmation dialog
-- [x] Unlinking calls `unlinkProjectFromTeam` API and refreshes the team's project section
-- [x] React Query caches are invalidated after link/unlink operations
-- [x] Verify changes work in browser
-- [x] Typecheck passes
-
-### US-008: Update project display components for optional team
-**Description:** As a user, I want project cards and detail views to gracefully handle projects that have no team, showing the creator instead.
-
-**Acceptance Criteria:**
-- [x] `ProjectCard` component: when `teamName` is null, display "By [createdByName]" instead of team name
-- [x] Project detail view: when no team linked, show creator info and hide team-specific actions
-- [x] Project detail view: when team is linked, show team name with link to team detail page
-- [x] Projects list page: add filter option to show "All" / "Team Projects" / "Independent Projects"
-- [x] Verify changes work in browser
-- [x] Typecheck passes
-
-### US-009: UI system tests for decoupled project-team workflow
-**Description:** As a developer, I need end-to-end tests to verify the complete project-team decoupling workflow.
-
-**Acceptance Criteria:**
-- [x] UI system test: Create project independently (no team) within a hackathon, verify it appears in projects list
-- [x] UI system test: Create project from team context, verify it appears linked to team
-- [x] UI system test: Link an unlinked project to a team, verify team shows the project
-- [x] UI system test: Unlink a project from a team, verify team no longer shows the project and project still exists
-- [x] UI system tests pass
-- [x] Typecheck passes
+- [ ] E2E test: Navigate to hackathon detail page → verify Teams section header shows "Teams (N)" with correct count
+- [ ] E2E test: Verify team thumbnails are displayed in grid layout and clicking one navigates to the team detail page
+- [ ] E2E test: Create a team → navigate back to hackathon detail → verify the new team appears in the Teams grid with updated count
+- [ ] E2E test: Toggle "My Team" filter → verify only user's team is shown; toggle "All Teams" → verify all teams are shown again
+- [ ] E2E tests pass
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- No change to the team-hackathon relationship (teams remain hackathon-scoped)
-- No multi-team associations (a project links to at most one team — strictly one-to-one)
-- No transfer of project ownership between users
-- No changes to judging, prize winners, or judge assignment flows (these reference projects and are unaffected)
-- No changes to project media management
-- No drag-and-drop or bulk linking operations
+- No changes to the TeamsListPage (it remains as-is, accessible via "View All Teams" link)
+- No search functionality within the inline teams grid (search stays on TeamsListPage)
+- No inline team joining — users click through to Team Detail page to join
+- No pagination or infinite scroll for the inline grid
+- No drag-and-drop or reordering of teams
+- No changes to TeamCard component (used only on TeamsListPage)
 
 ## Technical Considerations
 
-- **Existing data migration**: All current projects have a `team_id`. The migration must backfill `created_by` from `teams.created_by` before adding the NOT NULL constraint on `created_by`.
-- **Partial unique constraint**: PostgreSQL supports `CREATE UNIQUE INDEX ... WHERE condition` for the one-active-project-per-team rule while allowing NULLs.
-- **Hibernate enum handling**: Remember to use `CAST(column AS text)` in any native queries involving PostgreSQL named enums (per project conventions).
-- **Authorization complexity**: Two authorization paths now exist — project creator and team member. Service methods must check both.
-- **React Query cache invalidation**: Link/unlink operations affect both team and project caches — invalidate `["team", teamId]`, `["projects", hackathonId]`, and `["teamProject", teamId]` query keys.
-- **Existing `ProjectForm` component**: Reuse for both team-context and independent creation flows by making team fields conditional.
+- **API change required:** `TeamService.getTeamsByHackathon()` currently calls `TeamResponse.fromEntity(team)` which defaults to `includeMembers = false`, returning `members: null`. US-001 changes this to `includeMembers = true` so member avatars are available for the detailed thumbnails. This is backward-compatible (null → populated array).
+- **Existing components to reference:** `ProjectCard.tsx` for visual card style, `TeamCard.tsx` for team-specific data patterns, `ProjectsSection` in `HackathonDetail.tsx` for header count format and filter toggle styling.
+- **Data already fetched:** `teams` (via `getTeamsByHackathon`) and `myTeam` (via `getMyTeam`) are already queried in the current `TeamsSection` — reuse both.
+- **Max team size:** The existing `TeamCard` on `TeamsListPage` receives `maxTeamSize` as a prop from the hackathon settings. Check if `Hackathon` type has `maxTeamSize` — if so, use it for the "N / M members" display; if not, just show the count.
+- **Avatar fallback pattern:** TeamDetailPage uses first letter of `displayName` (or `firstName`) as initials when `avatarUrl` is null — reuse this pattern for thumbnail avatar circles.
+- **New component vs modifying TeamCard:** Create a new `TeamThumbnail` component rather than modifying `TeamCard`, since they serve different contexts (inline detail page vs dedicated list page) with different data density requirements.

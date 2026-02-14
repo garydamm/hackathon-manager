@@ -3,8 +3,10 @@ package com.hackathon.manager.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.hackathon.manager.dto.CreateTeamRequest
 import com.hackathon.manager.dto.JoinTeamRequest
+import com.hackathon.manager.dto.TeamMemberResponse
 import com.hackathon.manager.dto.TeamResponse
 import com.hackathon.manager.dto.UpdateTeamRequest
+import com.hackathon.manager.dto.auth.UserResponse
 import com.hackathon.manager.exception.ApiException
 import com.hackathon.manager.security.JwtAuthenticationFilter
 import com.hackathon.manager.security.JwtTokenProvider
@@ -70,13 +72,33 @@ class TeamControllerTest {
         avatarUrl = null,
         inviteCode = "ABC12345",
         isOpen = true,
-        memberCount = 3,
-        members = null,
+        memberCount = 1,
+        members = listOf(
+            TeamMemberResponse(
+                id = UUID.randomUUID(),
+                user = UserResponse(
+                    id = testUserId,
+                    email = "test@example.com",
+                    firstName = "Test",
+                    lastName = "User",
+                    displayName = "TestUser",
+                    avatarUrl = null,
+                    bio = null,
+                    skills = null,
+                    githubUrl = null,
+                    linkedinUrl = null,
+                    portfolioUrl = null,
+                    createdAt = OffsetDateTime.now()
+                ),
+                isLeader = true,
+                joinedAt = OffsetDateTime.now()
+            )
+        ),
         createdAt = OffsetDateTime.now()
     )
 
     @Test
-    fun `getTeamsByHackathon should return teams`() {
+    fun `getTeamsByHackathon should return teams with members`() {
         whenever(teamService.getTeamsByHackathon(testHackathonId))
             .thenReturn(listOf(createTeamResponse()))
 
@@ -87,6 +109,9 @@ class TeamControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$").isArray)
             .andExpect(jsonPath("$[0].name").value("Test Team"))
+            .andExpect(jsonPath("$[0].members").isArray)
+            .andExpect(jsonPath("$[0].members[0].isLeader").value(true))
+            .andExpect(jsonPath("$[0].members[0].user.displayName").value("TestUser"))
     }
 
     @Test
