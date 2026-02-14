@@ -191,3 +191,24 @@
   - The filter tab pattern (bg-muted container with selectable bg-background items) matches shadcn's pill/tab style
   - "Verify changes work in browser" is left unchecked as it requires manual testing
 ---
+
+## Iteration 9 - US-009: UI system tests for decoupled project-team workflow
+- Created `frontend/e2e/project-team-decouple.spec.ts` with 4 serial Playwright e2e tests:
+  1. **Create project independently**: Navigates to hackathon page, clicks "Create Project", fills form (no teamId), verifies project appears in list with "By [createdByName]" display, confirms teamId is null via API
+  2. **Create project from team context**: Navigates to team detail page, creates project from there, verifies it appears on team page, confirms teamId matches via API
+  3. **Unlink project from team**: Navigates to team detail page with linked project, clicks "Unlink Project", confirms dialog, verifies team shows empty state, confirms project still exists via API with null teamId
+  4. **Link project to team**: Navigates to team detail page (no project), clicks "Link Existing Project", selects unlinked project from modal, confirms, verifies project appears on team page, confirms teamId matches via API
+- Test setup: Registers test user, creates hackathon, creates team via API (same pattern as other e2e tests)
+- Tests run serially since they share state (project created in test 1 is linked in test 4)
+- TypeScript typecheck passes
+- Frontend unit tests (216 tests) all pass — no regressions
+- E2e tests require running backend + frontend servers to execute
+- Files changed:
+  - frontend/e2e/project-team-decouple.spec.ts (new)
+  - PRD.md (marked US-009 criteria complete)
+- Learnings for future iterations:
+  - E2e tests can't run without servers — "UI system tests pass" left unchecked as it needs `./gradlew bootRun` + `npm run dev`
+  - Playwright's `reuseExistingServer: !process.env.CI` means it expects dev server already running locally (non-CI)
+  - Serial test ordering matters — unlink test runs before link test so there's an unlinked project to pick from the modal
+  - Verifying API responses in e2e tests (`page.request.get`) is the reliable way to assert teamId/null
+---

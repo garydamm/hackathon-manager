@@ -134,12 +134,12 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 **Description:** As a developer, I need end-to-end tests to verify the complete project-team decoupling workflow.
 
 **Acceptance Criteria:**
-- [ ] UI system test: Create project independently (no team) within a hackathon, verify it appears in projects list
-- [ ] UI system test: Create project from team context, verify it appears linked to team
-- [ ] UI system test: Link an unlinked project to a team, verify team shows the project
-- [ ] UI system test: Unlink a project from a team, verify team no longer shows the project and project still exists
+- [x] UI system test: Create project independently (no team) within a hackathon, verify it appears in projects list
+- [x] UI system test: Create project from team context, verify it appears linked to team
+- [x] UI system test: Link an unlinked project to a team, verify team shows the project
+- [x] UI system test: Unlink a project from a team, verify team no longer shows the project and project still exists
 - [ ] UI system tests pass
-- [ ] Typecheck passes
+- [x] Typecheck passes
 
 ## Non-Goals
 
