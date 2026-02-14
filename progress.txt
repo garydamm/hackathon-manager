@@ -1,86 +1,27 @@
 # Progress Log
 
 ## Learnings
-(Patterns discovered during implementation)
-- Running `./gradlew test --tests '*ControllerTest'` fails on multi-project builds because mcp-server subproject has no matching tests. Use `:test` to scope to main project: `./gradlew :test --tests '*ControllerTest' --tests '*ServiceTest'`
+- Frontend has no `typecheck` npm script; use `npx tsc -b` directly for type checking
+- Component testing pattern: vitest + @testing-library/react + userEvent for interactions
+- Use `cn()` from `@/lib/utils` for conditional Tailwind class merging
+- Tailwind v4 with CSS variables (@theme) — no tailwind.config.js file
+- Hidden scrollbar: use inline styles `scrollbarWidth: 'none'`, `msOverflowStyle: 'none'`
 
 ---
 
-## Iteration 1 - US-001: Include members in teams-by-hackathon API response
-- Changed `TeamService.getTeamsByHackathon()` to pass `includeMembers = true` to `TeamResponse.fromEntity()`
-- Updated `TeamControllerTest` helper `createTeamResponse()` to include a `TeamMemberResponse` with `UserResponse` data
-- Updated test `getTeamsByHackathon should return teams with members` to verify `members` array, `isLeader` flag, and `user.displayName` in JSON response
-- Files changed:
-  - `src/main/kotlin/com/hackathon/manager/service/TeamService.kt` (1 line change)
-  - `src/test/kotlin/com/hackathon/manager/controller/TeamControllerTest.kt` (imports + helper data + test assertions)
-- Learnings for future iterations:
-  - Use `:test` not `test` for Gradle test commands to avoid mcp-server subproject failures
-  - `TeamMemberResponse` includes `user: UserResponse` and `isLeader: Boolean` — ready for avatar display in frontend
----
-
-## Iteration 2 - US-002: Create TeamThumbnail component with detailed and compact variants
-- Created `frontend/src/components/TeamThumbnail.tsx` with `variant` prop ("detailed" | "compact")
-- Detailed variant: gradient header with team initial, team name, description (line-clamp-2), member count / max size, open/closed badge, member avatar row (max 5 with +N overflow)
-- Compact variant: smaller card with team initial, name, and member count only
-- Both wrapped in `Link` to `/hackathons/{slug}/teams/{teamId}`, with motion animations (fade + slide-up, staggered by index) and hover effects matching ProjectCard/TeamCard
-- Created `frontend/src/components/TeamThumbnail.test.tsx` with 18 unit tests covering both variants
-- Files changed:
-  - `frontend/src/components/TeamThumbnail.tsx` (new)
-  - `frontend/src/components/TeamThumbnail.test.tsx` (new)
-- Learnings for future iterations:
-  - No `typecheck` npm script — use `npx tsc -b --noEmit` for type checking
-  - When team initial letter collides with member avatar initials (e.g., "A" for "Alpha Team" + "Alice"), use container queries in tests instead of `getByText`
-  - `Team.members` is `TeamMember[] | null | undefined` — always default to `[]` with `?? []`
----
-
-## Iteration 3 - US-003: Refactor TeamsSection with grid layout, count header, and adaptive thumbnails
-- Refactored `TeamsSection` in `HackathonDetail.tsx` from a simple navigation card to a rich visual grid
-- Header now shows "Teams (N)" with count matching ProjectsSection format
-- "Create Team" button in header row (for participants/organizers) using `UserPlus` icon
-- Teams displayed in responsive grid using `TeamThumbnail` components
-- Auto-selects "detailed" variant when < 10 teams, "compact" when >= 10
-- Grid columns: detailed mode → 1/2/3 cols (sm/md/lg); compact mode → 2/3/4 cols (sm/md/lg)
-- "View All Teams" link preserved at bottom of section
-- Empty state shows icon + "No teams yet" message with Create Team button
-- Loading state shows spinner (unchanged)
-- Imported `TeamThumbnail` component and `UserPlus` icon
-- Removed `myTeam` data destructuring (no longer displayed inline), kept query for loading state and future US-004 filter
-- Files changed:
-  - `frontend/src/pages/HackathonDetail.tsx` (TeamsSection refactored, added imports)
-- Learnings for future iterations:
-  - Keep `myTeam` query running even if data isn't used yet — US-004 needs it for the toggle filter
-  - TypeScript strict mode catches unused destructured variables — remove `data:` destructuring if not used, query still executes
-  - ProjectsSection pattern is the template to follow: header with count + action button, filter tabs, grid of cards, empty state
----
-
-## Iteration 4 - US-004: Add My Team / All Teams toggle filter
-- Added `TeamFilter` type ("all" | "my-team") and `teamFilter` state to `TeamsSection`
-- Destructured `data: myTeam` from existing `getMyTeam` query (was previously unused)
-- Added pill/tab toggle matching ProjectsSection filter styling (`bg-muted rounded-lg` container, `bg-background shadow-sm` active state)
-- Toggle only renders when `teamsCount > 0 && hasMyTeam` (hidden when user has no team or no teams exist)
-- "My Team" filter filters teams array by matching `team.id === myTeam.id`
-- Default selection is "All Teams"
-- Used `filteredTeams` for the grid render instead of raw `teams` array
-- Files changed:
-  - `frontend/src/pages/HackathonDetail.tsx` (TeamsSection updated with filter state, toggle UI, filtered rendering)
-  - `PRD.md` (US-004 marked complete)
-- Learnings for future iterations:
-  - The filter toggle pattern is identical between ProjectsSection and TeamsSection — could be extracted to a shared component if more sections need it
-  - `myTeam` returns `Team | null` from the API — `!!myTeam` is the simplest way to check if user is on a team
----
-
-## Iteration 5 - US-005: Add E2E tests for enhanced Teams section
-- Created `frontend/e2e/enhanced-teams-section.spec.ts` with 4 serial E2E tests:
-  1. Verifies "Teams (0)" header when no teams exist
-  2. Creates team via API, verifies "Teams (1)" header, team thumbnail visible, clicking navigates to team detail
-  3. Leaves team, creates new team via UI modal, navigates back to detail, verifies new team in grid
-  4. Verifies My Team / All Teams toggle filter appears and filters correctly
-- Two-user setup: organizer (creates hackathon, sets registration_open via API) + participant (registers via API, creates/interacts with teams)
-- Files changed:
-  - `frontend/e2e/enhanced-teams-section.spec.ts` (new)
-  - `PRD.md` (US-005 marked complete)
-- Learnings for future iterations:
-  - TeamThumbnail renders team name in multiple elements (span for text, h3 for heading) — use `getByRole('link', { name: new RegExp(teamName) })` to target the wrapping Link instead of `getByText(teamName)` which hits strict mode violations
-  - The toggle filter buttons are `<button>` elements (not links), so `getByRole('button', { name: 'All Teams' })` works
-  - Setting hackathon status to `registration_open` via API: `PUT /api/hackathons/{id}` with `{ status: 'registration_open' }` is cleaner than UI-based status change
+## Iteration 1 - US-001: Create SectionNav Component
+- Created `frontend/src/components/SectionNav.tsx` — sticky horizontal tab bar component
+  - Accepts `sections` (id, label, disabled), `activeId`, `onTabClick`, `stickyTop`, `className`
+  - Active tab: `border-b-2 border-primary text-foreground`
+  - Inactive: `text-muted-foreground hover:text-foreground`
+  - Disabled: `text-muted-foreground/50 cursor-not-allowed`, no hover, aria-disabled, tabIndex -1
+  - Sticky with `z-40`, configurable `stickyTop` (default `top-16`), `bg-background`, `border-b`
+  - Horizontal scroll with hidden scrollbar for mobile
+  - Minimum touch target 44px (`min-h-[44px]`)
+  - ARIA: `role="tablist"` on nav, `role="tab"` + `aria-selected` on buttons
+- Created `frontend/src/components/SectionNav.test.tsx` — 19 unit tests all passing
+- Files changed: `SectionNav.tsx`, `SectionNav.test.tsx`
+- Learnings:
+  - No scrollbar-hide utility in Tailwind v4 by default; used inline styles instead
+  - `userEvent.setup()` needed before interactions in vitest + testing-library
 ---

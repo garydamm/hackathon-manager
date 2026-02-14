@@ -1,100 +1,110 @@
-# PRD: Enhanced Teams Section on Hackathon Detail Page
+# PRD: Hackathon Detail Page Section Navigation
 
 ## Introduction
 
-The Teams section on the Hackathon Detail page currently shows minimal information — just a count, a "My Team" link, and a "Browse Teams" button. This feature transforms it into a rich, visual grid of clickable team thumbnails (matching the style of the Projects section), with adaptive card sizing based on team count, a "My Team / All Teams" toggle filter, a persistent "Create Team" button, and a team count in the header.
+The hackathon detail page (`HackathonDetail.tsx`) contains 10+ vertically stacked sections that vary by user role and hackathon state. Currently there is no way to see all available sections at a glance or quickly jump between them. This feature adds a sticky horizontal underline tab bar (similar to GitHub repository tabs) below the hero area that shows all page sections, highlights the active one via scrollspy, and allows click-to-jump navigation. Tabs for role-restricted sections are visible but grayed out for users who cannot access them.
 
 ## Goals
 
-- Display teams as a visual grid of clickable thumbnails on the Hackathon Detail page
-- Show detailed thumbnails (name, description, member count/max, open/closed status, member avatar row) when fewer than 10 teams
-- Show compact thumbnails (name and member count only) when 10 or more teams
-- Auto-adjust grid columns based on screen size and team count
-- Provide a toggle to filter between "All Teams" and "My Team"
-- Show team count next to the "Teams" header matching the Projects section format: "Teams (N)"
-- Always show the "Create Team" button for eligible users
-- Keep "View All Teams" link to the existing TeamsListPage
+- Provide at-a-glance visibility of all sections on the hackathon detail page
+- Enable one-click jump to any section via smooth scrolling
+- Auto-highlight the active section tab as the user scrolls (scrollspy)
+- Show all section tabs regardless of role, with inaccessible ones visually disabled
+- Maintain consistency with the existing shadcn/Tailwind design language
+- Work well on both desktop and mobile (horizontal scroll on small screens)
+
+## Section Mapping
+
+The nav bar consolidates the page's many sections into these tabs:
+
+| Tab Label | Anchors To | Disabled When |
+|-----------|-----------|---------------|
+| Overview | About / Rules / Team Settings area | Never |
+| Organizers | OrganizersSection | Never |
+| Participants | ParticipantsSection | User not authenticated |
+| Teams | TeamsSection | Hackathon not in registration_open/in_progress |
+| Projects | ProjectsSection | Never |
+| Schedule | ScheduleManagementSection | User is not an organizer |
+| Judging | JudgingCriteriaSection + JudgesSection | User is not an organizer |
+| Leaderboard | LeaderboardSection | User is not an organizer |
+| Results | ResultsSection | User is not a participant or hackathon not completed |
 
 ## User Stories
 
-### US-001: Include members in teams-by-hackathon API response
-**Description:** As a frontend developer, I need the teams list API to include member data so I can display member avatars on detailed team thumbnails.
+### US-001: Create SectionNav component
+**Description:** As a developer, I need a reusable sticky horizontal tab bar component so that it can be placed on the hackathon detail page for section navigation.
 
 **Acceptance Criteria:**
-- [x] Update `TeamService.getTeamsByHackathon()` to call `TeamResponse.fromEntity(team, includeMembers = true)`
-- [x] `GET /api/teams/hackathon/{hackathonId}` response now includes `members` array on each team, with each member's `user` (containing `displayName`, `avatarUrl`, `firstName`, `lastName`) and `isLeader` flag
-- [x] Existing `TeamControllerTest` updated to verify members are included in the list response
+- [x] New component `SectionNav.tsx` in `frontend/src/components/`
+- [x] Accepts a list of sections with `id`, `label`, `disabled`, and `active` properties
+- [x] Renders as a horizontal row of text tabs with underline styling
+- [x] Active tab has `border-b-2 border-primary text-foreground` styling
+- [x] Inactive tabs use `text-muted-foreground` with hover state `hover:text-foreground`
+- [x] Disabled tabs use `text-muted-foreground/50` with `cursor-not-allowed` and no hover effect
+- [x] Component uses `sticky` positioning (top value configurable via prop or CSS variable to account for app header)
+- [x] Has solid `bg-background` and bottom border for visual separation when stuck
+- [x] On small screens, tabs are horizontally scrollable with hidden scrollbar (`overflow-x-auto`, `scrollbar-hide`)
+- [x] Fires an `onTabClick(sectionId)` callback when a non-disabled tab is clicked
+- [x] Minimum touch target of 44px height on mobile
 - [x] Unit tests pass
 - [x] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-002: Create TeamThumbnail component with detailed and compact variants
-**Description:** As a user, I want to see team thumbnails in the hackathon detail page so I can quickly browse teams and click through to their detail pages.
-
-**Acceptance Criteria:**
-- [x] Create `frontend/src/components/TeamThumbnail.tsx` with a `variant` prop: `"detailed"` or `"compact"`
-- [x] **Detailed variant** shows: gradient header with team initial (matching TeamCard/ProjectCard style), team name, description (truncated, 2-line clamp), member count / max team size, open/closed badge, row of member avatar circles (use `avatarUrl` or first-letter initials fallback, show max 5 with "+N" overflow indicator)
-- [x] **Compact variant** shows: smaller card with team initial, team name, and member count — no description, no avatars, no open/closed badge
-- [x] Both variants are wrapped in a `Link` to `/hackathons/{slug}/teams/{teamId}`
-- [x] Both variants use motion animations consistent with existing ProjectCard (fade + slide-up, staggered by index)
-- [x] Hover effects match existing cards (shadow increase, slight upward translation)
-- [x] Unit tests pass
-- [x] Typecheck passes
-
-### US-003: Refactor TeamsSection with grid layout, count header, and adaptive thumbnails
-**Description:** As a user, I want the Teams section to display team thumbnails in a responsive grid so I can visually browse all teams without leaving the hackathon detail page.
+### US-002: Add section anchors and integrate SectionNav into HackathonDetail
+**Description:** As a user, I want to see a sticky navigation bar on the hackathon detail page so that I can see all sections and click to jump to any of them.
 
 **Acceptance Criteria:**
-- [x] Teams header shows count in parentheses: "Teams (N)" matching the Projects section format
-- [x] "Create Team" button always visible in the header row (for participants and organizers), links to `/hackathons/${slug}/teams?create=true`
-- [x] Teams displayed in a responsive grid using TeamThumbnail components
-- [x] Automatically selects `"detailed"` variant when < 10 teams, `"compact"` variant when >= 10 teams
-- [x] Grid columns auto-adjust: detailed mode uses responsive 1 col (sm) → 2 cols (md) → 3 cols (lg); compact mode uses responsive 2 cols (sm) → 3 cols (md) → 4 cols (lg)
-- [x] "View All Teams" link preserved at bottom of section, linking to TeamsListPage
-- [x] Loading state shows spinner (matching current behavior)
-- [x] Empty state message when no teams exist (e.g., "No teams yet")
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [x] Verify changes work in browser
+- [ ] Each section in `HackathonDetail.tsx` ViewMode has an `id` attribute matching the section mapping (e.g., `id="overview"`, `id="teams"`, `id="projects"`)
+- [ ] Each section has `scroll-margin-top` CSS set to the combined height of the app header + nav bar (~112px) so sections don't hide behind sticky elements
+- [ ] SectionNav is rendered between the Quick Info cards and the first content section
+- [ ] Section list is computed based on current user role and hackathon state — all tabs appear, inaccessible ones are marked `disabled`
+- [ ] Clicking a non-disabled tab smooth-scrolls to the corresponding section using `scrollIntoView({ behavior: 'smooth', block: 'start' })`
+- [ ] Clicking a disabled tab does nothing
+- [ ] Respects `prefers-reduced-motion` by using `behavior: 'auto'` when motion is reduced
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
 
-### US-004: Add My Team / All Teams toggle filter
-**Description:** As a user, I want to toggle between viewing all teams and just my team so I can quickly find my team in a large hackathon.
-
-**Acceptance Criteria:**
-- [x] Toggle filter with two options: "All Teams" and "My Team"
-- [x] Toggle uses the same pill/tab styling as the Projects section filter (`bg-muted rounded-lg` container with `bg-background shadow-sm` active state)
-- [x] Default selection is "All Teams"
-- [x] "My Team" filter shows only the user's team (filter the teams array using existing `myTeam` query data to match by ID)
-- [x] "My Team" option is hidden when the user is not on a team (no `myTeam` data)
-- [x] Toggle only appears when there is at least 1 team
-- [x] Unit tests pass
-- [x] Typecheck passes
-- [x] Verify changes work in browser
-
-### US-005: Add E2E tests for enhanced Teams section
-**Description:** As a developer, I need end-to-end tests for the enhanced Teams section to verify the complete user flow works correctly.
+### US-003: Implement scrollspy with IntersectionObserver
+**Description:** As a user, I want the active section tab to auto-update as I scroll through the page so that I always know which section I'm viewing.
 
 **Acceptance Criteria:**
-- [x] E2E test: Navigate to hackathon detail page → verify Teams section header shows "Teams (N)" with correct count
-- [x] E2E test: Verify team thumbnails are displayed in grid layout and clicking one navigates to the team detail page
-- [x] E2E test: Create a team → navigate back to hackathon detail → verify the new team appears in the Teams grid with updated count
-- [x] E2E test: Toggle "My Team" filter → verify only user's team is shown; toggle "All Teams" → verify all teams are shown again
-- [x] E2E tests pass
-- [x] Typecheck passes
+- [ ] New custom hook `useScrollSpy` in `frontend/src/hooks/useScrollSpy.ts`
+- [ ] Uses `IntersectionObserver` to observe all section elements by their IDs
+- [ ] Returns the currently active section ID based on which section is most visible in the viewport
+- [ ] Updates the active tab in SectionNav as the user scrolls
+- [ ] During programmatic scroll (click-to-jump), scrollspy updates are temporarily suppressed to prevent flickering
+- [ ] On mobile, the active tab auto-scrolls into view within the horizontally scrollable nav bar
+- [ ] Unit tests added for the useScrollSpy hook
+- [ ] Unit tests pass
+- [ ] Typecheck passes
+- [ ] Verify changes work in browser
+
+### US-004: E2E tests for section navigation
+**Description:** As a developer, I need end-to-end tests for the section navigation feature to ensure the complete user flow works correctly.
+
+**Acceptance Criteria:**
+- [ ] E2E test: Navigate to hackathon detail page → section nav bar is visible with expected tabs
+- [ ] E2E test: Click a section tab → page scrolls to that section
+- [ ] E2E test: Disabled tabs are visually distinct and not clickable
+- [ ] E2E test: Scroll down the page → active tab updates to reflect visible section
+- [ ] E2E tests pass
+- [ ] Typecheck passes
 
 ## Non-Goals
 
-- No changes to the TeamsListPage (it remains as-is, accessible via "View All Teams" link)
-- No search functionality within the inline teams grid (search stays on TeamsListPage)
-- No inline team joining — users click through to Team Detail page to join
-- No pagination or infinite scroll for the inline grid
-- No drag-and-drop or reordering of teams
-- No changes to TeamCard component (used only on TeamsListPage)
+- No count badges on tabs (just labels)
+- No dropdown or nested menus for grouped sections
+- No sidebar/TOC navigation variant
+- No edit-mode navigation (only applies to ViewMode)
+- No changes to the existing AppLayout header or breadcrumb navigation
+- No collapsible/expandable sections — sections remain as-is, nav just jumps to them
 
 ## Technical Considerations
 
-- **API change required:** `TeamService.getTeamsByHackathon()` currently calls `TeamResponse.fromEntity(team)` which defaults to `includeMembers = false`, returning `members: null`. US-001 changes this to `includeMembers = true` so member avatars are available for the detailed thumbnails. This is backward-compatible (null → populated array).
-- **Existing components to reference:** `ProjectCard.tsx` for visual card style, `TeamCard.tsx` for team-specific data patterns, `ProjectsSection` in `HackathonDetail.tsx` for header count format and filter toggle styling.
-- **Data already fetched:** `teams` (via `getTeamsByHackathon`) and `myTeam` (via `getMyTeam`) are already queried in the current `TeamsSection` — reuse both.
-- **Max team size:** The existing `TeamCard` on `TeamsListPage` receives `maxTeamSize` as a prop from the hackathon settings. Check if `Hackathon` type has `maxTeamSize` — if so, use it for the "N / M members" display; if not, just show the count.
-- **Avatar fallback pattern:** TeamDetailPage uses first letter of `displayName` (or `firstName`) as initials when `avatarUrl` is null — reuse this pattern for thumbnail avatar circles.
-- **New component vs modifying TeamCard:** Create a new `TeamThumbnail` component rather than modifying `TeamCard`, since they serve different contexts (inline detail page vs dedicated list page) with different data density requirements.
+- The app header in `AppLayout.tsx` is `sticky top-0 z-50` with height ~64px; the SectionNav should use `z-40` and `top-16` (64px) to stack below it
+- Use `cn()` utility (already in the project) for conditional class merging
+- Framer Motion is available if entry animations are desired, but not required
+- The `scrollbar-hide` utility may need to be added to Tailwind config or use inline styles (`scrollbarWidth: 'none'`, `msOverflowStyle: 'none'`, `WebkitOverflowScrolling: 'touch'`)
+- IntersectionObserver `rootMargin` should be set to offset for the sticky header + nav bar height
+- Existing section components (`OrganizersSection`, `ParticipantsSection`, etc.) should not need internal changes — IDs will be added to their wrapper elements in `HackathonDetail.tsx`
