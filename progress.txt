@@ -25,3 +25,29 @@
   - No scrollbar-hide utility in Tailwind v4 by default; used inline styles instead
   - `userEvent.setup()` needed before interactions in vitest + testing-library
 ---
+
+## Iteration 2 - US-002: Add section anchors and integrate SectionNav into HackathonDetail
+- Modified `frontend/src/pages/HackathonDetail.tsx` — integrated SectionNav into ViewMode
+  - Added `SectionNav` import and `SectionNavItem` type import
+  - Added `useCallback`, `useMemo` imports from React
+  - Computed `sections` list with disabled states based on user role and hackathon state:
+    - Overview: never disabled
+    - Organizers: never disabled
+    - Participants: disabled when not authenticated
+    - Teams: disabled when hackathon not in registration_open/in_progress
+    - Projects: never disabled
+    - Schedule: disabled when not organizer
+    - Judging: disabled when not organizer
+    - Leaderboard: disabled when not organizer
+    - Results: disabled when organizer OR (not participant AND hackathon not completed)
+  - SectionNav placed between Quick Info cards and content sections
+  - Each section wrapped with `id` attribute and `scrollMarginTop: "112px"` inline style
+  - Overview groups About/Rules/Team Settings in a single `id="overview"` div
+  - Judging groups JudgingCriteriaSection + JudgesSection in a single `id="judging"` div
+  - `handleTabClick` uses `scrollIntoView` with smooth/auto based on `prefers-reduced-motion`
+- Files changed: `HackathonDetail.tsx`
+- Learnings:
+  - Conditionally rendered sections (organizer-only) can still have nav tabs — tab is disabled + section not in DOM, so clicking does nothing gracefully (getElementById returns null)
+  - `scrollMarginTop` as inline style works well for the scroll-offset needed for sticky headers
+  - `useAuth()` was already imported in the file scope but needed within ViewMode for isAuthenticated check
+---

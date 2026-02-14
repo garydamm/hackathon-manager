@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
@@ -45,6 +45,8 @@ import { ResultsSection } from "@/components/ResultsSection"
 import { ScheduleManagementSection } from "@/components/ScheduleManagementSection"
 import { OrganizersSection } from "@/components/OrganizersSection"
 import { ParticipantsSection } from "@/components/ParticipantsSection"
+import { SectionNav } from "@/components/SectionNav"
+import type { SectionNavItem } from "@/components/SectionNav"
 import { hackathonService } from "@/services/hackathons"
 import { teamService } from "@/services/teams"
 import { projectService } from "@/services/projects"
@@ -498,6 +500,35 @@ function ViewMode({
 
   const showRegisterButton = isRegistrationOpen && !isRegistered
 
+  const { user } = useAuth()
+  const isAuthenticated = !!user
+  const isParticipant = hackathon.userRole === "participant"
+  const isCompleted = hackathon.status === "completed"
+
+  const sectionScrollMargin = { scrollMarginTop: "112px" }
+
+  const sections: SectionNavItem[] = useMemo(() => [
+    { id: "overview", label: "Overview" },
+    { id: "organizers", label: "Organizers" },
+    { id: "participants", label: "Participants", disabled: !isAuthenticated },
+    { id: "teams", label: "Teams", disabled: !showTeamsSection },
+    { id: "projects", label: "Projects" },
+    { id: "schedule", label: "Schedule", disabled: !isOrganizer },
+    { id: "judging", label: "Judging", disabled: !isOrganizer },
+    { id: "leaderboard", label: "Leaderboard", disabled: !isOrganizer },
+    { id: "results", label: "Results", disabled: isOrganizer || (!isParticipant && !isCompleted) },
+  ], [isAuthenticated, showTeamsSection, isOrganizer, isParticipant, isCompleted])
+
+  const handleTabClick = useCallback((sectionId: string) => {
+    const el = document.getElementById(sectionId)
+    if (!el) return
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    el.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    })
+  }, [])
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -656,6 +687,12 @@ function ViewMode({
         </Card>
       </div>
 
+      {/* Section Navigation */}
+      <SectionNav
+        sections={sections}
+        onTabClick={handleTabClick}
+      />
+
       {/* View Full Schedule Card - visible to all registered users */}
       {hackathon.userRole && (
         <Card className="bg-primary/5 border-primary/20">
@@ -681,92 +718,117 @@ function ViewMode({
         </Card>
       )}
 
-      {/* Description */}
-      {hackathon.description && (
+      {/* Overview: About / Rules / Team Settings */}
+      <div id="overview" style={sectionScrollMargin} className="space-y-8">
+        {/* Description */}
+        {hackathon.description && (
+          <Card>
+            <CardHeader>
+              <CardTitle>About</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap">{hackathon.description}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Rules */}
+        {hackathon.rules && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Rules & Guidelines</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap">{hackathon.rules}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Team Settings */}
         <Card>
           <CardHeader>
-            <CardTitle>About</CardTitle>
+            <CardTitle>Team Settings</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="whitespace-pre-wrap">{hackathon.description}</p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Min Team Size</p>
+                <p className="text-lg font-medium">{hackathon.minTeamSize}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Max Team Size</p>
+                <p className="text-lg font-medium">{hackathon.maxTeamSize}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Timezone</p>
+                <p className="text-lg font-medium">{hackathon.timezone}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* Rules */}
-      {hackathon.rules && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Rules & Guidelines</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-wrap">{hackathon.rules}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Team Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Team Settings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Min Team Size</p>
-              <p className="text-lg font-medium">{hackathon.minTeamSize}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Max Team Size</p>
-              <p className="text-lg font-medium">{hackathon.maxTeamSize}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Timezone</p>
-              <p className="text-lg font-medium">{hackathon.timezone}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Organizers Section - visible to all users */}
-      <OrganizersSection
-        hackathonId={hackathon.id}
-        canEdit={isOrganizer}
-        hackathon={hackathon}
-      />
+      <div id="organizers" style={sectionScrollMargin}>
+        <OrganizersSection
+          hackathonId={hackathon.id}
+          canEdit={isOrganizer}
+          hackathon={hackathon}
+        />
+      </div>
 
       {/* Participants Section - visible to authenticated users */}
-      <ParticipantsSection
-        hackathonId={hackathon.id}
-        hackathon={hackathon}
-        onRegisterClick={onRegisterClick}
-      />
+      <div id="participants" style={sectionScrollMargin}>
+        <ParticipantsSection
+          hackathonId={hackathon.id}
+          hackathon={hackathon}
+          onRegisterClick={onRegisterClick}
+        />
+      </div>
 
-      {/* Judging Criteria Section - visible to organizers only */}
-      {isOrganizer && <JudgingCriteriaSection hackathonId={hackathon.id} />}
-
-      {/* Judges Section - visible to organizers only */}
-      {isOrganizer && <JudgesSection hackathonId={hackathon.id} />}
+      {/* Judging: Criteria + Judges - visible to organizers only */}
+      {isOrganizer && (
+        <div id="judging" style={sectionScrollMargin} className="space-y-8">
+          <JudgingCriteriaSection hackathonId={hackathon.id} />
+          <JudgesSection hackathonId={hackathon.id} />
+        </div>
+      )}
 
       {/* Schedule Management Section - visible to organizers only */}
-      {isOrganizer && <ScheduleManagementSection hackathonId={hackathon.id} />}
+      {isOrganizer && (
+        <div id="schedule" style={sectionScrollMargin}>
+          <ScheduleManagementSection hackathonId={hackathon.id} />
+        </div>
+      )}
 
       {/* Leaderboard Section - visible to organizers only */}
-      {isOrganizer && <LeaderboardSection hackathonId={hackathon.id} />}
+      {isOrganizer && (
+        <div id="leaderboard" style={sectionScrollMargin}>
+          <LeaderboardSection hackathonId={hackathon.id} />
+        </div>
+      )}
 
       {/* Results Section - visible to all users */}
       {!isOrganizer && (
-        <ResultsSection
-          hackathonId={hackathon.id}
-          hackathonStatus={hackathon.status}
-        />
+        <div id="results" style={sectionScrollMargin}>
+          <ResultsSection
+            hackathonId={hackathon.id}
+            hackathonStatus={hackathon.status}
+          />
+        </div>
       )}
 
       {/* Teams Section */}
-      {showTeamsSection && <TeamsSection hackathon={hackathon} />}
+      {showTeamsSection && (
+        <div id="teams" style={sectionScrollMargin}>
+          <TeamsSection hackathon={hackathon} />
+        </div>
+      )}
 
       {/* Projects Section */}
-      <ProjectsSection hackathon={hackathon} />
+      <div id="projects" style={sectionScrollMargin}>
+        <ProjectsSection hackathon={hackathon} />
+      </div>
     </div>
   )
 }

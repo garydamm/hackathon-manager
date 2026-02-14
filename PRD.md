@@ -54,15 +54,15 @@ The nav bar consolidates the page's many sections into these tabs:
 **Description:** As a user, I want to see a sticky navigation bar on the hackathon detail page so that I can see all sections and click to jump to any of them.
 
 **Acceptance Criteria:**
-- [ ] Each section in `HackathonDetail.tsx` ViewMode has an `id` attribute matching the section mapping (e.g., `id="overview"`, `id="teams"`, `id="projects"`)
-- [ ] Each section has `scroll-margin-top` CSS set to the combined height of the app header + nav bar (~112px) so sections don't hide behind sticky elements
-- [ ] SectionNav is rendered between the Quick Info cards and the first content section
-- [ ] Section list is computed based on current user role and hackathon state — all tabs appear, inaccessible ones are marked `disabled`
-- [ ] Clicking a non-disabled tab smooth-scrolls to the corresponding section using `scrollIntoView({ behavior: 'smooth', block: 'start' })`
-- [ ] Clicking a disabled tab does nothing
-- [ ] Respects `prefers-reduced-motion` by using `behavior: 'auto'` when motion is reduced
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Each section in `HackathonDetail.tsx` ViewMode has an `id` attribute matching the section mapping (e.g., `id="overview"`, `id="teams"`, `id="projects"`)
+- [x] Each section has `scroll-margin-top` CSS set to the combined height of the app header + nav bar (~112px) so sections don't hide behind sticky elements
+- [x] SectionNav is rendered between the Quick Info cards and the first content section
+- [x] Section list is computed based on current user role and hackathon state — all tabs appear, inaccessible ones are marked `disabled`
+- [x] Clicking a non-disabled tab smooth-scrolls to the corresponding section using `scrollIntoView({ behavior: 'smooth', block: 'start' })`
+- [x] Clicking a disabled tab does nothing
+- [x] Respects `prefers-reduced-motion` by using `behavior: 'auto'` when motion is reduced
+- [x] Unit tests pass
+- [x] Typecheck passes
 - [ ] Verify changes work in browser
 
 ### US-003: Implement scrollspy with IntersectionObserver
