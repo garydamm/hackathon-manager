@@ -8,6 +8,7 @@ import { motion } from "framer-motion"
 import {
   Loader2,
   ArrowLeft,
+  ArrowUp,
   Calendar,
   Users,
   Globe,
@@ -473,6 +474,26 @@ function ProjectsSection({ hackathon }: { hackathon: Hackathon }) {
   )
 }
 
+function BackToTopButton() {
+  const handleClick = () => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" })
+  }
+
+  return (
+    <div className="flex justify-end pt-2">
+      <button
+        type="button"
+        onClick={handleClick}
+        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowUp className="h-3.5 w-3.5" />
+        Back to top
+      </button>
+    </div>
+  )
+}
+
 function ViewMode({
   hackathon,
   onRegisterClick,
@@ -777,6 +798,7 @@ function ViewMode({
             </div>
           </CardContent>
         </Card>
+        <BackToTopButton />
       </div>
 
       {/* Organizers Section - visible to all users */}
@@ -786,6 +808,7 @@ function ViewMode({
           canEdit={isOrganizer}
           hackathon={hackathon}
         />
+        <BackToTopButton />
       </div>
 
       {/* Participants Section - visible to authenticated users */}
@@ -795,6 +818,7 @@ function ViewMode({
           hackathon={hackathon}
           onRegisterClick={onRegisterClick}
         />
+        <BackToTopButton />
       </div>
 
       {/* Judging: Criteria + Judges - visible to organizers only */}
@@ -802,6 +826,7 @@ function ViewMode({
         <div id="judging" style={sectionScrollMargin} className="space-y-8">
           <JudgingCriteriaSection hackathonId={hackathon.id} />
           <JudgesSection hackathonId={hackathon.id} />
+          <BackToTopButton />
         </div>
       )}
 
@@ -809,6 +834,7 @@ function ViewMode({
       {isOrganizer && (
         <div id="schedule" style={sectionScrollMargin}>
           <ScheduleManagementSection hackathonId={hackathon.id} />
+          <BackToTopButton />
         </div>
       )}
 
@@ -816,6 +842,7 @@ function ViewMode({
       {isOrganizer && (
         <div id="leaderboard" style={sectionScrollMargin}>
           <LeaderboardSection hackathonId={hackathon.id} />
+          <BackToTopButton />
         </div>
       )}
 
@@ -826,6 +853,7 @@ function ViewMode({
             hackathonId={hackathon.id}
             hackathonStatus={hackathon.status}
           />
+          <BackToTopButton />
         </div>
       )}
 
@@ -833,12 +861,14 @@ function ViewMode({
       {showTeamsSection && (
         <div id="teams" style={sectionScrollMargin}>
           <TeamsSection hackathon={hackathon} />
+          <BackToTopButton />
         </div>
       )}
 
       {/* Projects Section */}
       <div id="projects" style={sectionScrollMargin}>
         <ProjectsSection hackathon={hackathon} />
+        <BackToTopButton />
       </div>
     </div>
   )
