@@ -31,14 +31,14 @@ The Teams section on the Hackathon Detail page currently shows minimal informati
 **Description:** As a user, I want to see team thumbnails in the hackathon detail page so I can quickly browse teams and click through to their detail pages.
 
 **Acceptance Criteria:**
-- [ ] Create `frontend/src/components/TeamThumbnail.tsx` with a `variant` prop: `"detailed"` or `"compact"`
-- [ ] **Detailed variant** shows: gradient header with team initial (matching TeamCard/ProjectCard style), team name, description (truncated, 2-line clamp), member count / max team size, open/closed badge, row of member avatar circles (use `avatarUrl` or first-letter initials fallback, show max 5 with "+N" overflow indicator)
-- [ ] **Compact variant** shows: smaller card with team initial, team name, and member count — no description, no avatars, no open/closed badge
-- [ ] Both variants are wrapped in a `Link` to `/hackathons/{slug}/teams/{teamId}`
-- [ ] Both variants use motion animations consistent with existing ProjectCard (fade + slide-up, staggered by index)
-- [ ] Hover effects match existing cards (shadow increase, slight upward translation)
-- [ ] Unit tests pass
-- [ ] Typecheck passes
+- [x] Create `frontend/src/components/TeamThumbnail.tsx` with a `variant` prop: `"detailed"` or `"compact"`
+- [x] **Detailed variant** shows: gradient header with team initial (matching TeamCard/ProjectCard style), team name, description (truncated, 2-line clamp), member count / max team size, open/closed badge, row of member avatar circles (use `avatarUrl` or first-letter initials fallback, show max 5 with "+N" overflow indicator)
+- [x] **Compact variant** shows: smaller card with team initial, team name, and member count — no description, no avatars, no open/closed badge
+- [x] Both variants are wrapped in a `Link` to `/hackathons/{slug}/teams/{teamId}`
+- [x] Both variants use motion animations consistent with existing ProjectCard (fade + slide-up, staggered by index)
+- [x] Hover effects match existing cards (shadow increase, slight upward translation)
+- [x] Unit tests pass
+- [x] Typecheck passes
 
 ### US-003: Refactor TeamsSection with grid layout, count header, and adaptive thumbnails
 **Description:** As a user, I want the Teams section to display team thumbnails in a responsive grid so I can visually browse all teams without leaving the hackathon detail page.

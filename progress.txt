@@ -17,3 +17,18 @@
   - Use `:test` not `test` for Gradle test commands to avoid mcp-server subproject failures
   - `TeamMemberResponse` includes `user: UserResponse` and `isLeader: Boolean` — ready for avatar display in frontend
 ---
+
+## Iteration 2 - US-002: Create TeamThumbnail component with detailed and compact variants
+- Created `frontend/src/components/TeamThumbnail.tsx` with `variant` prop ("detailed" | "compact")
+- Detailed variant: gradient header with team initial, team name, description (line-clamp-2), member count / max size, open/closed badge, member avatar row (max 5 with +N overflow)
+- Compact variant: smaller card with team initial, name, and member count only
+- Both wrapped in `Link` to `/hackathons/{slug}/teams/{teamId}`, with motion animations (fade + slide-up, staggered by index) and hover effects matching ProjectCard/TeamCard
+- Created `frontend/src/components/TeamThumbnail.test.tsx` with 18 unit tests covering both variants
+- Files changed:
+  - `frontend/src/components/TeamThumbnail.tsx` (new)
+  - `frontend/src/components/TeamThumbnail.test.tsx` (new)
+- Learnings for future iterations:
+  - No `typecheck` npm script — use `npx tsc -b --noEmit` for type checking
+  - When team initial letter collides with member avatar initials (e.g., "A" for "Alpha Team" + "Alice"), use container queries in tests instead of `getByText`
+  - `Team.members` is `TeamMember[] | null | undefined` — always default to `[]` with `?? []`
+---
