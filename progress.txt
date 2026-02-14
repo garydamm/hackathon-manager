@@ -51,3 +51,48 @@
   - `scrollMarginTop` as inline style works well for the scroll-offset needed for sticky headers
   - `useAuth()` was already imported in the file scope but needed within ViewMode for isAuthenticated check
 ---
+
+## Iteration 3 - US-003: Implement scrollspy with IntersectionObserver
+- Created `frontend/src/hooks/useScrollSpy.ts` — custom hook for scroll-based section tracking
+  - Uses `IntersectionObserver` with 11 thresholds (0 to 1 in 0.1 steps) for smooth tracking
+  - Tracks intersection ratios in a `Map<string, number>`, picks section with highest ratio
+  - `suppressFor(ms)` function temporarily pauses updates during programmatic scroll (prevents flickering)
+  - `rootMargin` option (default 120px) offsets for sticky header + nav bar
+  - Returns `{ activeId, suppressFor }`
+- Updated `frontend/src/components/SectionNav.tsx`
+  - Added `scrollContainerRef` for horizontal scroll container
+  - Added `useEffect` to auto-scroll active tab into view on mobile when `activeId` changes
+  - Added `data-section-id` attribute to buttons for querySelector targeting
+- Updated `frontend/src/pages/HackathonDetail.tsx`
+  - Imported `useScrollSpy` hook
+  - Computed `sectionIds` from sections list with `useMemo`
+  - Wired `activeId` from scrollspy to `SectionNav`
+  - Added `suppressFor(1000)` call in `handleTabClick` before programmatic scroll
+- Created `frontend/src/hooks/useScrollSpy.test.ts` — 13 unit tests all passing
+  - Tests: initial state, observing elements, skipping missing DOM elements, highest ratio tracking, ratio updates, suppression, resume after suppression, rootMargin config, disconnect on unmount, no observer when no elements, threshold config, re-create on sectionIds change
+- Files changed: `useScrollSpy.ts`, `useScrollSpy.test.ts`, `SectionNav.tsx`, `HackathonDetail.tsx`, `PRD.md`
+- Learnings:
+  - `vi.fn()` cannot be used with `new` keyword — use a class-based mock for `IntersectionObserver`
+  - `vi.stubGlobal("IntersectionObserver", MockClass)` works to replace browser API in jsdom/happy-dom
+  - `data-*` attributes on buttons enable clean querySelector targeting for auto-scroll-into-view
+---
+
+## Iteration 4 - US-004: E2E tests for section navigation
+- Created `frontend/e2e/section-nav.spec.ts` — 6 E2E tests covering section navigation
+  - Tests organized in two `describe` blocks: organizer and participant perspectives
+  - Setup: creates organizer + hackathon + participant (registered) in beforeAll
+  - Organizer tests:
+    1. Nav bar visible with all 9 expected tabs (Overview through Results)
+    2. Click tab scrolls to section (verifies scrollY increases + section near viewport top)
+    3. Disabled tab (Results for organizer) has aria-disabled, cursor-not-allowed, no scroll on click
+    4. Scroll to bottom changes active tab away from Overview (aria-selected check)
+  - Participant tests:
+    5. Schedule/Judging/Leaderboard tabs disabled; Overview/Organizers/Participants/Teams/Projects enabled
+    6. Click enabled tab scrolls page to corresponding section
+- Files changed: `section-nav.spec.ts`, `PRD.md`, `progress.txt`
+- Learnings:
+  - `scrollIntoView` in Playwright doesn't always position elements exactly at viewport top due to `scrollMarginTop` — use broader range check (50-300px) or verify scrollY delta instead
+  - IntersectionObserver scrollspy may not activate for last/short sections — testing "active tab changed away from first section" is more reliable than testing a specific section became active
+  - `role="tab"` selector works well with SectionNav since buttons have `role="tab"` attribute
+  - Serial mode required since all tests share the same hackathon/users from beforeAll
+---

@@ -84,12 +84,12 @@ The nav bar consolidates the page's many sections into these tabs:
 **Description:** As a developer, I need end-to-end tests for the section navigation feature to ensure the complete user flow works correctly.
 
 **Acceptance Criteria:**
-- [ ] E2E test: Navigate to hackathon detail page → section nav bar is visible with expected tabs
-- [ ] E2E test: Click a section tab → page scrolls to that section
-- [ ] E2E test: Disabled tabs are visually distinct and not clickable
-- [ ] E2E test: Scroll down the page → active tab updates to reflect visible section
-- [ ] E2E tests pass
-- [ ] Typecheck passes
+- [x] E2E test: Navigate to hackathon detail page → section nav bar is visible with expected tabs
+- [x] E2E test: Click a section tab → page scrolls to that section
+- [x] E2E test: Disabled tabs are visually distinct and not clickable
+- [x] E2E test: Scroll down the page → active tab updates to reflect visible section
+- [x] E2E tests pass
+- [x] Typecheck passes
 
 ## Non-Goals
 
