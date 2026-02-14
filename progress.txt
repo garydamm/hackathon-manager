@@ -52,3 +52,19 @@
   - TypeScript strict mode catches unused destructured variables — remove `data:` destructuring if not used, query still executes
   - ProjectsSection pattern is the template to follow: header with count + action button, filter tabs, grid of cards, empty state
 ---
+
+## Iteration 4 - US-004: Add My Team / All Teams toggle filter
+- Added `TeamFilter` type ("all" | "my-team") and `teamFilter` state to `TeamsSection`
+- Destructured `data: myTeam` from existing `getMyTeam` query (was previously unused)
+- Added pill/tab toggle matching ProjectsSection filter styling (`bg-muted rounded-lg` container, `bg-background shadow-sm` active state)
+- Toggle only renders when `teamsCount > 0 && hasMyTeam` (hidden when user has no team or no teams exist)
+- "My Team" filter filters teams array by matching `team.id === myTeam.id`
+- Default selection is "All Teams"
+- Used `filteredTeams` for the grid render instead of raw `teams` array
+- Files changed:
+  - `frontend/src/pages/HackathonDetail.tsx` (TeamsSection updated with filter state, toggle UI, filtered rendering)
+  - `PRD.md` (US-004 marked complete)
+- Learnings for future iterations:
+  - The filter toggle pattern is identical between ProjectsSection and TeamsSection — could be extracted to a shared component if more sections need it
+  - `myTeam` returns `Team | null` from the API — `!!myTeam` is the simplest way to check if user is on a team
+---

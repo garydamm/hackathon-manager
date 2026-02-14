@@ -122,19 +122,27 @@ const STATUS_OPTIONS: { value: HackathonStatus; label: string }[] = [
   { value: "cancelled", label: "Cancelled" },
 ]
 
+type TeamFilter = "all" | "my-team"
+
 function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
+  const [teamFilter, setTeamFilter] = useState<TeamFilter>("all")
+
   const { data: teams, isLoading: teamsLoading } = useQuery({
     queryKey: ["teams", hackathon.id],
     queryFn: () => teamService.getTeamsByHackathon(hackathon.id),
   })
 
-  const { isLoading: myTeamLoading } = useQuery({
+  const { data: myTeam, isLoading: myTeamLoading } = useQuery({
     queryKey: ["myTeam", hackathon.id],
     queryFn: () => teamService.getMyTeam(hackathon.id),
   })
 
   const canCreateTeam = hackathon.userRole === "participant" || hackathon.userRole === "organizer"
   const teamsCount = teams?.length ?? 0
+  const hasMyTeam = !!myTeam
+  const filteredTeams = teamFilter === "my-team" && myTeam
+    ? (teams ?? []).filter((t) => t.id === myTeam.id)
+    : (teams ?? [])
   const variant = teamsCount >= 10 ? "compact" as const : "detailed" as const
 
   if (teamsLoading || myTeamLoading) {
@@ -174,6 +182,29 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Filter toggle */}
+        {teamsCount > 0 && hasMyTeam && (
+          <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
+            {([
+              { value: "all" as const, label: "All Teams" },
+              { value: "my-team" as const, label: "My Team" },
+            ]).map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setTeamFilter(option.value)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  teamFilter === option.value
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {teamsCount === 0 ? (
           <div className="text-center py-8">
             <UsersRound className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
@@ -195,7 +226,7 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
                 : "grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
             }
           >
-            {(teams ?? []).map((team, index) => (
+            {filteredTeams.map((team, index) => (
               <TeamThumbnail
                 key={team.id}
                 team={team}

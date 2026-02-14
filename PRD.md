@@ -60,15 +60,15 @@ The Teams section on the Hackathon Detail page currently shows minimal informati
 **Description:** As a user, I want to toggle between viewing all teams and just my team so I can quickly find my team in a large hackathon.
 
 **Acceptance Criteria:**
-- [ ] Toggle filter with two options: "All Teams" and "My Team"
-- [ ] Toggle uses the same pill/tab styling as the Projects section filter (`bg-muted rounded-lg` container with `bg-background shadow-sm` active state)
-- [ ] Default selection is "All Teams"
-- [ ] "My Team" filter shows only the user's team (filter the teams array using existing `myTeam` query data to match by ID)
-- [ ] "My Team" option is hidden when the user is not on a team (no `myTeam` data)
-- [ ] Toggle only appears when there is at least 1 team
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Toggle filter with two options: "All Teams" and "My Team"
+- [x] Toggle uses the same pill/tab styling as the Projects section filter (`bg-muted rounded-lg` container with `bg-background shadow-sm` active state)
+- [x] Default selection is "All Teams"
+- [x] "My Team" filter shows only the user's team (filter the teams array using existing `myTeam` query data to match by ID)
+- [x] "My Team" option is hidden when the user is not on a team (no `myTeam` data)
+- [x] Toggle only appears when there is at least 1 team
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-005: Add E2E tests for enhanced Teams section
 **Description:** As a developer, I need end-to-end tests for the enhanced Teams section to verify the complete user flow works correctly.
