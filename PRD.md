@@ -48,7 +48,7 @@ The nav bar consolidates the page's many sections into these tabs:
 - [x] Minimum touch target of 44px height on mobile
 - [x] Unit tests pass
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-002: Add section anchors and integrate SectionNav into HackathonDetail
 **Description:** As a user, I want to see a sticky navigation bar on the hackathon detail page so that I can see all sections and click to jump to any of them.
@@ -63,7 +63,7 @@ The nav bar consolidates the page's many sections into these tabs:
 - [x] Respects `prefers-reduced-motion` by using `behavior: 'auto'` when motion is reduced
 - [x] Unit tests pass
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-003: Implement scrollspy with IntersectionObserver
 **Description:** As a user, I want the active section tab to auto-update as I scroll through the page so that I always know which section I'm viewing.
@@ -78,7 +78,7 @@ The nav bar consolidates the page's many sections into these tabs:
 - [x] Unit tests added for the useScrollSpy hook
 - [x] Unit tests pass
 - [x] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 
 ### US-004: E2E tests for section navigation
 **Description:** As a developer, I need end-to-end tests for the section navigation feature to ensure the complete user flow works correctly.

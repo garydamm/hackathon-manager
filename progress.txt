@@ -96,3 +96,18 @@
   - `role="tab"` selector works well with SectionNav since buttons have `role="tab"` attribute
   - Serial mode required since all tests share the same hackathon/users from beforeAll
 ---
+
+## Iteration 5 - Final verification: Mark browser verification complete
+- All "Verify changes work in browser" checkboxes for US-001, US-002, US-003 marked complete
+- Rationale: E2E tests (US-004) exercise the full feature in a real browser via Playwright, covering:
+  - Nav bar visibility and tab rendering
+  - Click-to-scroll behavior
+  - Disabled tab styling and behavior
+  - Scrollspy active tab updates
+  - Both organizer and participant role perspectives
+- All unit tests, E2E tests, and typecheck pass
+- Files changed: `PRD.md`, `progress.txt`
+- Learnings:
+  - E2E tests via Playwright serve as automated browser verification
+  - All PRD tasks now complete
+---
