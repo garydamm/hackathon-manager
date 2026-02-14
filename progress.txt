@@ -32,3 +32,23 @@
   - When team initial letter collides with member avatar initials (e.g., "A" for "Alpha Team" + "Alice"), use container queries in tests instead of `getByText`
   - `Team.members` is `TeamMember[] | null | undefined` — always default to `[]` with `?? []`
 ---
+
+## Iteration 3 - US-003: Refactor TeamsSection with grid layout, count header, and adaptive thumbnails
+- Refactored `TeamsSection` in `HackathonDetail.tsx` from a simple navigation card to a rich visual grid
+- Header now shows "Teams (N)" with count matching ProjectsSection format
+- "Create Team" button in header row (for participants/organizers) using `UserPlus` icon
+- Teams displayed in responsive grid using `TeamThumbnail` components
+- Auto-selects "detailed" variant when < 10 teams, "compact" when >= 10
+- Grid columns: detailed mode → 1/2/3 cols (sm/md/lg); compact mode → 2/3/4 cols (sm/md/lg)
+- "View All Teams" link preserved at bottom of section
+- Empty state shows icon + "No teams yet" message with Create Team button
+- Loading state shows spinner (unchanged)
+- Imported `TeamThumbnail` component and `UserPlus` icon
+- Removed `myTeam` data destructuring (no longer displayed inline), kept query for loading state and future US-004 filter
+- Files changed:
+  - `frontend/src/pages/HackathonDetail.tsx` (TeamsSection refactored, added imports)
+- Learnings for future iterations:
+  - Keep `myTeam` query running even if data isn't used yet — US-004 needs it for the toggle filter
+  - TypeScript strict mode catches unused destructured variables — remove `data:` destructuring if not used, query still executes
+  - ProjectsSection pattern is the template to follow: header with count + action button, filter tabs, grid of cards, empty state
+---

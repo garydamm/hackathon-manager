@@ -17,6 +17,7 @@ import {
   Save,
   X,
   UsersRound,
+  UserPlus,
   CheckCircle,
   FolderKanban,
   FolderPlus,
@@ -35,6 +36,7 @@ import { RegisterModal } from "@/components/RegisterModal"
 import { UnregisterModal } from "@/components/UnregisterModal"
 import { ArchiveModal } from "@/components/ArchiveModal"
 import { ProjectCard } from "@/components/ProjectCard"
+import { TeamThumbnail } from "@/components/TeamThumbnail"
 import { ProjectDetailModal } from "@/components/ProjectDetailModal"
 import { JudgingCriteriaSection } from "@/components/JudgingCriteriaSection"
 import { JudgesSection } from "@/components/JudgesSection"
@@ -126,13 +128,14 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
     queryFn: () => teamService.getTeamsByHackathon(hackathon.id),
   })
 
-  const { data: myTeam, isLoading: myTeamLoading } = useQuery({
+  const { isLoading: myTeamLoading } = useQuery({
     queryKey: ["myTeam", hackathon.id],
     queryFn: () => teamService.getMyTeam(hackathon.id),
   })
 
   const canCreateTeam = hackathon.userRole === "participant" || hackathon.userRole === "organizer"
   const teamsCount = teams?.length ?? 0
+  const variant = teamsCount >= 10 ? "compact" as const : "detailed" as const
 
   if (teamsLoading || myTeamLoading) {
     return (
@@ -155,39 +158,63 @@ function TeamsSection({ hackathon }: { hackathon: Hackathon }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UsersRound className="h-5 w-5" />
-          Teams
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <UsersRound className="h-5 w-5" />
+            Teams ({teamsCount})
+          </span>
+          {canCreateTeam && (
+            <Button asChild size="sm">
+              <Link to={`/hackathons/${hackathon.slug}/teams?create=true`}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Create Team
+              </Link>
+            </Button>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-muted-foreground">
-          {teamsCount} {teamsCount === 1 ? "team" : "teams"} in this hackathon
-        </p>
+        {teamsCount === 0 ? (
+          <div className="text-center py-8">
+            <UsersRound className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+            <p className="text-muted-foreground mb-4">No teams yet</p>
+            {canCreateTeam && (
+              <Button asChild>
+                <Link to={`/hackathons/${hackathon.slug}/teams?create=true`}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Create Team
+                </Link>
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div
+            className={
+              variant === "detailed"
+                ? "grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                : "grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+            }
+          >
+            {(teams ?? []).map((team, index) => (
+              <TeamThumbnail
+                key={team.id}
+                team={team}
+                hackathonSlug={hackathon.slug}
+                maxTeamSize={hackathon.maxTeamSize}
+                index={index}
+                variant={variant}
+              />
+            ))}
+          </div>
+        )}
 
-        {myTeam ? (
-          <div className="p-4 rounded-lg bg-muted/50 space-y-3">
-            <div>
-              <p className="text-sm text-muted-foreground">My Team</p>
-              <p className="font-medium">{myTeam.name}</p>
-            </div>
+        {teamsCount > 0 && (
+          <div className="text-center pt-2">
             <Button asChild variant="outline" size="sm">
-              <Link to={`/hackathons/${hackathon.slug}/teams/${myTeam.id}`}>
-                View Team
-              </Link>
+              <Link to={`/hackathons/${hackathon.slug}/teams`}>View All Teams</Link>
             </Button>
           </div>
-        ) : canCreateTeam ? (
-          <Button asChild>
-            <Link to={`/hackathons/${hackathon.slug}/teams?create=true`}>
-              Create Team
-            </Link>
-          </Button>
-        ) : null}
-
-        <Button asChild variant="outline">
-          <Link to={`/hackathons/${hackathon.slug}/teams`}>Browse Teams</Link>
-        </Button>
+        )}
       </CardContent>
     </Card>
   )

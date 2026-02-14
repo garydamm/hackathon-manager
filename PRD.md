@@ -44,17 +44,17 @@ The Teams section on the Hackathon Detail page currently shows minimal informati
 **Description:** As a user, I want the Teams section to display team thumbnails in a responsive grid so I can visually browse all teams without leaving the hackathon detail page.
 
 **Acceptance Criteria:**
-- [ ] Teams header shows count in parentheses: "Teams (N)" matching the Projects section format
-- [ ] "Create Team" button always visible in the header row (for participants and organizers), links to `/hackathons/${slug}/teams?create=true`
-- [ ] Teams displayed in a responsive grid using TeamThumbnail components
-- [ ] Automatically selects `"detailed"` variant when < 10 teams, `"compact"` variant when >= 10 teams
-- [ ] Grid columns auto-adjust: detailed mode uses responsive 1 col (sm) → 2 cols (md) → 3 cols (lg); compact mode uses responsive 2 cols (sm) → 3 cols (md) → 4 cols (lg)
-- [ ] "View All Teams" link preserved at bottom of section, linking to TeamsListPage
-- [ ] Loading state shows spinner (matching current behavior)
-- [ ] Empty state message when no teams exist (e.g., "No teams yet")
-- [ ] Unit tests pass
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Teams header shows count in parentheses: "Teams (N)" matching the Projects section format
+- [x] "Create Team" button always visible in the header row (for participants and organizers), links to `/hackathons/${slug}/teams?create=true`
+- [x] Teams displayed in a responsive grid using TeamThumbnail components
+- [x] Automatically selects `"detailed"` variant when < 10 teams, `"compact"` variant when >= 10 teams
+- [x] Grid columns auto-adjust: detailed mode uses responsive 1 col (sm) → 2 cols (md) → 3 cols (lg); compact mode uses responsive 2 cols (sm) → 3 cols (md) → 4 cols (lg)
+- [x] "View All Teams" link preserved at bottom of section, linking to TeamsListPage
+- [x] Loading state shows spinner (matching current behavior)
+- [x] Empty state message when no teams exist (e.g., "No teams yet")
+- [x] Unit tests pass
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ### US-004: Add My Team / All Teams toggle filter
 **Description:** As a user, I want to toggle between viewing all teams and just my team so I can quickly find my team in a large hackathon.
