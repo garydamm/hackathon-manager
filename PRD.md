@@ -103,7 +103,7 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 - [x] The form sends `hackathonId` and omits `teamId`
 - [x] Existing team-context project creation on `TeamDetailPage` still works (sends both `teamId` and `hackathonId`)
 - [x] After creation, the list refreshes to show the new project
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 - [x] Typecheck passes
 
 ### US-007: Add team-project linking and unlinking UI
@@ -116,7 +116,7 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 - [x] On `TeamDetailPage`, when the team has a linked project, show an "Unlink Project" option with confirmation dialog
 - [x] Unlinking calls `unlinkProjectFromTeam` API and refreshes the team's project section
 - [x] React Query caches are invalidated after link/unlink operations
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 - [x] Typecheck passes
 
 ### US-008: Update project display components for optional team
@@ -127,7 +127,7 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 - [x] Project detail view: when no team linked, show creator info and hide team-specific actions
 - [x] Project detail view: when team is linked, show team name with link to team detail page
 - [x] Projects list page: add filter option to show "All" / "Team Projects" / "Independent Projects"
-- [ ] Verify changes work in browser
+- [x] Verify changes work in browser
 - [x] Typecheck passes
 
 ### US-009: UI system tests for decoupled project-team workflow
@@ -138,7 +138,7 @@ Currently, projects are tightly coupled to teams — a project **requires** a `t
 - [x] UI system test: Create project from team context, verify it appears linked to team
 - [x] UI system test: Link an unlinked project to a team, verify team shows the project
 - [x] UI system test: Unlink a project from a team, verify team no longer shows the project and project still exists
-- [ ] UI system tests pass
+- [x] UI system tests pass
 - [x] Typecheck passes
 
 ## Non-Goals

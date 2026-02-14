@@ -11,48 +11,55 @@ const TEST_PASSWORD = 'TestPassword123';
 test.describe('Decoupled Project-Team Workflow', () => {
   test.describe.configure({ mode: 'serial' });
 
-  let testUserEmail: string;
-  let testUserFirstName: string;
+  // Organizer user (creates hackathon)
+  let organizerEmail: string;
+  let organizerFirstName: string;
+
+  // Participant user (registers for hackathon, creates team/projects)
+  let participantEmail: string;
+  let participantFirstName: string;
+
   let hackathonName: string;
   let hackathonSlug: string;
   let hackathonId: string;
   let teamName: string;
   let teamId: string;
-  let accessToken: string;
 
   // Track project IDs across tests
   let independentProjectId: string;
   let teamProjectId: string;
 
   test.beforeAll(async ({ browser }) => {
-    // Register a test user
-    testUserEmail = generateUniqueEmail();
-    testUserFirstName = 'DecoupleTest';
+    // === Create organizer user and hackathon ===
+    organizerEmail = generateUniqueEmail();
+    organizerFirstName = 'OrgDecouple';
 
-    const page = await browser.newPage();
-    await page.goto('/register');
+    const organizerPage = await browser.newPage();
+    await organizerPage.goto('/register');
 
-    await page.getByLabel('First name').fill(testUserFirstName);
-    await page.getByLabel('Last name').fill('User');
-    await page.getByLabel('Email').fill(testUserEmail);
-    await page.getByLabel('Password', { exact: true }).fill(TEST_PASSWORD);
-    await page.getByLabel('Confirm password').fill(TEST_PASSWORD);
-    await page.getByRole('button', { name: 'Create account' }).click();
+    await organizerPage.getByLabel('First name').fill(organizerFirstName);
+    await organizerPage.getByLabel('Last name').fill('User');
+    await organizerPage.getByLabel('Email').fill(organizerEmail);
+    await organizerPage.getByLabel('Password', { exact: true }).fill(TEST_PASSWORD);
+    await organizerPage.getByLabel('Confirm password').fill(TEST_PASSWORD);
+    await organizerPage.getByRole('button', { name: 'Create account' }).click();
 
     await expect(
-      page.getByRole('heading', {
-        name: new RegExp(`Welcome back, ${testUserFirstName}`),
+      organizerPage.getByRole('heading', {
+        name: new RegExp(`Welcome back, ${organizerFirstName}`),
       })
     ).toBeVisible({ timeout: 15000 });
 
-    // Create a hackathon
+    // Create hackathon
     hackathonName = generateUniqueHackathonName();
     hackathonSlug = hackathonName.toLowerCase().replace(/\s+/g, '-');
 
-    await page.goto('/hackathons/new');
+    await organizerPage.goto('/hackathons/new');
 
-    await page.getByLabel('Hackathon Name *').fill(hackathonName);
-    await page.getByLabel('Description').fill('Test hackathon for project-team decouple e2e tests.');
+    await organizerPage.getByLabel('Hackathon Name *').fill(hackathonName);
+    await organizerPage
+      .getByLabel('Description')
+      .fill('Test hackathon for project-team decouple e2e tests.');
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -62,32 +69,77 @@ test.describe('Decoupled Project-Team Workflow', () => {
     dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
     const endDate = dayAfterTomorrow.toISOString().slice(0, 16);
 
-    await page.getByLabel('Start Date & Time *').fill(startDate);
-    await page.getByLabel('End Date & Time *').fill(endDate);
+    await organizerPage.getByLabel('Start Date & Time *').fill(startDate);
+    await organizerPage.getByLabel('End Date & Time *').fill(endDate);
 
-    await page.getByRole('button', { name: 'Create Hackathon' }).click();
+    await organizerPage.getByRole('button', { name: 'Create Hackathon' }).click();
 
     await expect(
-      page.getByRole('heading', {
-        name: new RegExp(`Welcome back, ${testUserFirstName}`),
+      organizerPage.getByRole('heading', {
+        name: new RegExp(`Welcome back, ${organizerFirstName}`),
       })
     ).toBeVisible({ timeout: 15000 });
 
-    // Get auth token and hackathon ID
-    accessToken = (await page.evaluate(() => localStorage.getItem('accessToken')))!;
+    // Get organizer auth token and hackathon ID
+    const organizerToken = (await organizerPage.evaluate(() =>
+      localStorage.getItem('accessToken')
+    ))!;
 
-    const hackathonResponse = await page.request.get(
+    const hackathonResponse = await organizerPage.request.get(
       `http://localhost:8080/api/hackathons/${hackathonSlug}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
+      { headers: { Authorization: `Bearer ${organizerToken}` } }
     );
     const hackathon = await hackathonResponse.json();
     hackathonId = hackathon.id;
 
+    // Update hackathon status to registration_open so participants can register
+    await organizerPage.request.put(`http://localhost:8080/api/hackathons/${hackathonId}`, {
+      headers: {
+        Authorization: `Bearer ${organizerToken}`,
+        'Content-Type': 'application/json',
+      },
+      data: { status: 'registration_open' },
+    });
+
+    await organizerPage.evaluate(() => localStorage.clear());
+    await organizerPage.close();
+
+    // === Create participant user and register for hackathon ===
+    participantEmail = generateUniqueEmail();
+    participantFirstName = 'DecoupleTest';
+
+    const participantPage = await browser.newPage();
+    await participantPage.goto('/register');
+
+    await participantPage.getByLabel('First name').fill(participantFirstName);
+    await participantPage.getByLabel('Last name').fill('User');
+    await participantPage.getByLabel('Email').fill(participantEmail);
+    await participantPage.getByLabel('Password', { exact: true }).fill(TEST_PASSWORD);
+    await participantPage.getByLabel('Confirm password').fill(TEST_PASSWORD);
+    await participantPage.getByRole('button', { name: 'Create account' }).click();
+
+    await expect(
+      participantPage.getByRole('heading', {
+        name: new RegExp(`Welcome back, ${participantFirstName}`),
+      })
+    ).toBeVisible({ timeout: 15000 });
+
+    // Get participant auth token
+    const participantToken = (await participantPage.evaluate(() =>
+      localStorage.getItem('accessToken')
+    ))!;
+
+    // Register participant for the hackathon via API
+    await participantPage.request.post(
+      `http://localhost:8080/api/hackathons/${hackathonId}/register`,
+      { headers: { Authorization: `Bearer ${participantToken}` } }
+    );
+
     // Create a team via API
     teamName = generateUniqueTeamName();
-    const teamResponse = await page.request.post('http://localhost:8080/api/teams', {
+    const teamResponse = await participantPage.request.post('http://localhost:8080/api/teams', {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${participantToken}`,
         'Content-Type': 'application/json',
       },
       data: {
@@ -100,23 +152,23 @@ test.describe('Decoupled Project-Team Workflow', () => {
     const team = await teamResponse.json();
     teamId = team.id;
 
-    await page.evaluate(() => localStorage.clear());
-    await page.close();
+    await participantPage.evaluate(() => localStorage.clear());
+    await participantPage.close();
   });
 
   test.beforeEach(async ({ page }) => {
-    // Login fresh before each test
+    // Login as the participant user before each test
     await page.goto('/login');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 
-    await page.getByLabel('Email').fill(testUserEmail);
+    await page.getByLabel('Email').fill(participantEmail);
     await page.getByLabel('Password').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(
       page.getByRole('heading', {
-        name: new RegExp(`Welcome back, ${testUserFirstName}`),
+        name: new RegExp(`Welcome back, ${participantFirstName}`),
       })
     ).toBeVisible({ timeout: 10000 });
   });
@@ -144,7 +196,7 @@ test.describe('Decoupled Project-Team Workflow', () => {
     await expect(page.getByText('Independent E2E Project')).toBeVisible({ timeout: 10000 });
 
     // Verify the project shows as independent (created by user, no team)
-    await expect(page.getByText(`By ${testUserFirstName}`)).toBeVisible();
+    await expect(page.getByText(`By ${participantFirstName}`)).toBeVisible();
 
     // Store project ID via API for later tests
     const token = await page.evaluate(() => localStorage.getItem('accessToken'));
@@ -159,8 +211,8 @@ test.describe('Decoupled Project-Team Workflow', () => {
     expect(independentProject).toBeTruthy();
     independentProjectId = independentProject.id;
 
-    // Verify teamId is null (independent project)
-    expect(independentProject.teamId).toBeNull();
+    // Verify teamId is absent (independent project — backend omits null fields)
+    expect(independentProject.teamId).toBeFalsy();
   });
 
   test('create project from team context, verify it appears linked to team', async ({ page }) => {
@@ -236,8 +288,8 @@ test.describe('Decoupled Project-Team Workflow', () => {
     expect(projectResponse.ok()).toBeTruthy();
     const project = await projectResponse.json();
     expect(project.name).toBe('Team E2E Project');
-    // Project should now have no team
-    expect(project.teamId).toBeNull();
+    // Project should now have no team (backend omits null fields)
+    expect(project.teamId).toBeFalsy();
   });
 
   test('link an unlinked project to a team, verify team shows the project', async ({ page }) => {
@@ -274,6 +326,9 @@ test.describe('Decoupled Project-Team Workflow', () => {
 
     // Wait for the project to appear on the team detail page
     await expect(page.getByText('Independent E2E Project')).toBeVisible({ timeout: 10000 });
+
+    // Small delay to ensure the link transaction is fully committed
+    await page.waitForTimeout(1000);
 
     // Verify via API that the project is now linked to the team
     const token = await page.evaluate(() => localStorage.getItem('accessToken'));

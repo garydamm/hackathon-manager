@@ -212,3 +212,24 @@
   - Serial test ordering matters — unlink test runs before link test so there's an unlinked project to pick from the modal
   - Verifying API responses in e2e tests (`page.request.get`) is the reliable way to assert teamId/null
 ---
+
+## Iteration 10 - Fix e2e tests and verify all browser tasks (US-006/007/008/009)
+- Fixed e2e test `project-team-decouple.spec.ts` to use proper two-user setup:
+  - Organizer user creates hackathon, sets status to `registration_open`
+  - Participant user registers for hackathon, creates team, runs all tests
+  - Previously, single user was organizer (hackathon creator), so `userRole === "organizer"` meant "Create Project" button was hidden (only shown for `participant` role)
+- Fixed `toBeNull()` assertions to `toBeFalsy()`:
+  - Backend uses Jackson `non_null` serialization, so null fields are omitted from JSON entirely
+  - In JavaScript, omitted fields are `undefined`, not `null`
+  - `toBeNull()` fails on `undefined`; `toBeFalsy()` passes for both
+- Added 1-second delay before API verification in link test to avoid race condition
+- All 4 e2e tests pass, 216 frontend unit tests pass, typecheck passes
+- Files changed:
+  - frontend/e2e/project-team-decouple.spec.ts (rewritten beforeAll, fixed assertions)
+  - PRD.md (marked US-006/007/008 browser verification and US-009 e2e tests complete)
+- Learnings for future iterations:
+  - E2e tests that need participant role MUST use a separate user from the hackathon creator (organizer role takes precedence)
+  - Hackathon status must be `registration_open` before a user can register via API
+  - Jackson `non_null` means null fields → undefined in JS; use `toBeFalsy()` not `toBeNull()` in e2e tests
+  - Link/unlink API mutations may need small delay before verification to ensure transaction commit
+---
