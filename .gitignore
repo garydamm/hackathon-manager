@@ -16,6 +16,7 @@ build/
 *.swo
 
 # Kotlin
+.kotlin/
 *.class
 *.log
 *.war

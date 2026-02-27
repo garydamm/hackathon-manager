@@ -73,7 +73,7 @@ class ScoringService(
         }
 
         val allAssignments = existingAssignments + newAssignments
-        return allAssignments.map { JudgeAssignmentResponse.fromEntity(it) }
+        return allAssignments.map { JudgeAssignmentResponse.fromEntity(it, includeScores = true) }
     }
 
     @Transactional(readOnly = true)
